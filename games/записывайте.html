@@ -16,6 +16,7 @@
     color:#fff7e9;
     display:flex;align-items:center;justify-content:center;
     padding:16px;
+    padding:max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
     overflow:hidden;
     -webkit-user-select:none;user-select:none;
     -webkit-tap-highlight-color:transparent;
@@ -24,8 +25,9 @@
 
   #shell{
     position:relative;
-    width:min(1140px, 96vw, 132vh);
+    width:min(1140px, 98vw, 142vh);
     aspect-ratio:3/2;
+    max-height:100%;
     border-radius:22px;
     overflow:hidden;
     background:#caa87c;
@@ -208,23 +210,43 @@
   .stat span{font-size:12px;font-weight:700;color:#5d7a72;text-transform:uppercase;letter-spacing:1px}
 
   @media (max-width:760px){
-    .pill{font-size:13px;padding:7px 11px}
-    .miniBar{width:56px}
-    .card{padding:18px 18px 20px;border-radius:20px}
-    .rules li{font-size:13.5px;padding:9px 11px}
-    .btn{font-size:16px;padding:13px 26px}
+    body{padding:0}
+    #shell{
+      width:100%;
+      height:100%;
+      max-height:100dvh;
+      border-radius:0;
+      box-shadow:none;
+      aspect-ratio:auto;
+    }
+    .pill{font-size:12px;padding:6px 10px;gap:6px}
+    .pill .ico{font-size:14px}
+    .miniBar{width:50px;height:7px}
+    #percentText{min-width:32px;font-size:11px}
+    .iconBtn{width:36px;height:36px;font-size:16px}
+    .card{padding:18px 16px 20px;border-radius:20px}
+    .title{font-size:clamp(30px,7vw,46px);margin:8px 0 2px}
+    .subtitle{font-size:13px;margin-bottom:12px}
+    .rules{gap:7px;margin:12px 0 16px}
+    .rules li{font-size:12.5px;padding:8px 10px;gap:8px}
+    .rules .em{font-size:18px}
+    .btn{font-size:15px;padding:12px 22px;border-radius:14px}
     #hint{font-size:12px;padding:7px 12px;gap:8px}
-    #toast{bottom:60px;font-size:12.5px;padding:7px 14px}
+    #toast{bottom:60px;font-size:12px;padding:6px 14px}
+    #stick{width:104px;height:104px;left:14px;bottom:78px}
+    #knob{width:46px;height:46px;margin:-23px 0 0 -23px}
+    #shoutBtn{width:96px;height:96px;right:14px;bottom:78px;font-size:13px}
   }
   body.touch-mode #hint{display:none}
-  body.touch-mode #stick{bottom:92px}
-  body.touch-mode #shoutBtn{bottom:96px}
+  body.touch-mode #stick{bottom:82px}
+  body.touch-mode #shoutBtn{bottom:82px}
   body.touch-mode #phraseBar{
     flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;
     -webkit-overflow-scrolling:touch;scrollbar-width:none;max-width:calc(100% - 16px);
+    bottom:calc(10px + env(safe-area-inset-bottom, 0px));
   }
   body.touch-mode #phraseBar::-webkit-scrollbar{display:none}
-  body.touch-mode .chip{font-size:12px;padding:8px 10px}
+  body.touch-mode .chip{font-size:12px;padding:7px 11px;min-height:38px}
 </style>
 </head>
 <body>
@@ -617,6 +639,18 @@ let endTimeout = null, hintTimeout = null, toastTimeout = null, lastTimerSec = -
 /* ================= Ввод ================= */
 const keys = new Set();
 const touchVec = { x: 0, y: 0 };
+let pointerTarget = null;
+
+function screenToWorld(clientX, clientY){
+  const rect = canvas.getBoundingClientRect();
+  const scale = Math.min(rect.width / W, rect.height / H);
+  const ox = (rect.width - W * scale) / 2;
+  const oy = (rect.height - H * scale) / 2;
+  return {
+    x: clamp((clientX - rect.left - ox) / scale, FLOOR.l + TR, FLOOR.r - TR),
+    y: clamp((clientY - rect.top - oy) / scale, FLOOR.t + TR, FLOOR.b - TR)
+  };
+}
 window.addEventListener('keydown', e => {
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
   keys.add(e.code);
@@ -646,6 +680,19 @@ function moveInput(){
   if (keys.has('KeyW') || keys.has('ArrowUp'))    y--;
   if (keys.has('KeyS') || keys.has('ArrowDown'))  y++;
   x += touchVec.x; y += touchVec.y;
+
+  if (x === 0 && y === 0 && pointerTarget){
+    const t = game.teacher;
+    const dx = pointerTarget.x - t.x, dy = pointerTarget.y - t.y;
+    const d = Math.hypot(dx, dy);
+    if (d > 8){
+      x = dx / d;
+      y = dy / d;
+    } else {
+      pointerTarget = null;
+    }
+  }
+
   const len = Math.hypot(x, y);
   if (len > 1){ x /= len; y /= len; }
   return { x, y, on: len > 0.08 };
@@ -654,6 +701,7 @@ function moveInput(){
 /* джойстик */
 let stickId = null;
 function stickUpdate(e){
+  pointerTarget = null;
   const r = stick.getBoundingClientRect();
   const max = r.width * 0.30;
   let dx = e.clientX - (r.left + r.width/2);
@@ -669,12 +717,29 @@ function stickReset(){
   stickId = null; touchVec.x = 0; touchVec.y = 0;
   knob.style.transform = 'translate(0,0)';
 }
-stick.addEventListener('pointerdown', e => { e.preventDefault(); stickId = e.pointerId; stick.setPointerCapture(e.pointerId); stickUpdate(e); });
-stick.addEventListener('pointermove', e => { if (e.pointerId === stickId) stickUpdate(e); });
-stick.addEventListener('pointerup', stickReset);
-stick.addEventListener('pointercancel', stickReset);
-shoutBtn.addEventListener('pointerdown', e => { e.preventDefault(); shout(); });
-shoutBtn.addEventListener('click', e => e.preventDefault());
+stick.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); stickId = e.pointerId; stick.setPointerCapture(e.pointerId); stickUpdate(e); });
+stick.addEventListener('pointermove', e => { if (e.pointerId === stickId){ e.stopPropagation(); stickUpdate(e); } });
+stick.addEventListener('pointerup', e => { e.stopPropagation(); stickReset(); });
+stick.addEventListener('pointercancel', e => { e.stopPropagation(); stickReset(); });
+shoutBtn.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); shout(); });
+shoutBtn.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
+
+/* управление нажатием / тапом по холсту (как в скуф-физруке) */
+canvas.addEventListener('pointerdown', e => {
+  if (game.state !== 'playing' || game.paused) return;
+  e.preventDefault();
+  ensureAudio();
+  pointerTarget = screenToWorld(e.clientX, e.clientY);
+  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+});
+canvas.addEventListener('pointermove', e => {
+  if (!pointerTarget) return;
+  pointerTarget = screenToWorld(e.clientX, e.clientY);
+});
+const clearPointer = () => { pointerTarget = null; };
+canvas.addEventListener('pointerup', clearPointer);
+canvas.addEventListener('pointercancel', clearPointer);
+canvas.addEventListener('pointerleave', clearPointer);
 
 /* ================= Логика ================= */
 function canStand(x, y){
@@ -872,6 +937,7 @@ function hideOverlay(){
 function startGame(){
   ensureAudio(); sfxClick();
   clearTimeout(endTimeout); clearTimeout(hintTimeout);
+  pointerTarget = null;
   game.state = 'playing'; game.paused = false;
   game.timeLeft = TOTAL_TIME; game.shouts = 0; game.completed = 0;
   game.effects = []; game.particles = [];
@@ -900,6 +966,7 @@ function togglePause(force){
 }
 function endGame(result){
   if (game.state !== 'playing') return;
+  pointerTarget = null;
   game.state = result; game.paused = false;
   hint.classList.add('hidden');
   phraseBar.classList.add('hidden');
@@ -1506,6 +1573,20 @@ function draw(){
 
   drawBakh(game.visualTime);
   for (const s of students) drawStudent(s, game.visualTime);
+
+  // маркер цели тапа (как в скуф-физруке)
+  if (pointerTarget && game.state === 'playing'){
+    const pt = game.visualTime * 5;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(242,193,78,.85)';
+    ctx.lineWidth = 2.4;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.arc(pointerTarget.x, pointerTarget.y, 13 + Math.sin(pt) * 2, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(242,193,78,.9)';
+    ctx.beginPath(); ctx.arc(pointerTarget.x, pointerTarget.y, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
 
   // волны крика
   for (const e of game.effects){
