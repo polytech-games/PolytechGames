@@ -166,7 +166,7 @@
   </div>
 
   <div id="topright" class="panel">
-    ВОЛНА <b id="wave">1</b><br>
+    ВОЛНА <b id="wave">1</b><span id="waveProgress" style="font-size:12px;color:#a0b4c8;margin-left:6px"></span><br>
     Убито: <span id="kills">0</span> &nbsp;·&nbsp; Очки: <span id="score">0</span>
   </div>
 
@@ -403,6 +403,7 @@ let health, energy, wave, kills, score;
 let reloading, reloadT, fireCool, walkTime, gunKick, muzzle, recoil, hitFlash;
 let enemies, items, fx;
 let lastT = 0, hudT = 0;
+let waveQueue = [], waveSpawnTimer = 0, waveBreakTimer = 0, waveTotalEnemies = 0;
 
 /* ================= viewport (разделение экрана) ================= */
 let VX = 0, VOFF = 0, VW = W, VH = H;   // окно отрисовки вида
@@ -531,6 +532,7 @@ function startGame() {
   reloading = false; reloadT = 0; fireCool = 0;
   walkTime = 0; gunKick = 0; muzzle = 0; recoil = 0; hitFlash = 0;
   wave = 0; kills = 0; score = 0;
+  waveQueue = []; waveSpawnTimer = 0; waveBreakTimer = 0; waveTotalEnemies = 0;
   enemies = []; items = []; fx = [];
   for (const w of WEAPONS) { w.ammo = w.magSize; w.reserve = w.reserveStart; }
   cur = 0;
@@ -646,17 +648,19 @@ function setEnemiesFor(p) {
     hp: o.dead ? 0 : o.health, radius: 0.36, type: "player"
   }];
 }
-function damagePlayer(v, dmg) {
+function damagePlayer(v, dmg, hitZone) {
   if (v.dead) return;
   if (abT[2] > 0) return;
   const d = Math.max(1, Math.round(dmg));
   v.health -= d;
   v.flash = 0.22;
   v.hitFlash = 0.08;
-  for (let i = 0; i < 4; i++) {
+  const isHead = hitZone === "head";
+  if (isHead) beep(1900, 0.08, "square", 0.08, 1200);
+  for (let i = 0; i < (isHead ? 7 : 4); i++) {
     const a = Math.random() * 7;
-    fx.push({ kind: "part", x: v.posX, y: v.posY, vx: Math.cos(a) * 2.2, vy: Math.sin(a) * 2.2,
-      t: 0.3, max: 0.3, color: "#ff4040", size: 3 });
+    fx.push({ kind: "part", x: v.posX, y: v.posY, vx: Math.cos(a) * (isHead ? 3 : 2.2), vy: Math.sin(a) * (isHead ? 3 : 2.2),
+      t: 0.3, max: 0.3, color: isHead ? "#ff1111" : "#ff4040", size: isHead ? 4 : 3 });
   }
   if (v.health <= 0) {
     v.health = 0; v.dead = true; v.respawn = 2.2;
@@ -763,10 +767,23 @@ function updateVersus(dt) {
 /* ================= волны ================= */
 function nextWave() {
   wave++;
+  waveBreakTimer = 0;
   const nZom = 3 + wave * 2;
   const nTer = Math.max(0, 1 + Math.floor(wave * 0.8));
-  for (let i = 0; i < nZom; i++) spawn("zombie");
-  for (let i = 0; i < nTer; i++) spawn("terror");
+  waveTotalEnemies = nZom + nTer;
+  waveQueue = [];
+  for (let i = 0; i < nZom; i++) waveQueue.push("zombie");
+  for (let i = 0; i < nTer; i++) waveQueue.push("terror");
+  // перемешиваем очередь появления
+  waveQueue.sort(() => Math.random() - 0.5);
+
+  // спавним стартовую пачку (2-3 врага), чтобы не было внезапной толпы на лицо
+  const initialSpawn = Math.min(waveQueue.length, Math.max(2, Math.min(4, Math.floor(waveTotalEnemies * 0.35))));
+  for (let i = 0; i < initialSpawn; i++) {
+    spawn(waveQueue.shift());
+  }
+  waveSpawnTimer = 1.8;
+
   for (let i = 0; i < 2; i++) { const p = findSpawn(); if (p) items.push({ x: p.x, y: p.y, type: "med" }); }
   const p = findSpawn(); if (p) items.push({ x: p.x, y: p.y, type: "energy" });
   updateHUD();
@@ -783,7 +800,16 @@ function findSpawn() {
   for (let t = 0; t < 500; t++) {
     const x = 1.5 + Math.random() * (MW - 3), y = 1.5 + Math.random() * (MH - 3);
     if (isWall(x, y)) continue;
-    if (Math.hypot(x - posX, y - posY) < 7) continue;
+    const d = Math.hypot(x - posX, y - posY);
+    // Спавним не ближе 8 клеток, чтобы враги не валились прямо перед лицом
+    if (d < 8) continue;
+    return { x, y };
+  }
+  // Запасной вариант с меньшей дистанцией
+  for (let t = 0; t < 200; t++) {
+    const x = 1.5 + Math.random() * (MW - 3), y = 1.5 + Math.random() * (MH - 3);
+    if (isWall(x, y)) continue;
+    if (Math.hypot(x - posX, y - posY) < 5) continue;
     return { x, y };
   }
   return null;
@@ -835,6 +861,8 @@ function fire() {
 }
 function hitscan(dx, dy, w, dmg) {
   const step = 0.06;
+  const camPitch = pitch + recoilPitch;
+  const eyeH = 0.5 + fly;
   for (let t = 0.25; t < w.range; t += step) {
     const px = posX + dx * t, py = posY + dy * t;
     if (isWall(px, py)) return false;
@@ -842,23 +870,58 @@ function hitscan(dx, dy, w, dmg) {
       if (e.hp <= 0) continue;
       const d = Math.hypot(e.x - px, e.y - py);
       if (d < e.radius * 0.9) {
-        if (e.isPlayer) { damagePlayer(players[e.pid], dmg); return true; }
-        damageEnemy(e, dmg, dx, dy); return true;
+        // Определяем зону попадания по вертикальному прицеливанию и проекции
+        // Высота спрайта врага: hPix = (VH / dist) * s.h (где s.h = 0.55)
+        // Низ спрайта на экране: wallBottom = horizonY + eyeH * (VH / dist)
+        // Центр экрана (куда направлен выстрел): cy = VH / 2
+        // Вертикальное смещение точки выстрела относительно верха спрайта:
+        const dist = Math.max(0.2, t);
+        const lineH = VH / dist;
+        const topY = VH / 2 + camPitch + (eyeH - 0.55) * lineH;
+        const botY = VH / 2 + camPitch + eyeH * lineH;
+        const cy = VH / 2; // центр экрана
+        // hitFrac: 0 = макушка головы, 1 = стопы ног
+        let hitFrac = (cy - topY) / Math.max(1, botY - topY);
+        hitFrac = Math.max(0, Math.min(1, hitFrac));
+
+        let zone = "body";
+        let zoneMul = 1.0;
+        if (hitFrac < 0.28) {
+          zone = "head";
+          zoneMul = 2.5; // хедшот — сочный крит x2.5
+        } else if (hitFrac > 0.68) {
+          zone = "legs";
+          zoneMul = 0.65; // ноги — пониженный урон
+        } else {
+          zone = "body";
+          zoneMul = 1.0; // туловище — базовый урон
+        }
+
+        const finalDmg = dmg * zoneMul;
+        if (e.isPlayer) { damagePlayer(players[e.pid], finalDmg, zone); return true; }
+        damageEnemy(e, finalDmg, dx, dy, false, zone); return true;
       }
     }
   }
   return false;
 }
-function damageEnemy(e, dmg, dx, dy, noFx) {
+function damageEnemy(e, dmg, dx, dy, noFx, hitZone) {
   const d = Math.max(1, Math.round(dmg));
   e.hp -= d;
   if (!noFx) {
-    const critical = Math.random() < 0.12;
-    fx.push({ kind: "dmg", x: e.x, y: e.y, t: 0.7, max: 0.7, text: "" + d, color: critical ? "#ffd166" : "#ffffff" });
-    for (let i = 0; i < 4; i++) {
-      const a = Math.atan2(dy, dx) + (Math.random() - 0.5) * 1.2;
-      fx.push({ kind: "part", x: e.x, y: e.y, vx: Math.cos(a) * 2, vy: Math.sin(a) * 2,
-        t: 0.35, max: 0.35, color: e.type === "zombie" ? "#7fae5e" : "#b03030", size: 3 });
+    const isHead = hitZone === "head";
+    const isLegs = hitZone === "legs";
+    const tag = isHead ? " (ГОЛОВА!)" : (isLegs ? " (ноги)" : "");
+    const col = isHead ? "#ff3333" : (isLegs ? "#9eb3c8" : "#ffd166");
+    fx.push({ kind: "dmg", x: e.x, y: e.y, t: 0.75, max: 0.75, text: d + tag, color: col });
+    if (isHead) {
+      beep(1900, 0.08, "square", 0.08, 1200); // звонкий "динь" при хедшоте
+    }
+    const partCount = isHead ? 8 : (isLegs ? 3 : 5);
+    for (let i = 0; i < partCount; i++) {
+      const a = Math.atan2(dy, dx) + (Math.random() - 0.5) * 1.4;
+      fx.push({ kind: "part", x: e.x, y: e.y, vx: Math.cos(a) * (isHead ? 3.5 : 2), vy: Math.sin(a) * (isHead ? 3.5 : 2),
+        t: 0.38, max: 0.38, color: isHead ? "#ff2222" : (e.type === "zombie" ? "#7fae5e" : "#b03030"), size: isHead ? 4 : 3 });
     }
   } else {
     // поджог от лазера
@@ -879,7 +942,10 @@ function damageEnemy(e, dmg, dx, dy, noFx) {
   enemies = enemies.filter(en => en.hp > 0);
   if (mode === "solo") {
     updateHUD();
-    if (enemies.length === 0) { score += 300 + wave * 20; nextWave(); }
+    if (enemies.length === 0 && waveQueue.length === 0 && waveBreakTimer <= 0) {
+      score += 300 + wave * 20;
+      waveBreakTimer = 3.2; // 3.2 секунды передышки перед новой волной
+    }
   }
 }
 function tryReload() {
@@ -1013,6 +1079,24 @@ function update(dt) {
   recoilPitch += (0 - recoilPitch) * Math.min(1, dt * 8);
   if (reloading) { reloadT -= dt; if (reloadT <= 0) finishReload(); }
   if (shooting && w.auto && !reloading && fireCool <= 0) fire();
+
+  /* --- динамика спавна волны (постепенный приток) --- */
+  if (mode === "solo") {
+    if (waveBreakTimer > 0) {
+      waveBreakTimer -= dt;
+      if (waveBreakTimer <= 0) {
+        nextWave();
+      }
+    } else if (waveQueue.length > 0) {
+      waveSpawnTimer -= dt;
+      if (waveSpawnTimer <= 0) {
+        // спавним следующего зомби/террориста из очереди волны
+        spawn(waveQueue.shift());
+        // Следующий появится через 1.6 - 3.2 сек
+        waveSpawnTimer = 1.6 + Math.random() * 1.6;
+      }
+    }
+  }
 
   /* --- враги --- */
   for (const e of enemies) {
@@ -1167,11 +1251,11 @@ function render() {
   /* ----- эффекты (частицы, цифры урона, волна) ----- */
   for (const f of fx) drawFx(f, invDet, camPitch, eyeH);
 
+  /* ----- прицел / оптика (до лазера и оружия) ----- */
+  drawReticle();
+
   /* ----- лазерные глаза ----- */
   if (laserOn) drawLaser(horizonY);
-
-  /* ----- прицел / прицеливание ----- */
-  drawReticle();
 
   /* ----- оружие ----- */
   drawWeapon();
@@ -1229,20 +1313,57 @@ function drawReticle() {
   const w = WEAPONS[cur];
   // снайпер + прицел = оптика
   if (aiming && w.shape === "sniper") {
-    ctx.fillStyle = "rgba(0,0,0,0.82)";
-    const R = VH * 0.42;
+    ctx.save();
+    const R = VH * 0.44;
+    // затемнение фона вне линзы прицела
+    ctx.fillStyle = "rgba(4,6,10,0.96)";
     ctx.beginPath();
     ctx.rect(0, 0, VW, VH);
-    ctx.arc(cx, cy, R, 0, 7, true);
+    ctx.arc(cx, cy, R, 0, Math.PI * 2, true);
     ctx.fill("evenodd");
-    ctx.strokeStyle = "rgba(0,0,0,0.9)"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.stroke();
-    ctx.strokeStyle = "rgba(180,255,180,0.9)"; ctx.lineWidth = 1;
+
+    // внутренний стеклянный оттенок оптики
+    const lensGrad = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R);
+    lensGrad.addColorStop(0, "rgba(80,180,160,0.02)");
+    lensGrad.addColorStop(0.85, "rgba(20,50,45,0.08)");
+    lensGrad.addColorStop(1, "rgba(5,15,12,0.45)");
+    ctx.fillStyle = lensGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fill();
+
+    // оправа прицела
+    ctx.strokeStyle = "rgba(20,25,30,0.98)"; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = "rgba(80,95,110,0.6)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, R - 2, 0, Math.PI * 2); ctx.stroke();
+
+    // сетка прицела
+    const retCol = hitFlash > 0 ? "rgba(255,60,60,0.95)" : "rgba(125,255,157,0.9)";
+    ctx.strokeStyle = retCol; ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(cx, cy - R); ctx.lineTo(cx, cy + R);
     ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R, cy);
     ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy, 3, 0, 7); ctx.stroke();
+
+    // риски дальномера на перекрестии
+    ctx.lineWidth = 1;
+    for (let step = 15; step < R * 0.85; step += 22) {
+      ctx.beginPath();
+      // горизонтальные засечки
+      ctx.moveTo(cx - 4, cy + step); ctx.lineTo(cx + 4, cy + step);
+      ctx.moveTo(cx - 4, cy - step); ctx.lineTo(cx + 4, cy - step);
+      // вертикальные засечки
+      ctx.moveTo(cx + step, cy - 4); ctx.lineTo(cx + step, cy + 4);
+      ctx.moveTo(cx - step, cy - 4); ctx.lineTo(cx - step, cy + 4);
+      ctx.stroke();
+    }
+
+    // центральное перекрестие и точка
+    ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = retCol;
+    ctx.beginPath(); ctx.arc(cx, cy, 1.2, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
     return;
   }
   // динамический прицел по разбросу
@@ -1494,6 +1615,13 @@ function drawMinimap() {
   for (const e of enemies) {
     mmx.fillStyle = e.type === "zombie" ? "#7fae5e" : "#ff4d4d";
     mmx.beginPath(); mmx.arc(e.x * S, e.y * S, 2.5, 0, 7); mmx.fill();
+    // Пульсирующий ореол на миникарте, если остался последний враг (легче найти)
+    if (enemies.length === 1 && waveQueue.length === 0) {
+      mmx.strokeStyle = "rgba(255,220,80,0.85)";
+      mmx.lineWidth = 1.5;
+      const pulseR = 4.5 + Math.sin(Date.now() * 0.008) * 2;
+      mmx.beginPath(); mmx.arc(e.x * S, e.y * S, Math.max(3, pulseR), 0, 7); mmx.stroke();
+    }
   }
   mmx.fillStyle = "#7dff9d";
   mmx.beginPath(); mmx.arc(posX * S, posY * S, 3, 0, 7); mmx.fill();
@@ -1513,6 +1641,18 @@ function updateHUD() {
   el("wammo").innerHTML = '<span class="mag">' + w.ammo + '</span><span class="res"> / ' + w.reserve + '</span>';
   el("wammo").classList.toggle("low", w.ammo <= Math.max(1, w.magSize * 0.25));
   el("wave").textContent = wave;
+  const wpEl = el("waveProgress");
+  if (wpEl && mode === "solo") {
+    if (waveBreakTimer > 0) {
+      wpEl.textContent = "· ПЕРЕДЫШКА " + waveBreakTimer.toFixed(1) + "c";
+      wpEl.style.color = "#6bff8f";
+    } else {
+      const alive = enemies.length;
+      const queue = waveQueue.length;
+      wpEl.textContent = "· ОСТАЛОСЬ: " + (alive + queue);
+      wpEl.style.color = "#a0b4c8";
+    }
+  }
   el("kills").textContent = kills;
   el("score").textContent = score;
   // 0 — ЛАЗЕР (удержание Q)
