@@ -22,22 +22,47 @@
 
 ## 👥 Авторы и разработчики
 
-* **Влад Евполов** — GitHub: [@skippingclass](https://github.com/skippingclass)
+* **Владислав Евполов** — GitHub: [@skippingclass](https://github.com/skippingclass)
 * **Кирилл Акиншин** — GitHub: [@AKDWorks](https://github.com/AKDWorks)
+* **Камиль Нурмагамбетов** — GitHub: [@miilxxwizi](https://github.com/miilxxwizi)
 
 | Игра | Идея / Геймдизайн | Реализация / Код |
 | :--- | :--- | :--- |
-| **Симулятор Скуфа-Физрука** | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) |
-| **ЗАПИШИТЕ! (Симулятор учителя)** | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Влад Евполов (@skippingclass)](https://github.com/skippingclass) |
-| **CS-GO 3: Zombie Ops** | [Влад Евполов (@skippingclass)](https://github.com/skippingclass) | [Влад Евполов (@skippingclass)](https://github.com/skippingclass) |
+| **Симулятор Скуфа-Физрука** | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks), DeepSeek v4.1 Flash |
+| **ЗАПИШИТЕ! (Симулятор учителя)** | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Владислав Евполов (@skippingclass)](https://github.com/skippingclass), DeepSeek v4.1 Flash |
+| **CS-GO 3: Zombie Ops** | [Владислав Евполов (@skippingclass)](https://github.com/skippingclass) | [Владислав Евполов (@skippingclass)](https://github.com/skippingclass), DeepSeek v4.1 Flash |
+| **Худшая Группа Попова** | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks), ChatGPT | [Камиль Нурмагамбетов (@miilxxwizi)](https://github.com/miilxxwizi), Claude |
+
+---
+
+## 📁 Структура репозитория
+
+```text
+PolytechGamesBackup/
+├── index.html               # Главная страница (витрина для GitHub Pages / браузера)
+├── assets/                  # Общие медиа-ресурсы и логотипы
+├── screenshots/             # Скриншоты геймплея для витрины
+├── games/                   # Игры сборника
+│   ├── skuf-fizruk.html     # Симулятор Скуфа-Физрука
+│   ├── записывайте.html     # ЗАПИШИТЕ! (Симулятор учителя)
+│   ├── контр страйк 3.html  # CS-GO 3: Zombie Ops
+│   └── popov/               # Худшая Группа Попова (визуальная новелла)
+│       ├── index.html       # Точка входа игры
+│       ├── game.js          # Игровая механика и стейт
+│       ├── data.js          # Сценарий, диалоги, вопросы и события
+│       ├── style.css        # Оформление и стили UI
+│       └── assets/          # Спрайты персонажей и фоны аудитории
+├── CONTRIBUTING.md          # Правила для контрибьюторов (П-24-67Б)
+└── README.md                # Главное описание проекта
+```
 
 ---
 
 ## 🕹️ Обзор игр
 
 ### 1. 📣 Симулятор Скуфа-Физрука
-> **Файл:** [`skuf-fizruk.html`](./skuf-fizruk.html)  
-> **Автор:** [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks)  
+> **Файл:** [`games/skuf-fizruk.html`](./games/skuf-fizruk.html)  
+> **Авторы:** [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks), DeepSeek v4.1 Flash  
 > **Жанр:** 2D Аркадный тайм-менеджмент / Симулятор школьного спортзала
 
 ![Симулятор Скуфа-Физрука](./screenshots/skuf-fizruk.png)
@@ -60,8 +85,8 @@
 ---
 
 ### 2. 📓 ЗАПИШИТЕ! — Симулятор учителя
-> **Файл:** [`записывайте.html`](./записывайте.html)  
-> **Идея:** [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | **Реализация:** [Влад Евполов (@skippingclass)](https://github.com/skippingclass)  
+> **Файл:** [`games/записывайте.html`](./games/записывайте.html)  
+> **Идея:** [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | **Реализация:** [Владислав Евполов (@skippingclass)](https://github.com/skippingclass), DeepSeek v4.1 Flash  
 > **Жанр:** Классный стелс-менеджмент / Ироничный симулятор урока
 
 ![ЗАПИШИТЕ! — симулятор учителя](./screenshots/zapisyvayte.png)
@@ -83,8 +108,8 @@
 ---
 
 ### 3. 🧟 CS-GO 3: Zombie Ops (с суперсилами Хоумлендера)
-> **Файл:** [`контр страйк 3.html`](./контр страйк 3.html)  
-> **Автор:** [Влад Евполов (@skippingclass)](https://github.com/skippingclass)  
+> **Файл:** [`games/контр страйк 3.html`](./games/контр%20страйк%203.html)  
+> **Авторы:** [Владислав Евполов (@skippingclass)](https://github.com/skippingclass), DeepSeek v4.1 Flash  
 > **Жанр:** 3D Псевдо-рейкастинг FPS / Арена-шутер с суперспособностями
 
 ![CS-GO 3 — Zombie Ops](./screenshots/cs3-zombie-ops.png)
@@ -114,6 +139,29 @@
 
 ---
 
+### 4. 👨‍🏫 Худшая Группа Попова
+> **Файл:** [`games/popov/index.html`](./games/popov/index.html)  
+> **Авторы:** [Камиль Нурмагамбетов (@miilxxwizi)](https://github.com/miilxxwizi), [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks), ChatGPT, Claude  
+> **Жанр:** Интерактивная визуальная новелла / Симулятор ошеломления преподавателя
+
+![Худшая Группа Попова](./screenshots/popov-game.png)
+
+#### 📖 Про что игра:
+Интерактивная визуальная новелла про суровые будни преподавателя информационных технологий колледжа **Д.В. Попова**. 
+
+Вы ведёте пары у легендарной группы студентов, пытаясь обучить их JavaScript (функции, объекты, массивы). Однако студенты демонстрируют катастрофическую сообразительность! Основная механика построена на риске и вероятностях: задавайте лёгкие, средние или сложные вопросы, вызывайте конкретных студентов к доске и реагируйте на дикие случайные события (опоздания Дамира, Бахытжан, закинувший ноги на парту без обуви прямо во время пары, и сонный Еламан). 
+
+Цель игры — заполнить **шкалу ошеломления** до максимума и испытать легендарный спектр эмоций преподавателя (от олимпийского спокойствия до полного экзистенциального шока 💀).
+
+#### 🎮 Управление:
+* `ЛКМ` / `Клик` — выбор реплик, переход к следующему диалогу и взаимодействие со сценой
+* `1`, `2`, `3` — быстрый выбор сложности вопросов (Лёгкий, Средний, Сложный)
+* `Tab` / Кнопка «↻ Ракурс» — повернуться на 180° к противоположной стене аудитории
+* `Esc` — открытие меню настроек и истории реплик (лог диалогов)
+* Кнопки `AUTO` и `LOG` в диалоговом окне — авточтение и журнал реплик
+
+---
+
 ## 🚀 Как запустить игры
 
 1. Клонируйте репозиторий:
@@ -121,9 +169,10 @@
    git clone https://github.com/skippingclass/PolytechGamesBackup.git
    ```
 2. Откройте любой из файлов двойным щелчком мыши в браузере (*Chrome, Edge, Firefox, Safari, Yandex*):
-   * `skuf-fizruk.html`
-   * `записывайте.html`
-   * `контр страйк 3.html`
+   * `games/skuf-fizruk.html`
+   * `games/записывайте.html`
+   * `games/контр страйк 3.html`
+   * `games/popov/index.html`
 3. Играйте и ставьте рекорды!
 
 ---
