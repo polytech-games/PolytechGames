@@ -7,24 +7,29 @@
 ### **Высший колледж «Astana Polytechnic»**
 *Коллекция оригинальных браузерных инди-игр, созданных студентами*
 
+[![GitHub repo](https://img.shields.io/badge/GitHub-skippingclass%2FPolytechGamesBackup-181717?style=flat-square&logo=github)](https://github.com/skippingclass/PolytechGamesBackup)
+
 ---
 
 </div>
 
 ## 📌 О проекте
 
-В данном репозитории собраны 3 полностью самодостаточные браузерные игры на чистом стеке **HTML5 / Canvas / JavaScript / CSS3**. 
-Все игры работают прямо в любом современном браузере без необходимости устанавливать дополнительные зависимости, плагины или веб-серверы — достаточно просто открыть соответствующий `.html` файл!
+В данном репозитории собран бекап самодостаточных браузерных игр про политех на стеке **HTML5 / Canvas / JavaScript / CSS3**. 
+Все игры работают прямо в любом современном браузере без каких-либо зависимостей, сборщиков или веб-серверов — достаточно открыть соответствующий `.html` файл!
 
 ---
 
-## 👥 Авторы и создатели
+## 👥 Авторы и разработчики
+
+* **Влад Евполов** — GitHub: [@skippingclass](https://github.com/skippingclass)
+* **Кирилл Акиншин** — GitHub: [@AKDWorks](https://github.com/AKDWorks)
 
 | Игра | Идея / Геймдизайн | Реализация / Код |
 | :--- | :--- | :--- |
-| **Симулятор Скуфа-Физрука** | **Кирилл Акиншин** | **Кирилл Акиншин** |
-| **ЗАПИШИТЕ! (Симулятор учителя)** | **Кирилл Акиншин** | **Влад Евполов** |
-| **CS-GO 3: Zombie Ops** | **Влад Евполов** | **Влад Евполов** |
+| **Симулятор Скуфа-Физрука** | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) |
+| **ЗАПИШИТЕ! (Симулятор учителя)** | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Влад Евполов (@skippingclass)](https://github.com/skippingclass) |
+| **CS-GO 3: Zombie Ops** | [Влад Евполов (@skippingclass)](https://github.com/skippingclass) | [Влад Евполов (@skippingclass)](https://github.com/skippingclass) |
 
 ---
 
@@ -32,7 +37,7 @@
 
 ### 1. 📣 Симулятор Скуфа-Физрука
 > **Файл:** [`skuf-fizruk.html`](./skuf-fizruk.html)  
-> **Автор:** Кирилл Акиншин  
+> **Автор:** [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks)  
 > **Жанр:** 2D Аркадный тайм-менеджмент / Симулятор школьного спортзала
 
 ![Симулятор Скуфа-Физрука](./screenshots/skuf-fizruk.png)
@@ -56,7 +61,7 @@
 
 ### 2. 📓 ЗАПИШИТЕ! — Симулятор учителя
 > **Файл:** [`записывайте.html`](./записывайте.html)  
-> **Идея:** Кирилл Акиншин | **Реализация:** Влад Евполов  
+> **Идея:** [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | **Реализация:** [Влад Евполов (@skippingclass)](https://github.com/skippingclass)  
 > **Жанр:** Классный стелс-менеджмент / Ироничный симулятор урока
 
 ![ЗАПИШИТЕ! — симулятор учителя](./screenshots/zapisyvayte.png)
@@ -79,7 +84,7 @@
 
 ### 3. 🧟 CS-GO 3: Zombie Ops (с суперсилами Хоумлендера)
 > **Файл:** [`контр страйк 3.html`](./контр страйк 3.html)  
-> **Автор:** Влад Евполов  
+> **Автор:** [Влад Евполов (@skippingclass)](https://github.com/skippingclass)  
 > **Жанр:** 3D Псевдо-рейкастинг FPS / Арена-шутер с суперспособностями
 
 ![CS-GO 3 — Zombie Ops](./screenshots/cs3-zombie-ops.png)
@@ -111,11 +116,11 @@
 
 ## 🚀 Как запустить игры
 
-1. Скачайте или клонируйте репозиторий:
+1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/your-username/games-backup.git
+   git clone https://github.com/skippingclass/PolytechGamesBackup.git
    ```
-2. Откройте любой из файлов двойным щелчком мыши в любимом браузере (*Google Chrome, Microsoft Edge, Mozilla Firefox, Safari, Яндекс.Браузер*):
+2. Откройте любой из файлов двойным щелчком мыши в браузере (*Chrome, Edge, Firefox, Safari, Yandex*):
    * `skuf-fizruk.html`
    * `записывайте.html`
    * `контр страйк 3.html`
@@ -125,6 +130,7 @@
 
 <div align="center">
 
-Сделано с душой студентами **Astana Polytechnic** 🎓
+Сделано с душой студентами **Astana Polytechnic** 🎓  
+Репозиторий проекта: [skippingclass/PolytechGamesBackup](https://github.com/skippingclass/PolytechGamesBackup)
 
 </div>
