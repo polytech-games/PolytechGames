@@ -130,7 +130,8 @@
 
 <div align="center">
 
-Сделано с душой студентами **Astana Polytechnic** 🎓  
-Репозиторий проекта: [skippingclass/PolytechGamesBackup](https://github.com/skippingclass/PolytechGamesBackup)
+Сделано с душой студентами **Astana Polytechnic** (группа **П-24-67Б**) 🎓  
+Репозиторий проекта: [skippingclass/PolytechGamesBackup](https://github.com/skippingclass/PolytechGamesBackup)  
+Хотите добавить свою игру? Ознакомьтесь с [CONTRIBUTING.md](./CONTRIBUTING.md) 🤝
 
 </div>
