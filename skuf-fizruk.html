@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Симулятор Скуфа-Физрука</title>
+<style>
+:root{
+  --bg:#080b12;
+  --panel:#121a29;
+  --panel2:#1a2334;
+  --line:rgba(255,255,255,.10);
+  --text:#eef3ff;
+  --muted:#8d9ab3;
+  --accent:#ffb545;
+  --accent2:#ff7a3d;
+  --green:#45d483;
+  --red:#ff5d5d;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;}
+button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer}
+#app{height:100dvh;height:100vh;display:flex;flex-direction:column;background:
+  radial-gradient(1200px 600px at 50% -10%,rgba(255,181,69,.06),transparent 60%),var(--bg);}
+
+/* ---------- HUD ---------- */
+#hud{flex:0 0 auto;display:flex;align-items:center;gap:clamp(8px,1.2vw,16px);
+  padding:9px clamp(10px,2vw,22px);background:linear-gradient(180deg,#141c2c,#0e1522);
+  border-bottom:1px solid var(--line);z-index:5;position:relative;}
+.brand{display:flex;align-items:center;gap:10px;min-width:185px;}
+.brand-mark{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:21px;
+  background:linear-gradient(145deg,#26314a,#151d2d);
+  border:1px solid rgba(255,181,69,.35);box-shadow:0 6px 18px rgba(0,0,0,.4),inset 0 0 18px rgba(255,181,69,.08);}
+.brand-title{font-size:13px;letter-spacing:.10em;font-weight:800;}
+.brand-sub{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-top:1px;}
+.hud-card{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:12px;padding:7px 12px;}
+.hud-label{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:700;}
+.timer-card{min-width:132px}
+.timer-row{display:flex;align-items:baseline;gap:5px;margin:1px 0 4px;}
+#timer{font-size:24px;font-weight:850;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1;}
+.mini-meter,.meter{height:6px;border-radius:99px;background:rgba(4,8,15,.75);overflow:hidden;border:1px solid rgba(255,255,255,.06);}
+.mini-meter i,.meter i{display:block;height:100%;border-radius:99px;transition:width .18s linear;}
+.mini-meter i{width:100%;background:linear-gradient(90deg,#ffb545,#ff7a3d);}
+#timerCard.danger #timer{color:#ff7676;animation:pulse .8s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.discipline-card{flex:1;max-width:420px;min-width:190px;}
+.disc-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px;}
+#disciplineValue{font-size:16px;font-weight:850;font-variant-numeric:tabular-nums;}
+.disc-status{font-size:10px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stats{display:flex;gap:8px;margin-left:auto;}
+.stat{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.035);border:1px solid var(--line);
+  border-radius:10px;padding:6px 10px;}
+.stat b{font-size:14px;font-variant-numeric:tabular-nums;}
+.stat small{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.dot{width:8px;height:8px;border-radius:50%;box-shadow:0 0 8px currentColor;}
+.dot.work{background:var(--green);color:var(--green)}
+.dot.slack{background:var(--accent);color:var(--accent)}
+.dot.tired{background:var(--red);color:var(--red)}
+.sound-btn{width:38px;height:38px;border-radius:11px;font-size:17px;background:rgba(255,255,255,.05);
+  border:1px solid var(--line);transition:.15s;flex:0 0 auto;}
+.sound-btn:hover{background:rgba(255,255,255,.1);transform:translateY(-1px)}
+.sound-btn.off{opacity:.45}
+
+/* ---------- STAGE ---------- */
+#stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;cursor:crosshair;touch-action:none;}
+#game{display:block;width:100%;height:100%;}
+#stage::after{content:"";position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 90px rgba(0,0,0,.55);}
+
+/* ---------- TOAST ---------- */
+.toast{position:absolute;left:50%;top:16px;transform:translate(-50%,-16px);opacity:0;pointer-events:none;
+  padding:9px 18px;border-radius:99px;font-size:13px;font-weight:750;white-space:nowrap;
+  background:rgba(10,15,24,.88);border:1px solid rgba(255,181,69,.35);backdrop-filter:blur(6px);
+  box-shadow:0 12px 30px rgba(0,0,0,.45);transition:.22s;z-index:6;max-width:92%;overflow:hidden;text-overflow:ellipsis;}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.good{border-color:rgba(69,212,131,.45);color:#bdf5d3}
+.toast.warn{border-color:rgba(255,93,93,.5);color:#ffc7c7}
+
+/* ---------- OVERLAYS ---------- */
+.overlay{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+  padding:12px;background:rgba(4,7,13,.55);backdrop-filter:blur(5px);transition:opacity .28s;}
+.overlay.hidden{opacity:0;pointer-events:none;}
+.modal{position:relative;width:min(660px,96vw);max-height:96%;overflow:auto;
+  padding:clamp(16px,2.4vw,28px);border-radius:24px;text-align:center;
+  background:linear-gradient(160deg,#1b2538,#0e1420 65%);
+  border:1px solid rgba(255,255,255,.13);
+  box-shadow:0 34px 90px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.06);}
+.modal-stripe{position:absolute;left:0;right:0;top:0;height:5px;border-radius:26px 26px 0 0;
+  background:linear-gradient(90deg,var(--accent2),var(--accent),var(--green));}
+.eyebrow{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--accent);font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:pulse 1.4s infinite}
+.start-modal h1{margin:0;font-size:clamp(26px,4.6vw,46px);line-height:.92;letter-spacing:-.045em;font-weight:900;}
+.start-modal h1 span{background:linear-gradient(100deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lead{color:#c3cde0;font-size:clamp(12px,1.3vw,14px);line-height:1.45;max-width:470px;margin:12px auto 14px;}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.how{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:13px;padding:9px 6px;}
+.how-icon{font-size:18px;display:block;margin-bottom:3px;}
+.how b{display:block;font-size:11.5px;letter-spacing:.03em;}
+.how small{color:var(--muted);font-size:9.5px;}
+.tip-box{text-align:left;font-size:11.5px;line-height:1.45;color:#c9d3e6;
+  background:rgba(255,181,69,.08);border:1px solid rgba(255,181,69,.28);border-radius:13px;
+  padding:10px 12px;margin-bottom:14px;}
+.tip-box b{color:var(--accent)}
+.start-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;
+  padding:14px 20px;border-radius:15px;font-size:16px;font-weight:900;letter-spacing:.05em;
+  background:linear-gradient(100deg,var(--accent),var(--accent2));color:#241300;
+  box-shadow:0 14px 34px rgba(255,122,61,.32);transition:.16s;}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(255,122,61,.45)}
+.start-btn:active{transform:translateY(0) scale(.99)}
+.start-btn .arrow{font-size:20px}
+.modal-foot{margin-top:13px;font-size:10.5px;color:var(--muted)}
+.grade-wrap{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:6px;}
+.grade{font-size:clamp(56px,10vw,92px);font-weight:900;line-height:.9;
+  background:linear-gradient(100deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 40px rgba(255,181,69,.18);}
+.grade-label{text-align:left;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:800;}
+.end-modal h2{margin:6px 0 8px;font-size:clamp(20px,3vw,30px);letter-spacing:-.02em}
+.end-modal p{color:#c3cde0;font-size:13px;line-height:1.5;margin:0 auto 18px;max-width:440px;}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:20px;}
+.result-grid>div{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:13px;padding:10px 6px;}
+.result-grid span{display:block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.result-grid b{font-size:19px;font-variant-numeric:tabular-nums;}
+
+/* ---------- CONTROLS ---------- */
+#controls{flex:0 0 auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;
+  padding:9px clamp(10px,2vw,22px) calc(9px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,#0f1624,#090d15);border-top:1px solid var(--line);}
+.cmd{position:relative;display:flex;align-items:center;gap:9px;padding:9px 11px;min-height:66px;
+  border-radius:14px;border:1px solid rgba(255,255,255,.10);overflow:hidden;text-align:left;
+  background:linear-gradient(180deg,#1b2437,#111927);transition:transform .13s,border-color .18s,box-shadow .18s;}
+.cmd:hover{transform:translateY(-2px);border-color:rgba(255,181,69,.5);box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.cmd:active{transform:translateY(0) scale(.99)}
+.cmd.active{border-color:var(--accent);background:linear-gradient(180deg,#2b2b28,#1c2315);
+  box-shadow:0 0 0 1px rgba(255,181,69,.25),0 0 26px rgba(255,181,69,.18);}
+.cmd .icon{font-size:23px;width:30px;text-align:center;flex:0 0 auto;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));}
+.cmd .key{position:absolute;top:6px;right:8px;font-size:9px;font-weight:900;letter-spacing:.06em;
+  padding:2px 6px;border-radius:6px;background:#080d16;border:1px solid rgba(255,255,255,.13);color:#aeb9cd;}
+.cmd .text{min-width:0;}
+.cmd .text b{display:block;font-size:clamp(10.5px,1.05vw,13.5px);line-height:1.12;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cmd .text small{display:block;color:var(--muted);font-size:9.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cmd.active .key{background:var(--accent);color:#231300;border-color:var(--accent)}
+.cmd.whistle{background:linear-gradient(140deg,#3c2713,#241708);border-color:rgba(255,181,69,.42);}
+.cmd.whistle .key{background:var(--accent);color:#231300;border-color:var(--accent)}
+.cmd.whistle:hover{border-color:var(--accent);box-shadow:0 10px 28px rgba(255,140,50,.22)}
+.cmd .cooldown{position:absolute;inset:0;background:rgba(3,6,12,.72);pointer-events:none;transform-origin:left;
+  border-radius:inherit;transform:scaleX(0);transition:transform .12s linear;}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:1060px){
+  .stats .stat small{display:none;}
+}
+@media (max-width:860px){
+  .brand{min-width:0}
+  .brand-title,.brand-sub{display:none}
+  .stats{display:none}
+  .discipline-card{max-width:none}
+  #controls{gap:6px}
+  .cmd{min-height:56px;padding:7px 8px;gap:6px}
+  .cmd .icon{font-size:19px;width:22px}
+  .cmd .text small{display:none}
+  .cmd .key{top:4px;right:5px;font-size:8px;padding:1px 4px}
+}
+@media (max-width:620px){
+  #hud{gap:6px;padding:6px 8px}
+  .hud-card{padding:5px 8px;border-radius:9px}
+  #timer{font-size:18px}
+  .timer-card{min-width:96px}
+  .disc-status{display:none}
+  .sound-btn{width:32px;height:32px;font-size:14px;border-radius:9px}
+  #controls{gap:5px;padding:6px 6px calc(6px + env(safe-area-inset-bottom));grid-template-columns:repeat(3,minmax(0,1fr));}
+  .cmd{min-height:48px;justify-content:center;padding:5px;text-align:center}
+  .cmd .icon{display:none}
+  .cmd .text b{font-size:9.5px;white-space:normal;line-height:1.06}
+  .cmd .key{position:static;display:block;margin-bottom:3px;font-size:8px;}
+  .cmd{flex-direction:column;gap:1px}
+  .how-grid{grid-template-columns:1fr;gap:6px}
+  .how{display:flex;align-items:center;gap:9px;padding:8px 10px;text-align:left}
+  .how-icon{margin:0}
+  .modal{padding:18px 15px;border-radius:20px}
+  .result-grid{gap:6px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header id="hud">
+    <div class="brand">
+      <div class="brand-mark">📣</div>
+      <div>
+        <div class="brand-title">СКУФ-ФИЗРУК</div>
+        <div class="brand-sub">симулятор урока</div>
+      </div>
+    </div>
+
+    <div class="hud-card timer-card" id="timerCard">
+      <div class="hud-label">До конца урока</div>
+      <div class="timer-row"><span id="timer">01:00</span></div>
+      <div class="mini-meter"><i id="timerFill"></i></div>
+    </div>
+
+    <div class="hud-card discipline-card">
+      <div class="disc-top">
+        <span class="hud-label">Дисциплина</span>
+        <span id="disciplineValue">100%</span>
+      </div>
+      <div class="meter"><i id="disciplineFill"></i></div>
+      <div class="disc-status" id="disciplineStatus">Порядок в зале</div>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat"><span class="dot work"></span><b id="statWork">0/25</b><small>работают</small></div>
+      <div class="stat"><span class="dot slack"></span><b id="statSlack">0</b><small>сачкуют</small></div>
+      <div class="stat"><span class="dot tired"></span><b id="statTired">0</b><small>без сил</small></div>
+    </div>
+
+    <button id="soundBtn" class="sound-btn" type="button" aria-label="Выключить звук">🔊</button>
+  </header>
+
+  <main id="stage">
+    <canvas id="game"></canvas>
+    <div id="toast" class="toast"></div>
+
+    <div id="startScreen" class="overlay">
+      <div class="modal start-modal">
+        <div class="modal-stripe"></div>
+        <div class="eyebrow"><span class="live-dot"></span> Физкультура • 60 секунд</div>
+        <h1>СИМУЛЯТОР<br><span>СКУФА-ФИЗРУКА</span></h1>
+        <p class="lead">25 студентов, один свисток и целая минута, чтобы зал не превратился в зону отдыха. Следи за выносливостью и дисциплиной.</p>
+        <div class="how-grid">
+          <div class="how"><span class="how-icon">🕹️</span><b>WASD / ← ↑ ↓ →</b><small>ходить по залу</small></div>
+          <div class="how"><span class="how-icon">🔢</span><b>1 – 5</b><small>отдавать приказы</small></div>
+          <div class="how"><span class="how-icon">📢</span><b>ПРОБЕЛ</b><small>свистеть на сачков</small></div>
+        </div>
+        <div class="tip-box"><b>Совет физрука:</b> сачкунов на скамейке и с телефоном возвращает только свисток рядом с ними. Красные студенты падают без сил — не гоняй всех до предела.</div>
+        <button id="startBtn" class="start-btn" type="button"><span>НАЧАТЬ УРОК</span><span class="arrow">→</span></button>
+        <div class="modal-foot">На телефоне: веди пальцем по залу, команды — кнопками снизу.</div>
+      </div>
+    </div>
+
+    <div id="endScreen" class="overlay hidden">
+      <div class="modal end-modal">
+        <div class="modal-stripe"></div>
+        <div class="eyebrow">Урок окончен</div>
+        <div class="grade-wrap">
+          <div class="grade" id="grade">5</div>
+          <div class="grade-label">оценка<br>физрука</div>
+        </div>
+        <h2 id="endTitle">Отличный урок!</h2>
+        <p id="endText">Строем стоят, свистка боятся.</p>
+        <div class="result-grid">
+          <div><span>Дисциплина</span><b id="resultDiscipline">100%</b></div>
+          <div><span>Поймано сачков</span><b id="resultCaught">0</b></div>
+          <div><span>Без сил</span><b id="resultTired">0</b></div>
+        </div>
+        <button id="restartBtn" class="start-btn" type="button"><span>ЕЩЁ УРОК</span><span class="arrow">↻</span></button>
+        <div class="modal-foot">Enter / Пробел — начать заново</div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="controls">
+    <button class="cmd" data-command="squat" type="button">
+      <span class="key">1</span><span class="icon">🏋️</span>
+      <span class="text"><b>20 приседаний</b><small>Сжать и разжать</small></span>
+    </button>
+    <button class="cmd" data-command="run" type="button">
+      <span class="key">2</span><span class="icon">🏃</span>
+      <span class="text"><b>Бег по кругу</b><small>По периметру зала</small></span>
+    </button>
+    <button class="cmd" data-command="pushup" type="button">
+      <span class="key">3</span><span class="icon">💪</span>
+      <span class="text"><b>Отжимания</b><small>Лечь и работать</small></span>
+    </button>
+    <button class="cmd" data-command="lineup" type="button">
+      <span class="key">4</span><span class="icon">🧍</span>
+      <span class="text"><b>Построиться!</b><small>Шеренга перед тобой</small></span>
+    </button>
+    <button class="cmd" data-command="jog" type="button">
+      <span class="key">5</span><span class="icon">🦵</span>
+      <span class="text"><b>Бег на месте</b><small>Работаем коленями</small></span>
+    </button>
+    <button id="whistleBtn" class="cmd whistle" type="button">
+      <span class="cooldown" id="whistleCooldown"></span>
+      <span class="key">SPACE</span><span class="icon">📢</span>
+      <span class="text"><b>СВИСТОК!</b><small>Приструнить сачков</small></span>
+    </button>
+  </footer>
+
+</div>
+<script>
+'use strict';
+/* ============================================================
+   СИМУЛЯТОР СКУФА-ФИЗРУКА
+   ============================================================ */
+
+/* ---------- базовые константы ---------- */
+const WORLD = { w: 1280, h: 720 };
+const COURT = { x: 120, y: 165, w: 1040, h: 500 };
+
+const TOTAL_BOTS = 25;
+const COACH_BOUNDS = {
+  left: COURT.x + 52, top: COURT.y + 56,
+  right: COURT.x + COURT.w - 52, bottom: COURT.y + COURT.h - 52
+};
+const BOT_BOUNDS = { left: 48, top: 172, right: 1232, bottom: 692 };
+
+const WHISTLE_RADIUS = 255;
+const WHISTLE_COOLDOWN = 1.35;
+const SKIN = ['#f2c79a', '#e8b183', '#d99b6c', '#c7854f', '#a96a3c', '#f6d3ad'];
+const HAIR = ['#2b2119', '#4a3220', '#7a4a1f', '#a8622a', '#1f1f26', '#5a3a52', '#c9a24a'];
+const SKIRT = ['#b84a63', '#4a7bb8', '#7a4ab8', '#3f9a6e', '#c9743a']; 
+
+/* ---------- утилиты ---------- */
+const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+const lerp = (a, b, t) => a + (b - a) * t;
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const rnd = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[(Math.random() * arr.length) | 0];
+
+function roundRect(c, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  c.beginPath();
+  c.moveTo(x + r, y);
+  c.arcTo(x + w, y, x + w, y + h, r);
+  c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r);
+  c.arcTo(x, y, x + w, y, r);
+  c.closePath();
+}
+
+/* цвет по выносливости: зелёный -> жёлтый -> красный */
+function staminaColor(s) {
+  s = clamp(s, 0, 100);
+  const hue = 2 + (s / 100) * 120;      // 0 красный, 60 жёлтый, 122 зелёный
+  const light = 44 + (s / 100) * 12;
+  return `hsl(${hue.toFixed(0)}, 68%, ${light.toFixed(0)}%)`;
+}
+
+/* ---------- DOM ---------- */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const stage = document.getElementById('stage');
+const timerEl = document.getElementById('timer');
+const timerCard = document.getElementById('timerCard');
+const timerFill = document.getElementById('timerFill');
+const disciplineValue = document.getElementById('disciplineValue');
+const disciplineFill = document.getElementById('disciplineFill');
+const disciplineStatus = document.getElementById('disciplineStatus');
+const statWork = document.getElementById('statWork');
+const statSlack = document.getElementById('statSlack');
+const statTired = document.getElementById('statTired');
+const soundBtn = document.getElementById('soundBtn');
+const startScreen = document.getElementById('startScreen');
+const endScreen = document.getElementById('endScreen');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const toastEl = document.getElementById('toast');
+const whistleBtn = document.getElementById('whistleBtn');
+const whistleCooldownEl = document.getElementById('whistleCooldown');
+
+/* ---------- игровое состояние ---------- */
+let state = 'intro';            // intro | playing | over
+let timeLeft = 60;
+let discipline = 100;
+let currentCommand = null;      // squat | run | pushup | lineup | null
+let waves = [];
+let whistleCooldown = 0;
+let stats = { caught: 0, commands: 0 };
+let keys = new Set();
+let pointerTarget = null;
+let soundEnabled = true;
+let audioCtx = null;
+let elapsed = 0;
+let hudTimer = 0;
+let lastCountdownSecond = 60;
+let toastTimer = null;
+let lastFrame = performance.now();
+
+const coach = {
+  x: 640, y: 470, dirX: 0, dirY: 1,
+  moving: false, walk: 0, shout: 0, blink: 0
+};
+
+let bots = [];
+let slackSpots = [];
+let loopPoints = [];
+
+/* ---------- вьюпорт / масштаб ---------- */
+const view = { cssW: 1, cssH: 1, dpr: 1, scale: 1, ox: 0, oy: 0 };
+
+function resizeCanvas() {
+  const rect = stage.getBoundingClientRect();
+  view.cssW = Math.max(1, rect.width);
+  view.cssH = Math.max(1, rect.height);
+  view.dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(view.cssW * view.dpr);
+  canvas.height = Math.round(view.cssH * view.dpr);
+  view.scale = Math.min(view.cssW / WORLD.w, view.cssH / WORLD.h);
+  view.ox = (view.cssW - WORLD.w * view.scale) / 2;
+  view.oy = (view.cssH - WORLD.h * view.scale) / 2;
+}
+
+function screenToWorld(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left - view.ox) / view.scale,
+    y: (clientY - rect.top - view.oy) / view.scale
+  };
+}
+
+/* ---------- статичный задник ---------- */
+let backgroundCanvas = null;
+
+function buildBackground() {
+  const b = document.createElement('canvas');
+  b.width = WORLD.w; b.height = WORLD.h;
+  const g = b.getContext('2d');
+
+  /* стена */
+  let grad = g.createLinearGradient(0, 0, 0, 150);
+  grad.addColorStop(0, '#f2e8d7');
+  grad.addColorStop(1, '#d9cab0');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, WORLD.w, 150);
+
+  g.strokeStyle = 'rgba(120,100,75,.10)';
+  g.lineWidth = 1;
+  for (let x = 0; x <= WORLD.w; x += 160) {
+    g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 110); g.stroke();
+  }
+
+  g.fillStyle = '#cdbb9e';
+  g.fillRect(0, 110, WORLD.w, 40);
+  g.strokeStyle = 'rgba(110,90,66,.35)';
+  g.beginPath(); g.moveTo(0, 110); g.lineTo(WORLD.w, 110); g.stroke();
+
+  const drawWindow = (x, y, w, h) => {
+    g.fillStyle = '#7b6248';
+    roundRect(g, x - 5, y - 5, w + 10, h + 10, 6); g.fill();
+    const sky = g.createLinearGradient(0, y, 0, y + h);
+    sky.addColorStop(0, '#a9d8ff');
+    sky.addColorStop(.6, '#d9efff');
+    sky.addColorStop(1, '#f4fbff');
+    g.fillStyle = sky;
+    roundRect(g, x, y, w, h, 4); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.75)';
+    g.beginPath(); g.ellipse(x + w * .28, y + h * .32, w * .16, h * .16, 0, 0, 7); g.fill();
+    g.beginPath(); g.ellipse(x + w * .68, y + h * .62, w * .22, h * .18, 0, 0, 7); g.fill();
+    g.strokeStyle = '#8d7355'; g.lineWidth = 4;
+    g.beginPath(); g.moveTo(x + w / 2, y); g.lineTo(x + w / 2, y + h); g.stroke();
+    g.beginPath(); g.moveTo(x, y + h / 2); g.lineTo(x + w, y + h / 2); g.stroke();
+  };
+  drawWindow(150, 24, 220, 72);
+  drawWindow(910, 24, 220, 72);
+
+  /* баннер */
+  g.fillStyle = '#20304f';
+  roundRect(g, 505, 20, 270, 62, 10); g.fill();
+  g.strokeStyle = '#ffb545'; g.lineWidth = 3;
+  roundRect(g, 505, 20, 270, 62, 10); g.stroke();
+  g.fillStyle = '#fff';
+  g.font = '800 21px "Segoe UI", Arial, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('ФИЗКУЛЬТУРА', 640, 52);
+
+  /* плинтус */
+  g.fillStyle = '#8d6b45';
+  g.fillRect(0, 146, WORLD.w, 10);
+  g.fillStyle = 'rgba(0,0,0,.18)';
+  g.fillRect(0, 156, WORLD.w, 5);
+
+  /* пол */
+  grad = g.createLinearGradient(0, 150, 0, WORLD.h);
+  grad.addColorStop(0, '#d9b681');
+  grad.addColorStop(1, '#c59a63');
+  g.fillStyle = grad;
+  g.fillRect(0, 150, WORLD.w, WORLD.h - 150);
+
+  const palette = ['#d8b27d', '#d2a870', '#dfba86', '#cda26a', '#dab57f', '#d0a56d'];
+  const rowH = 30, plankW = 128;
+  for (let y = 150, r = 0; y < WORLD.h; y += rowH, r++) {
+    const off = (r % 2) * (plankW / 2);
+    for (let x = -plankW + off, i = 0; x < WORLD.w; x += plankW, i++) {
+      g.fillStyle = palette[(r * 3 + i * 5) % palette.length];
+      g.fillRect(x, y, plankW - 1, rowH - 1);
+      g.strokeStyle = 'rgba(120,88,50,.20)';
+      g.lineWidth = 1;
+      g.strokeRect(x + .5, y + .5, plankW - 1, rowH - 1);
+      g.strokeStyle = 'rgba(120,88,50,.10)';
+      g.beginPath();
+      g.moveTo(x + 12, y + rowH * .5);
+      g.lineTo(x + plankW - 24, y + rowH * .5);
+      g.stroke();
+    }
+  }
+
+  /* разметка зала */
+  g.save();
+  g.lineJoin = 'round';
+  g.strokeStyle = 'rgba(255,255,255,.85)';
+  g.lineWidth = 6;
+  g.strokeRect(COURT.x, COURT.y, COURT.w, COURT.h);
+  g.strokeStyle = 'rgba(214,72,52,.75)';
+  g.lineWidth = 2;
+  g.strokeRect(COURT.x + 9, COURT.y + 9, COURT.w - 18, COURT.h - 18);
+  g.strokeStyle = 'rgba(255,255,255,.8)';
+  g.lineWidth = 5;
+  g.beginPath();
+  g.moveTo(WORLD.w / 2, COURT.y);
+  g.lineTo(WORLD.w / 2, COURT.y + COURT.h);
+  g.stroke();
+  g.beginPath();
+  g.arc(WORLD.w / 2, COURT.y + COURT.h / 2, 70, 0, Math.PI * 2);
+  g.stroke();
+  g.beginPath();
+  g.arc(WORLD.w / 2, COURT.y + COURT.h / 2, 14, 0, Math.PI * 2);
+  g.stroke();
+  /* штрафные полукруги */
+  g.beginPath();
+  g.arc(COURT.x, COURT.y + COURT.h / 2, 92, -Math.PI / 2, Math.PI / 2);
+  g.stroke();
+  g.beginPath();
+  g.arc(COURT.x + COURT.w, COURT.y + COURT.h / 2, 92, Math.PI / 2, Math.PI * 1.5);
+  g.stroke();
+  /* трёхочковые */
+  g.beginPath();
+  g.arc(COURT.x + 30, COURT.y + COURT.h / 2, 235, -Math.PI / 2.6, Math.PI / 2.6);
+  g.stroke();
+  g.beginPath();
+  g.arc(COURT.x + COURT.w - 30, COURT.y + COURT.h / 2, 235, Math.PI - Math.PI / 2.6, Math.PI + Math.PI / 2.6);
+  g.stroke();
+  g.restore();
+
+  /* скамейки по бокам */
+  const drawBench = (x, w) => {
+    const y = 235, h = 300;
+    g.fillStyle = 'rgba(0,0,0,.22)';
+    roundRect(g, x + 4, y + 6, w, h, 10); g.fill();
+    g.fillStyle = '#8a5c33';
+    roundRect(g, x, y, w, h, 10); g.fill();
+    g.fillStyle = '#a06e3d';
+    roundRect(g, x + 7, y + 7, w - 14, h - 14, 7); g.fill();
+    g.strokeStyle = 'rgba(70,44,20,.55)'; g.lineWidth = 2;
+    for (let i = y + 30; i < y + h - 18; i += 26) {
+      g.beginPath(); g.moveTo(x + 8, i); g.lineTo(x + w - 8, i); g.stroke();
+    }
+    g.fillStyle = '#5f3c1e';
+    g.fillRect(x + 10, y + 10, 8, h - 20);
+    g.fillRect(x + w - 18, y + 10, 8, h - 20);
+    g.fillStyle = '#3f2814';
+    g.fillRect(x + 16, y + 8, 12, 8);
+    g.fillRect(x + 16, y + h - 16, 12, 8);
+  };
+  drawBench(30, 66);
+  drawBench(1184, 66);
+
+  /* лёгкая тень от стены + виньетка */
+  grad = g.createLinearGradient(0, 150, 0, 205);
+  grad.addColorStop(0, 'rgba(0,0,0,.22)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 150, WORLD.w, 60);
+
+  grad = g.createRadialGradient(WORLD.w / 2, WORLD.h / 2, 210, WORLD.w / 2, WORLD.h / 2, 760);
+  grad.addColorStop(0, 'rgba(255,255,255,.06)');
+  grad.addColorStop(.55, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(0,0,0,.30)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, WORLD.w, WORLD.h);
+
+  backgroundCanvas = b;
+}
+
+/* ---------- расстановка объектов ---------- */
+function buildSlackSpots() {
+  slackSpots = [];
+  const benchY = [255, 305, 355, 405, 455, 505];
+  for (const y of benchY) slackSpots.push({ type: 'bench', x: 63, y, face: 1 });
+  for (const y of benchY) slackSpots.push({ type: 'bench', x: 1217, y, face: -1 });
+  const phones = 13;
+  for (let i = 0; i < phones; i++) {
+    const x = 175 + i * (930 / (phones - 1));
+    slackSpots.push({ type: 'phone', x, y: 185, face: 1 });
+  }
+}
+
+function buildLoopPoints() {
+  loopPoints = [];
+  const l = COURT.x + 72, r = COURT.x + COURT.w - 72;
+  const t = COURT.y + 74, bt = COURT.y + COURT.h - 74;
+  const step = 34;
+  for (let x = l; x < r; x += step) loopPoints.push({ x, y: t });
+  for (let y = t; y < bt; y += step) loopPoints.push({ x: r, y });
+  for (let x = r; x > l; x -= step) loopPoints.push({ x, y: bt });
+  for (let y = bt; y > t; y -= step) loopPoints.push({ x: l, y });
+}
+
+function nearestLoopIndex(b) {
+  let best = 0, bd = Infinity;
+  for (let i = 0; i < loopPoints.length; i++) {
+    const d = Math.hypot(loopPoints[i].x - b.x, loopPoints[i].y - b.y);
+    if (d < bd) { bd = d; best = i; }
+  }
+  return best;
+}
+
+function createBots() {
+  bots = [];
+  const cols = 5, rows = 5;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const i = r * cols + c;
+      const x = 258 + c * 192 + rnd(-34, 34);
+      const y = 245 + r * 92 + rnd(-18, 18);
+      bots.push({
+        id: i,
+        x, y, homeX: x, homeY: y,
+        stamina: 100,
+        laziness: rnd(0.2, 0.9),
+        speed: rnd(100, 138),
+        anim: rnd(0, 10),
+        blink: rnd(0, 4),
+        face: i % SKIN.length,
+        hair: i % HAIR.length,
+        haircut: (i * 7) % 3,
+        girl: (i % 5) >= 3,
+        skirt: i % SKIRT.length,
+        state: 'idle',
+        slackTimer: 0,
+        slackThreshold: rnd(6, 12),
+        spot: slackSpots[i % slackSpots.length],
+        runIndex: Math.floor(i / TOTAL_BOTS * loopPoints.length),
+        runOffset: Math.floor(i / TOTAL_BOTS * loopPoints.length),
+        scareFlash: 0,
+        exhaustedTime: 0,
+        wobble: rnd(0, 6.28)
+      });
+    }
+  }
+}
+
+function resetGame() {
+  coach.x = 640; coach.y = 470;
+  coach.dirX = 0; coach.dirY = 1;
+  coach.moving = false; coach.walk = 0; coach.shout = 0;
+  timeLeft = 60;
+  discipline = 100;
+  currentCommand = null;
+  waves = [];
+  whistleCooldown = 0;
+  stats = { caught: 0, commands: 0 };
+  pointerTarget = null;
+  keys.clear();
+  elapsed = 0;
+  lastCountdownSecond = 60;
+  createBots();
+  updateCounters();
+  renderHud(true);
+  syncCommandButtons();
+}
+
+/* ---------- звук (Web Audio) ---------- */
+function initAudio() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playWhistle() {
+  if (!soundEnabled || !audioCtx) return;
+  try {
+    const t = audioCtx.currentTime;
+    const master = audioCtx.createGain();
+    master.gain.setValueAtTime(0.0001, t);
+    master.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+    master.gain.setValueAtTime(0.16, t + 0.24);
+    master.gain.exponentialRampToValueAtTime(0.0001, t + 0.46);
+    master.connect(audioCtx.destination);
+
+    const o1 = audioCtx.createOscillator();
+    o1.type = 'sine';
+    o1.frequency.setValueAtTime(1850, t);
+    o1.frequency.linearRampToValueAtTime(2380, t + 0.10);
+    o1.frequency.linearRampToValueAtTime(2050, t + 0.24);
+    o1.frequency.linearRampToValueAtTime(2320, t + 0.38);
+    o1.connect(master);
+
+    const trill = audioCtx.createGain();
+    trill.gain.value = 0.05;
+    trill.connect(master);
+    const o2 = audioCtx.createOscillator();
+    o2.type = 'triangle';
+    o2.frequency.value = 2750;
+    o2.connect(trill);
+
+    const lfo = audioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 30;
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = 0.05;
+    lfo.connect(lfoGain);
+    lfoGain.connect(master.gain);
+
+    o1.start(t); o2.start(t); lfo.start(t);
+    o1.stop(t + 0.47); o2.stop(t + 0.47); lfo.stop(t + 0.47);
+  } catch (e) { /* тишина лучше ошибки */ }
+}
+
+function playBeep(freq = 520, dur = 0.08, vol = 0.05, type = 'sine') {
+  if (!soundEnabled || !audioCtx) return;
+  try {
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  } catch (e) {}
+}
+
+/* ---------- сообщения ---------- */
+function showToast(text, tone = 'info', ms = 2300) {
+  toastEl.textContent = text;
+  toastEl.className = 'toast show' + (tone === 'info' ? '' : ' ' + tone);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms);
+}
+
+/* ---------- приказы ---------- */
+function issueCommand(type) {
+  if (state !== 'playing') return;
+  currentCommand = type;
+  stats.commands++;
+  const names = {
+    squat: '🏋️ Все приседают! Раз-два!',
+    run: '🏃 Бегом по периметру!',
+    pushup: '💪 Ложись и отжимайся!',
+    lineup: '🧍 В шеренгу становись!',
+    jog: '🦵 Бег на месте! Колени выше!'
+  };
+  for (const b of bots) {
+    b.scareFlash = Math.max(0, b.scareFlash - 0.3);
+    if (b.state === 'exhausted') { b.afterCommand = type; continue; }
+    if (isSlacking(b)) continue;           // сачки игнорируют приказ
+    beginExercise(b, false);
+  }
+  playBeep(type === 'lineup' ? 640 : 480, 0.09, 0.045, 'square');
+  syncCommandButtons();
+  showToast(names[type] || 'Приказ!');
+  renderHud(true);
+}
+
+function beginExercise(b, fromWhistle) {
+  if (b.stamina <= 0) { exhaustBot(b); return; }
+  switch (currentCommand) {
+    case 'squat': b.state = 'squat'; break;
+    case 'pushup': b.state = 'pushup'; break;
+    case 'jog': b.state = 'jog'; break;
+    case 'run':
+      b.state = 'run';
+      b.runIndex = fromWhistle ? nearestLoopIndex(b) : b.runOffset;
+      break;
+    case 'lineup': b.state = 'lineup'; break;
+    default: b.state = 'idle';
+  }
+  b.slackTimer = 0;
+}
+
+function isSlacking(b) {
+  return b.state === 'toSlack' || b.state === 'bench' || b.state === 'phone';
+}
+
+function isWorking(b) {
+  return (b.state === 'squat' || b.state === 'pushup' || b.state === 'run' ||
+    b.state === 'lineup' || b.state === 'jog') && b.stamina > 0;
+}
+
+function startSlack(b) {
+  if (b.stamina <= 0 || b.state === 'exhausted') return;
+  b.state = 'toSlack';
+  b.slackTimer = 0;
+  discipline = Math.max(0, discipline - 0.5);
+}
+
+function exhaustBot(b) {
+  if (b.state === 'exhausted') return;
+  b.state = 'exhausted';
+  b.stamina = 0;
+  b.afterCommand = currentCommand;
+  b.exhaustedTime = 0;
+  discipline = Math.max(0, discipline - 1.0);
+}
+
+/* ---------- свисток ---------- */
+function triggerWhistle() {
+  if (state !== 'playing') return;
+  if (whistleCooldown > 0) return;
+  whistleCooldown = WHISTLE_COOLDOWN;
+  coach.shout = 0.95;
+  playWhistle();
+  for (let i = 0; i < 3; i++) {
+    waves.push({ x: coach.x, y: coach.y, r: 46 + i * 14, alpha: 0, delay: i * 0.07, maxR: WHISTLE_RADIUS });
+  }
+  let caught = 0;
+  for (const b of bots) {
+    const d = Math.hypot(b.x - coach.x, b.y - coach.y);
+    if (d > WHISTLE_RADIUS) continue;
+    if (isSlacking(b)) {
+      caught++;
+      b.scareFlash = 0.95;
+      b.laziness = Math.max(0.12, b.laziness - 0.09);
+      b.slackTimer = 0;
+      beginExercise(b, true);
+    } else if (b.state !== 'exhausted') {
+      b.scareFlash = Math.max(b.scareFlash, 0.5);
+    }
+  }
+  if (caught > 0) {
+    stats.caught += caught;
+    discipline = Math.min(100, discipline + 1.6 * caught);
+    showToast(`📢 Свисток! Возвращено сачков: ${caught}`, 'good');
+  } else {
+    showToast('📢 Свисток! Рядом сачков нет.');
+  }
+  renderHud(true);
+}
+
+/* ---------- старт / конец ---------- */
+function startGame() {
+  initAudio();
+  resetGame();
+  state = 'playing';
+  startScreen.classList.add('hidden');
+  endScreen.classList.add('hidden');
+  showToast('🔔 Урок начался! Отдай приказ: 1–5, свисток — Пробел', 'info', 3200);
+  playBeep(760, 0.09, 0.05);
+  setTimeout(() => playBeep(980, 0.09, 0.05), 130);
+  syncCommandButtons();
+}
+
+function endGame() {
+  state = 'over';
+  timeLeft = 0;
+  const d = Math.round(discipline);
+  let grade, title, text;
+  if (d >= 88) { grade = '5'; title = 'Отличный урок!'; text = 'Строем стоят, свистка боятся. Скуф доволен!'; }
+  else if (d >= 70) { grade = '4'; title = 'Хороший урок'; text = 'Пара сачков всё же проскочила, но дисциплина держится.'; }
+  else if (d >= 48) { grade = '3'; title = 'Троечка'; text = 'Половина зала сачкует. Свисток надо было не жалеть.'; }
+  else { grade = '2'; title = 'Развал дисциплины'; text = 'Зал превратился в зону отдыха. Скуф идёт за журналом.'; }
+  document.getElementById('grade').textContent = grade;
+  document.getElementById('endTitle').textContent = title;
+  document.getElementById('endText').textContent = text;
+  document.getElementById('resultDiscipline').textContent = d + '%';
+  document.getElementById('resultCaught').textContent = stats.caught;
+  document.getElementById('resultTired').textContent = counters.tired;
+  endScreen.classList.remove('hidden');
+  playBeep(240, 0.35, 0.05, 'sawtooth');
+  pointerTarget = null;
+  syncCommandButtons();
+}
+
+/* ---------- счётчики ---------- */
+const counters = { work: 0, slack: 0, tired: 0, idle: 0 };
+
+function updateCounters() {
+  counters.work = 0; counters.slack = 0; counters.tired = 0; counters.idle = 0;
+  for (const b of bots) {
+    if (b.state === 'exhausted') counters.tired++;
+    else if (isSlacking(b)) counters.slack++;
+    else if (isWorking(b)) counters.work++;
+    else counters.idle++;
+  }
+}
+
+/* ---------- формация «шеренга» ---------- */
+function formationTarget(i) {
+  const ax = Math.abs(coach.dirX), ay = Math.abs(coach.dirY);
+  const verticalFacing = ay >= ax;          // смотрит up/down
+  const row = i < 13 ? 0 : 1;
+  const col = i < 13 ? i : i - 13;
+  const rowCenter = row ? 5.5 : 6;
+  const B = { left: BOT_BOUNDS.left + 20, right: BOT_BOUNDS.right - 20, top: BOT_BOUNDS.top + 20, bottom: BOT_BOUNDS.bottom - 20 };
+  if (verticalFacing) {
+    const halfSpan = 228;
+    const cx = clamp(coach.x, COURT.x + halfSpan + 40, COURT.x + COURT.w - halfSpan - 40);
+    const cy = clamp(coach.y + (coach.dirY >= 0 ? 155 : -155), COURT.y + 45, COURT.y + COURT.h - 45);
+    return { x: cx + (col - rowCenter) * 38, y: cy + (row ? 18 : -18) };
+  }
+  const halfSpan = 228;
+  const cy = clamp(coach.y, COURT.y + halfSpan + 40, COURT.y + COURT.h - halfSpan - 40);
+  const cx = clamp(coach.x + (coach.dirX >= 0 ? 155 : -155), COURT.x + 45, COURT.x + COURT.w - 45);
+  return { x: cx + (row ? 18 : -18), y: cy + (col - rowCenter) * 38 };
+}
+
+/* ---------- физрук ---------- */
+function updateCoach(dt) {
+  let mx = 0, my = 0;
+  if (keys.has('KeyA') || keys.has('ArrowLeft')) mx -= 1;
+  if (keys.has('KeyD') || keys.has('ArrowRight')) mx += 1;
+  if (keys.has('KeyW') || keys.has('ArrowUp')) my -= 1;
+  if (keys.has('KeyS') || keys.has('ArrowDown')) my += 1;
+
+  if (mx === 0 && my === 0 && pointerTarget) {
+    const dx = pointerTarget.x - coach.x, dy = pointerTarget.y - coach.y;
+    const d = Math.hypot(dx, dy);
+    if (d > 5) { mx = dx / d; my = dy / d; }
+    else pointerTarget = null;
+  }
+  const len = Math.hypot(mx, my);
+  coach.moving = len > 0;
+  if (len > 0) {
+    mx /= len; my /= len;
+    coach.dirX = mx; coach.dirY = my;
+    const sp = 158;
+    coach.x += mx * sp * dt;
+    coach.y += my * sp * dt;
+    coach.walk += dt * 9;
+  } else {
+    coach.walk += dt * 1.6;
+  }
+  coach.x = clamp(coach.x, COACH_BOUNDS.left, COACH_BOUNDS.right);
+  coach.y = clamp(coach.y, COACH_BOUNDS.top, COACH_BOUNDS.bottom);
+  if (coach.shout > 0) coach.shout -= dt;
+  coach.blink -= dt;
+  if (coach.blink < -0.14) coach.blink = rnd(1.6, 4.5);
+}
+
+/* ---------- студенты ---------- */
+function clampBot(b) {
+  b.x = clamp(b.x, BOT_BOUNDS.left, BOT_BOUNDS.right);
+  b.y = clamp(b.y, BOT_BOUNDS.top, BOT_BOUNDS.bottom);
+}
+
+function moveToward(b, tx, ty, speed, dt) {
+  const dx = tx - b.x, dy = ty - b.y;
+  const d = Math.hypot(dx, dy);
+  if (d < 0.001) return true;
+  const sp = Math.min(d, speed * dt);
+  b.x += dx / d * sp;
+  b.y += dy / d * sp;
+  if (b.moving) b.walk += dt * 10;
+  return d - sp < 2;
+}
+
+function updateBot(b, dt) {
+  const rates = { squat: 0.84, pushup: 1.0, run: 1.12, jog: 0.95 };
+  b.moving = false;
+  b.blink -= dt;
+  if (b.blink < -0.15) b.blink = rnd(1.5, 4.5);
+  if (b.scareFlash > 0) b.scareFlash -= dt;
+
+  if (b.state === 'exhausted') { b.exhaustedTime += dt; b.anim += dt * 2; return; }
+  if (b.state === 'idle') { b.stamina = Math.min(100, b.stamina + 3 * dt); b.anim += dt * 1.8; return; }
+  if (b.state === 'bench' || b.state === 'phone') {
+    b.stamina = Math.min(100, b.stamina + 1.5 * dt);
+    b.anim += dt * 1.4;
+    return;
+  }
+  if (b.state === 'toSlack') {
+    b.stamina = Math.min(100, b.stamina + 1.1 * dt);
+    b.moving = true;
+    b.anim += dt * 9;
+    const done = moveToward(b, b.spot.x, b.spot.y, 92, dt);
+    if (done) { b.x = b.spot.x; b.y = b.spot.y; b.state = b.spot.type; }
+    clampBot(b);
+    return;
+  }
+
+  /* рабочие состояния */
+  if (b.state === 'squat' || b.state === 'pushup') {
+    b.stamina -= rates[b.state] * dt;
+    b.anim += dt * (b.state === 'squat' ? 6.2 : 5.2);
+  } else if (b.state === 'jog') {
+    b.stamina -= rates.jog * dt;
+    b.anim += dt * 13;
+    b.moving = false;
+  } else if (b.state === 'run') {
+    b.stamina -= rates.run * dt;
+    b.anim += dt * 12;
+    b.moving = true;
+    const p = loopPoints[b.runIndex % loopPoints.length];
+    const d = Math.hypot(p.x - b.x, p.y - b.y);
+    if (d < 9) b.runIndex = (b.runIndex + 1) % loopPoints.length;
+    else moveToward(b, p.x, p.y, b.speed, dt);
+    clampBot(b);
+  } else if (b.state === 'lineup') {
+    const t = formationTarget(b.id);
+    const d = Math.hypot(t.x - b.x, t.y - b.y);
+    b.moving = d > 3;
+    if (b.moving) {
+      b.stamina -= 0.64 * dt;
+      b.anim += dt * 9;
+      moveToward(b, t.x, t.y, 118, dt);
+    } else {
+      b.stamina = Math.min(100, b.stamina + 0.5 * dt);
+      b.anim += dt * 2;
+      b.x = t.x; b.y = t.y;
+    }
+    clampBot(b);
+  }
+
+  if (b.stamina <= 0) { exhaustBot(b); return; }
+
+  /* сачкование */
+  if (currentCommand) {
+    const d = Math.hypot(b.x - coach.x, b.y - coach.y);
+    if (d > 320) b.slackTimer += dt * (0.4 + b.laziness * 0.95) * (b.stamina < 45 ? 1.3 : 1);
+    else b.slackTimer = Math.max(0, b.slackTimer - dt * 1.0);
+    b.slackTimer += dt * 0.03 * b.laziness;
+    if (b.slackTimer >= b.slackThreshold) startSlack(b);
+  }
+}
+
+/* ---------- обновление мира ---------- */
+function updateWaves(dt) {
+  for (const w of waves) {
+    if (w.delay > 0) { w.delay -= dt; continue; }
+    w.r += 640 * dt;
+    w.alpha = clamp(1 - (w.r - 46) / (w.maxR - 46), 0, 1);
+  }
+  waves = waves.filter(w => w.delay > 0 || w.r < w.maxR);
+}
+
+function updateDiscipline(dt) {
+  if (!currentCommand) return;
+  let working = 0;
+  for (const b of bots) if (isWorking(b)) working++;
+  const comp = working / bots.length;
+  discipline = clamp(discipline + (comp - 0.85) * 9 * dt, 0, 100);
+}
+
+function updateGame(dt) {
+  elapsed += dt;
+  timeLeft -= dt;
+  if (whistleCooldown > 0) whistleCooldown = Math.max(0, whistleCooldown - dt);
+
+  const second = Math.ceil(timeLeft);
+  if (second !== lastCountdownSecond) {
+    lastCountdownSecond = second;
+    if (second > 0 && second <= 5) playBeep(720, 0.06, 0.04);
+  }
+
+  updateCoach(dt);
+  for (const b of bots) updateBot(b, dt);
+  resolveCollisions();
+  updateWaves(dt);
+  updateDiscipline(dt);
+  updateCounters();
+
+  if (timeLeft <= 0) { timeLeft = 0; endGame(); }
+}
+
+function resolveCollisions() {
+  const r = 22;
+  for (let i = 0; i < bots.length; i++) {
+    const a = bots[i];
+    if (a.state === 'exhausted') continue;
+    for (let j = i + 1; j < bots.length; j++) {
+      const b = bots[j];
+      if (b.state === 'exhausted') continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 0.001 && d < r) {
+        const push = (r - d) / d * 0.5;
+        a.x -= dx * push; a.y -= dy * push;
+        b.x += dx * push; b.y += dy * push;
+        clampBot(a); clampBot(b);
+      }
+    }
+  }
+}
+
+/* ---------- HUD ---------- */
+function formatTime(sec) {
+  const s = Math.max(0, Math.ceil(sec));
+  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+}
+
+function disciplineStatusText(v) {
+  if (v >= 88) return 'Образцовый порядок';
+  if (v >= 70) return 'Работают, но с ленцой';
+  if (v >= 48) return 'Дисциплина шатается';
+  if (v >= 25) return 'Половина зала сачкует';
+  return 'Полный бардак в зале';
+}
+
+function renderHud(force) {
+  timerEl.textContent = formatTime(timeLeft);
+  timerFill.style.width = clamp(timeLeft / 60 * 100, 0, 100) + '%';
+  timerCard.classList.toggle('danger', state === 'playing' && timeLeft <= 10);
+
+  const d = Math.round(discipline);
+  disciplineValue.textContent = d + '%';
+  disciplineFill.style.width = d + '%';
+  disciplineFill.style.background = d >= 70
+    ? 'linear-gradient(90deg,#ffb545,#45d483)'
+    : d >= 40
+      ? 'linear-gradient(90deg,#ff7a3d,#ffb545)'
+      : 'linear-gradient(90deg,#ff3d3d,#ff7a3d)';
+  disciplineStatus.textContent = disciplineStatusText(d);
+
+  statWork.textContent = counters.work + '/' + TOTAL_BOTS;
+  statSlack.textContent = counters.slack;
+  statTired.textContent = counters.tired;
+}
+
+function syncCommandButtons() {
+  document.querySelectorAll('.cmd[data-command]').forEach(btn => {
+    btn.classList.toggle('active', state === 'playing' && btn.dataset.command === currentCommand);
+  });
+}
+
+function updateCooldownUi() {
+  const k = whistleCooldown > 0 ? whistleCooldown / WHISTLE_COOLDOWN : 0;
+  whistleCooldownEl.style.transform = `scaleX(${k})`;
+}
+
+/* ============================================================
+   ОТРИСОВКА ЛЮДЕЙ
+   ============================================================ */
+function botActionText(b) {
+  if (b.state === 'exhausted') return '💤 без сил';
+  if (b.scareFlash > 0) return '😱 ай!';
+  switch (b.state) {
+    case 'squat': return '🏋️ приседает';
+    case 'pushup': return '💪 отжимается';
+    case 'run': return '🏃 бежит';
+    case 'jog': return '🦵 на месте';
+    case 'lineup': return b.moving ? '🏃 строится' : '🧍 в строю';
+    case 'toSlack': return '🚶 уходит';
+    case 'bench': return '🪑 сачкует';
+    case 'phone': return '📱 телефон';
+    default: return '⏳ ждёт';
+  }
+}
+
+function botLabelPos(b) {
+  if (b.state === 'pushup') return { label: -40, bar: -29 };
+  if (b.state === 'exhausted') return { label: -36, bar: -25 };
+  if (b.state === 'bench') return { label: -58, bar: -47 };
+  return { label: -68, bar: -57 };
+}
+
+function drawBotLabel(b) {
+  const g = ctx;
+  const p = botLabelPos(b);
+  const text = botActionText(b);
+  g.save();
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.font = '700 10px "Segoe UI", Arial, sans-serif';
+  const w = g.measureText(text).width + 12;
+  g.fillStyle = 'rgba(6,10,18,.82)';
+  roundRect(g, b.x - w / 2, b.y + p.label - 8, w, 15, 7);
+  g.fill();
+  g.strokeStyle = b.state === 'exhausted' ? 'rgba(255,93,93,.55)'
+    : isSlacking(b) ? 'rgba(255,181,69,.5)' : 'rgba(255,255,255,.10)';
+  g.lineWidth = 1;
+  g.stroke();
+  g.fillStyle = isSlacking(b) ? '#ffd79a' : '#eaf0fb';
+  g.fillText(text, b.x, b.y + p.label);
+
+  /* полоска выносливости */
+  const bw = 34;
+  g.fillStyle = 'rgba(5,9,16,.85)';
+  roundRect(g, b.x - bw / 2, b.y + p.bar - 2, bw, 5, 2.5);
+  g.fill();
+  g.fillStyle = staminaColor(b.stamina);
+  const fillW = Math.max(0, (bw - 2) * (b.stamina / 100));
+  roundRect(g, b.x - bw / 2 + 1, b.y + p.bar - 1, fillW, 3, 1.5);
+  g.fill();
+  g.restore();
+}
+
+function drawBot(b) {
+  const g = ctx;
+  drawBotLabel(b);
+  g.save();
+  g.translate(b.x, b.y);
+  g.fillStyle = 'rgba(0,0,0,.24)';
+  g.beginPath(); g.ellipse(0, 2, 12, 4.5, 0, 0, 7); g.fill();
+  if (b.scareFlash > 0) g.translate(Math.sin(elapsed * 55 + b.id) * 1.6, 0);
+
+  const skin = SKIN[b.face];
+  if (b.state === 'exhausted') { drawBotExhausted(g, b, skin); g.restore(); return; }
+  if (b.state === 'pushup') { drawBotPushup(g, b, skin); g.restore(); return; }
+
+  const color = staminaColor(b.stamina);
+  const pants = '#38465e';
+  const sitting = b.state === 'bench';
+  const phone = b.state === 'phone';
+
+  let crouch = 0, bob = 0, legSwing = 0;
+  if (b.state === 'squat') crouch = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(b.anim));
+  else if (sitting) crouch = 0.42;
+  if (b.state === 'run' || b.state === 'jog') { bob = -Math.abs(Math.sin(b.anim)) * 2.4; legSwing = Math.sin(b.anim) * 7; }
+  else if (b.state === 'toSlack') { bob = -1; legSwing = Math.sin(b.anim) * 6; }
+  else if (b.state === 'lineup' && !b.moving) bob = Math.sin(b.anim) * 0.8;
+  else if (b.state === 'idle') bob = Math.sin(b.anim) * 0.8;
+
+  const hipY = -14 + crouch * 8;
+  const torsoH = 22 - crouch * 5;
+  const torsoCenter = hipY - torsoH / 2 + bob;
+  const headY = torsoCenter - torsoH / 2 - 7;
+
+  /* ноги */
+  g.strokeStyle = pants;
+  g.lineWidth = 5;
+  g.lineCap = 'round';
+  if (crouch > 0.05) {
+    g.beginPath();
+    g.moveTo(-3, hipY); g.lineTo(-7, hipY + 7 + crouch * 4); g.lineTo(-5, 0);
+    g.moveTo(3, hipY); g.lineTo(7, hipY + 7 + crouch * 4); g.lineTo(5, 0);
+    g.stroke();
+  } else {
+    g.beginPath();
+    g.moveTo(-4, hipY); g.lineTo(-4 + legSwing, 0);
+    g.moveTo(4, hipY); g.lineTo(4 - legSwing, 0);
+    g.stroke();
+  }
+  g.fillStyle = '#20293a';
+  g.beginPath(); g.ellipse(-5 + (crouch > .05 ? 0 : legSwing), 1, 4, 2.2, 0, 0, 7); g.fill();
+  g.beginPath(); g.ellipse(5 - (crouch > .05 ? 0 : legSwing), 1, 4, 2.2, 0, 0, 7); g.fill();
+
+  /* юбка у девочек */
+  if (b.girl) {
+    g.fillStyle = SKIRT[b.skirt];
+    g.beginPath();
+    g.moveTo(-8, hipY + 1);
+    g.lineTo(8, hipY + 1);
+    g.lineTo(11, hipY + 9);
+    g.lineTo(-11, hipY + 9);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = 'rgba(15,20,30,.35)';
+    g.lineWidth = 1;
+    g.stroke();
+  }
+
+  /* руки */
+  const shoulderY = torsoCenter - torsoH * 0.28;
+  const armSwing = b.state === 'run' ? -Math.sin(b.anim) * 8 : (b.moving ? Math.sin(b.anim) * 4 : 0);
+  g.strokeStyle = skin;
+  g.lineWidth = 4;
+  g.beginPath();
+  g.moveTo(-8, shoulderY); g.lineTo(-11, shoulderY + 9 + armSwing);
+  if (phone) { g.moveTo(8, shoulderY); g.lineTo(11, shoulderY + 4); }
+  else { g.moveTo(8, shoulderY); g.lineTo(11, shoulderY + 9 - armSwing); }
+  g.stroke();
+
+  /* туловище */
+  g.fillStyle = color;
+  roundRect(g, -10, torsoCenter - torsoH / 2, 20, torsoH, 8);
+  g.fill();
+  g.strokeStyle = 'rgba(15,20,30,.55)';
+  g.lineWidth = 1.5;
+  roundRect(g, -10, torsoCenter - torsoH / 2, 20, torsoH, 8);
+  g.stroke();
+  g.fillStyle = 'rgba(255,255,255,.22)';
+  roundRect(g, -7, torsoCenter - torsoH / 2 + 3, 5, torsoH - 10, 3);
+  g.fill();
+
+  /* длинные волосы (сзади головы) */
+  const hairCol = HAIR[b.hair];
+  if (b.girl) {
+    g.fillStyle = hairCol;
+    g.beginPath(); g.ellipse(0, headY + 4, 9.5, 12, 0, 0, 7); g.fill();
+    if (b.haircut === 0) {
+      g.beginPath(); g.ellipse(10.5, headY + 3, 4, 7.5, 0.5, 0, 7); g.fill();
+    } else {
+      g.beginPath(); g.ellipse(-10.5, headY + 3, 4, 7.5, -0.5, 0, 7); g.fill();
+    }
+  }
+  /* голова */
+  g.fillStyle = skin;
+  g.beginPath(); g.arc(0, headY, 8, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(15,20,30,.45)';
+  g.lineWidth = 1.2;
+  g.beginPath(); g.arc(0, headY, 8, 0, 7); g.stroke();
+  /* волосы сверху */
+  g.fillStyle = hairCol;
+  if (b.girl) {
+    g.beginPath(); g.arc(0, headY - 1, 8.2, Math.PI * 1.0, Math.PI * 2.0); g.fill();
+    g.beginPath(); g.arc(-3, headY - 5, 5.5, Math.PI * 1.0, Math.PI * 2.0); g.fill();
+  } else {
+    g.beginPath(); g.arc(0, headY, 8, Math.PI * 1.05, Math.PI * 1.95); g.fill();
+  }
+  /* глаза */
+  const look = phone ? 1.5 : 0;
+  g.fillStyle = '#17202e';
+  if (b.blink < 0) {
+    g.fillRect(-4.4, headY - 1.6, 3, 1.4);
+    g.fillRect(1.4, headY - 1.6, 3, 1.4);
+  } else {
+    g.beginPath(); g.arc(-2.8, headY - 1, 1.2, 0, 7); g.fill();
+    g.beginPath(); g.arc(2.8, headY - 1, 1.2, 0, 7); g.fill();
+  }
+  /* рот */
+  g.strokeStyle = 'rgba(120,60,50,.85)';
+  g.lineWidth = 1.2;
+  g.beginPath();
+  if (b.state === 'squat' || b.state === 'pushup' || b.state === 'run') g.arc(0 + look, headY + 4, 2.6, 0, Math.PI);
+  else if (isSlacking(b)) g.arc(0, headY + 5.5, 2.4, Math.PI, 0);
+  else g.arc(0, headY + 2.5, 2.6, 0.15, Math.PI - 0.15);
+  g.stroke();
+
+  /* телефон */
+  if (phone) {
+    g.fillStyle = '#10151f';
+    roundRect(g, 7, shoulderY + 1, 8, 12, 2);
+    g.fill();
+    g.fillStyle = '#7fe3ff';
+    roundRect(g, 8.4, shoulderY + 2.4, 5.2, 8.6, 1);
+    g.fill();
+  }
+  g.restore();
+}
+
+function drawBotPushup(g, b, skin) {
+  const color = staminaColor(b.stamina);
+  const lift = Math.sin(b.anim) * 2.2;
+  g.save();
+  /* ноги назад */
+  g.strokeStyle = '#38465e';
+  g.lineWidth = 5;
+  g.lineCap = 'round';
+  g.beginPath();
+  g.moveTo(-2, -6 + lift * .3); g.lineTo(-16, -4);
+  g.moveTo(-1, -4 + lift * .3); g.lineTo(-16, -2);
+  g.stroke();
+  /* туловище плашмя */
+  g.fillStyle = color;
+  roundRect(g, -10, -14 + lift * .3, 22, 12, 6);
+  g.fill();
+  g.strokeStyle = 'rgba(15,20,30,.55)';
+  g.lineWidth = 1.4;
+  roundRect(g, -10, -14 + lift * .3, 22, 12, 6);
+  g.stroke();
+  /* руки упираются */
+  g.strokeStyle = skin;
+  g.lineWidth = 4;
+  g.beginPath();
+  g.moveTo(-4, -8 + lift); g.lineTo(-4, 0);
+  g.moveTo(6, -8 + lift); g.lineTo(6, 0);
+  g.stroke();
+  /* голова */
+  if (b.girl) {
+    g.fillStyle = HAIR[b.hair];
+    g.beginPath(); g.ellipse(17, -11 + lift * .5, 7.5, 8.5, 0, 0, 7); g.fill();
+  }
+  g.fillStyle = skin;
+  g.beginPath(); g.arc(15, -12 + lift * .5, 7, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(15,20,30,.45)';
+  g.lineWidth = 1.2;
+  g.beginPath(); g.arc(15, -12 + lift * .5, 7, 0, 7); g.stroke();
+  g.fillStyle = HAIR[b.hair];
+  g.beginPath(); g.arc(15, -12 + lift * .5, 7, Math.PI * 1.1, Math.PI * 2); g.fill();
+  g.fillStyle = '#17202e';
+  g.beginPath(); g.arc(13, -12 + lift * .5, 1.1, 0, 7); g.fill();
+  g.beginPath(); g.arc(17.5, -12 + lift * .5, 1.1, 0, 7); g.fill();
+  g.restore();
+}
+
+function drawBotExhausted(g, b, skin) {
+  const breathe = 1 + Math.sin(b.anim * 2) * 0.06;
+  g.save();
+  g.translate(0, 2);
+  /* ноги */
+  g.strokeStyle = '#38465e';
+  g.lineWidth = 5;
+  g.lineCap = 'round';
+  g.beginPath();
+  g.moveTo(-8, -6); g.lineTo(-19, -8);
+  g.moveTo(-8, -3); g.lineTo(-19, -3);
+  g.stroke();
+  /* туловище на спине */
+  g.save();
+  g.scale(breathe, 1);
+  g.fillStyle = '#b8423f';
+  roundRect(g, -10, -14, 22, 14, 7);
+  g.fill();
+  g.strokeStyle = 'rgba(60,15,15,.6)';
+  g.lineWidth = 1.4;
+  roundRect(g, -10, -14, 22, 14, 7);
+  g.stroke();
+  g.restore();
+  /* голова */
+  if (b.girl) {
+    g.fillStyle = HAIR[b.hair];
+    g.beginPath(); g.ellipse(16, -8, 8, 7.5, 0, 0, 7); g.fill();
+  }
+  g.fillStyle = skin;
+  g.beginPath(); g.arc(14, -9, 7, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(15,20,30,.45)';
+  g.lineWidth = 1.2;
+  g.beginPath(); g.arc(14, -9, 7, 0, 7); g.stroke();
+  g.fillStyle = HAIR[b.hair];
+  g.beginPath(); g.arc(14, -9, 7, Math.PI * 1.05, Math.PI * 1.95); g.fill();
+  g.strokeStyle = '#17202e';
+  g.lineWidth = 1.6;
+  g.beginPath();
+  g.moveTo(11, -12); g.lineTo(14, -9); g.moveTo(14, -12); g.lineTo(11, -9);
+  g.moveTo(16, -12); g.lineTo(19, -9); g.moveTo(19, -12); g.lineTo(16, -9);
+  g.stroke();
+  /* пар дыхания */
+  const puff = (Math.sin(b.anim * 2.4) + 1) / 2;
+  g.fillStyle = `rgba(255,255,255,${0.12 + puff * 0.16})`;
+  g.beginPath(); g.arc(24, -14 - puff * 3, 3 + puff * 2, 0, 7); g.fill();
+  g.beginPath(); g.arc(28, -18 - puff * 5, 2 + puff, 0, 7); g.fill();
+  g.restore();
+}
+
+/* ---------- физрук ---------- */
+function drawCoach() {
+  const g = ctx;
+  g.save();
+  g.translate(coach.x, coach.y);
+  g.fillStyle = 'rgba(0,0,0,.30)';
+  g.beginPath(); g.ellipse(0, 3, 33, 11, 0, 0, 7); g.fill();
+
+  const walk = coach.moving ? coach.walk : 0;
+  const legSwing = coach.moving ? Math.sin(walk) * 8 : 0;
+  const jitter = coach.shout > 0 ? Math.sin(elapsed * 40) * 1.2 : 0;
+  g.translate(jitter, 0);
+
+  /* ноги */
+  g.strokeStyle = '#22304a';
+  g.lineWidth = 12;
+  g.lineCap = 'round';
+  g.beginPath();
+  g.moveTo(-9, -34); g.lineTo(-9 + legSwing, -1);
+  g.moveTo(9, -34); g.lineTo(9 - legSwing, -1);
+  g.stroke();
+  g.fillStyle = '#101724';
+  g.beginPath(); g.ellipse(-9 + legSwing, 0, 8, 4, 0, 0, 7); g.fill();
+  g.beginPath(); g.ellipse(9 - legSwing, 0, 8, 4, 0, 0, 7); g.fill();
+
+  /* руки */
+  const armSwing = coach.moving ? -Math.sin(walk) * 10 : Math.sin(coach.walk) * 3;
+  g.strokeStyle = '#2b3c5c';
+  g.lineWidth = 13;
+  g.beginPath();
+  g.moveTo(-22, -62); g.lineTo(-27, -40 + armSwing);
+  g.moveTo(22, -62); g.lineTo(27, -40 - armSwing);
+  g.stroke();
+  g.fillStyle = SKIN[0];
+  g.beginPath(); g.arc(-27, -38 + armSwing, 6, 0, 7); g.fill();
+  g.beginPath(); g.arc(27, -38 - armSwing, 6, 0, 7); g.fill();
+
+  /* туловище-олимпийка с животиком */
+  const bodyGrad = g.createLinearGradient(0, -95, 0, -28);
+  bodyGrad.addColorStop(0, '#33496f');
+  bodyGrad.addColorStop(1, '#1f2f4d');
+  g.fillStyle = bodyGrad;
+  g.beginPath();
+  g.ellipse(0, -60, 30, 35, 0, 0, 7);
+  g.fill();
+  g.strokeStyle = 'rgba(10,15,25,.7)';
+  g.lineWidth = 2;
+  g.beginPath();
+  g.ellipse(0, -60, 30, 35, 0, 0, 7);
+  g.stroke();
+  /* живот */
+  g.fillStyle = '#4a6795';
+  g.beginPath();
+  g.ellipse(0, -48, 20, 18, 0, 0, 7);
+  g.fill();
+  g.fillStyle = 'rgba(255,255,255,.14)';
+  g.beginPath();
+  g.ellipse(-8, -66, 8, 14, -0.3, 0, 7);
+  g.fill();
+  /* полоски на олимпийке */
+  g.strokeStyle = 'rgba(255,255,255,.85)';
+  g.lineWidth = 2.5;
+  g.beginPath(); g.moveTo(-15, -92); g.lineTo(-24, -74); g.stroke();
+  g.beginPath(); g.moveTo(15, -92); g.lineTo(24, -74); g.stroke();
+
+  /* свисток на шее */
+  g.strokeStyle = '#c85a2a';
+  g.lineWidth = 2.5;
+  g.beginPath(); g.moveTo(-11, -88); g.lineTo(0, -74); g.lineTo(11, -88); g.stroke();
+  g.fillStyle = '#ffb545';
+  g.beginPath(); g.arc(0, -71, 5.5, 0, 7); g.fill();
+  g.fillStyle = '#a9741f';
+  g.fillRect(0, -73, 6, 4);
+
+  /* голова */
+  const headY = -104;
+  g.fillStyle = SKIN[0];
+  g.beginPath(); g.arc(0, headY, 17, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(10,15,25,.5)';
+  g.lineWidth = 1.8;
+  g.beginPath(); g.arc(0, headY, 17, 0, 7); g.stroke();
+  /* уши */
+  g.beginPath(); g.arc(-16, headY + 2, 4, 0, 7); g.arc(16, headY + 2, 4, 0, 7); g.fill();
+  /* кепка */
+  g.fillStyle = '#c0432f';
+  g.beginPath(); g.arc(0, headY - 3, 17, Math.PI, Math.PI * 2); g.fill();
+  g.fillRect(-18, headY - 6, 36, 5);
+  g.fillStyle = '#982f22';
+  g.beginPath();
+  g.ellipse(coach.dirX * 12, headY - 5, 15, 5, 0, 0, 7);
+  g.fill();
+  /* глаза */
+  g.fillStyle = '#17202e';
+  const ex = coach.dirX * 2.5, ey = coach.dirY * 1.5;
+  if (coach.blink < 0) {
+    g.fillRect(-9 + ex, headY + 1 + ey, 7, 2);
+    g.fillRect(2 + ex, headY + 1 + ey, 7, 2);
+  } else {
+    g.beginPath(); g.arc(-5.5 + ex, headY + 2 + ey, 2.4, 0, 7); g.fill();
+    g.beginPath(); g.arc(5.5 + ex, headY + 2 + ey, 2.4, 0, 7); g.fill();
+  }
+  /* усы */
+  g.strokeStyle = '#4a382a';
+  g.lineWidth = 3;
+  g.lineCap = 'round';
+  g.beginPath();
+  g.moveTo(-8 + ex, headY + 10); g.quadraticCurveTo(0 + ex, headY + 12, 8 + ex, headY + 10);
+  g.stroke();
+  /* рот */
+  g.strokeStyle = 'rgba(120,60,50,.9)';
+  g.lineWidth = 1.6;
+  g.beginPath();
+  if (coach.shout > 0) g.arc(ex, headY + 12, 4, 0, Math.PI * 2);
+  else g.arc(ex, headY + 9, 5, 0.15, Math.PI - 0.15);
+  g.stroke();
+
+  /* восклицание */
+  if (coach.shout > 0) {
+    const a = clamp(coach.shout, 0, 1);
+    g.globalAlpha = a;
+    g.textAlign = 'center';
+    g.font = '900 20px "Segoe UI", Arial, sans-serif';
+    g.fillStyle = '#ffdc7a';
+    g.strokeStyle = 'rgba(20,12,0,.8)';
+    g.lineWidth = 4;
+    g.strokeText('ФЬЮИТ!', 0, headY - 30);
+    g.fillText('ФЬЮИТ!', 0, headY - 30);
+    g.globalAlpha = 1;
+  }
+  g.restore();
+}
+
+function drawWaves() {
+  const g = ctx;
+  g.save();
+  g.lineWidth = 3;
+  for (const w of waves) {
+    if (w.delay > 0 || w.alpha <= 0) continue;
+    g.strokeStyle = `rgba(255,214,92,${w.alpha * 0.75})`;
+    g.beginPath(); g.arc(w.x, w.y - 60, w.r, 0, 7); g.stroke();
+    g.strokeStyle = `rgba(255,255,255,${w.alpha * 0.35})`;
+    g.beginPath(); g.arc(w.x, w.y - 60, w.r * 0.78, 0, 7); g.stroke();
+  }
+  g.restore();
+}
+
+function drawPointerTarget() {
+  if (!pointerTarget) return;
+  const g = ctx;
+  const t = elapsed * 5;
+  g.save();
+  g.strokeStyle = 'rgba(255,181,69,.85)';
+  g.lineWidth = 2.5;
+  g.setLineDash([6, 5]);
+  g.beginPath(); g.arc(pointerTarget.x, pointerTarget.y, 14 + Math.sin(t) * 2, 0, 7); g.stroke();
+  g.setLineDash([]);
+  g.beginPath(); g.arc(pointerTarget.x, pointerTarget.y, 4, 0, 7); g.stroke();
+  g.restore();
+}
+
+/* ---------- рендер сцены ---------- */
+function drawScene() {
+  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  ctx.fillStyle = '#05080e';
+  ctx.fillRect(0, 0, view.cssW, view.cssH);
+
+  ctx.setTransform(
+    view.dpr * view.scale, 0, 0, view.dpr * view.scale,
+    view.dpr * view.ox, view.dpr * view.oy
+  );
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, WORLD.w, WORLD.h);
+  ctx.clip();
+
+  if (backgroundCanvas) ctx.drawImage(backgroundCanvas, 0, 0);
+  drawWaves();
+  drawPointerTarget();
+
+  const entities = bots.map(b => ({ y: b.y, draw: () => drawBot(b) }));
+  entities.push({ y: coach.y, draw: drawCoach });
+  entities.sort((a, b) => a.y - b.y);
+  for (const e of entities) e.draw();
+
+  ctx.restore();
+}
+
+/* ---------- главный цикл ---------- */
+function loop(now) {
+  const dt = Math.min(0.05, Math.max(0, (now - lastFrame) / 1000));
+  lastFrame = now;
+
+  if (state === 'playing') {
+    updateGame(dt);
+    hudTimer += dt;
+    if (hudTimer >= 0.1) { hudTimer = 0; renderHud(); updateCooldownUi(); }
+  } else {
+    /* лёгкая жизнь на фоне меню */
+    elapsed += dt;
+    for (const b of bots) {
+      b.anim += dt * 1.6;
+      b.blink -= dt;
+      if (b.blink < -0.15) b.blink = rnd(1.5, 4.5);
+    }
+    coach.walk += dt * 1.6;
+    coach.blink -= dt;
+    if (coach.blink < -0.14) coach.blink = rnd(1.6, 4.5);
+    hudTimer += dt;
+    if (hudTimer >= 0.25) { hudTimer = 0; renderHud(); updateCooldownUi(); }
+  }
+
+  drawScene();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- управление ---------- */
+function isMoveCode(code) {
+  return code === 'KeyW' || code === 'KeyA' || code === 'KeyS' || code === 'KeyD' ||
+    code === 'ArrowUp' || code === 'ArrowDown' || code === 'ArrowLeft' || code === 'ArrowRight';
+}
+
+window.addEventListener('keydown', e => {
+  if (isMoveCode(e.code) || e.code === 'Space') e.preventDefault();
+
+  if (state === 'intro') {
+    if (e.code === 'Enter' || e.code === 'Space') startGame();
+    return;
+  }
+  if (state === 'over') {
+    if (e.code === 'Enter' || e.code === 'Space') startGame();
+    return;
+  }
+
+  keys.add(e.code);
+  if (e.repeat) return;
+
+  switch (e.code) {
+    case 'Digit1': case 'Numpad1': issueCommand('squat'); break;
+    case 'Digit2': case 'Numpad2': issueCommand('run'); break;
+    case 'Digit3': case 'Numpad3': issueCommand('pushup'); break;
+    case 'Digit4': case 'Numpad4': issueCommand('lineup'); break;
+    case 'Digit5': case 'Numpad5': issueCommand('jog'); break;
+    case 'Space': case 'Digit6': triggerWhistle(); break;
+    case 'KeyM': toggleSound(); break;
+  }
+});
+
+window.addEventListener('keyup', e => keys.delete(e.code));
+window.addEventListener('blur', () => keys.clear());
+document.addEventListener('visibilitychange', () => { if (document.hidden) keys.clear(); });
+
+/* кнопки-приказы */
+document.querySelectorAll('.cmd[data-command]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    initAudio();
+    issueCommand(btn.dataset.command);
+  });
+});
+whistleBtn.addEventListener('click', () => { initAudio(); triggerWhistle(); });
+
+startBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', startGame);
+
+/* звук */
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+  soundBtn.classList.toggle('off', !soundEnabled);
+  soundBtn.setAttribute('aria-label', soundEnabled ? 'Выключить звук' : 'Включить звук');
+  if (soundEnabled) { initAudio(); playBeep(660, 0.08, 0.05); }
+}
+soundBtn.addEventListener('click', toggleSound);
+
+/* управление пальцем/мышью по залу */
+canvas.addEventListener('pointerdown', e => {
+  if (state !== 'playing') return;
+  e.preventDefault();
+  initAudio();
+  pointerTarget = screenToWorld(e.clientX, e.clientY);
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+});
+canvas.addEventListener('pointermove', e => {
+  if (!pointerTarget) return;
+  pointerTarget = screenToWorld(e.clientX, e.clientY);
+});
+const clearPointer = () => { pointerTarget = null; };
+canvas.addEventListener('pointerup', clearPointer);
+canvas.addEventListener('pointercancel', clearPointer);
+canvas.addEventListener('pointerleave', clearPointer);
+
+/* ---------- запуск ---------- */
+function init() {
+  buildSlackSpots();
+  buildLoopPoints();
+  buildBackground();
+  createBots();
+  updateCounters();
+  renderHud(true);
+  syncCommandButtons();
+  updateCooldownUi();
+  resizeCanvas();
+  if (window.ResizeObserver) new ResizeObserver(resizeCanvas).observe(stage);
+  window.addEventListener('resize', resizeCanvas);
+  requestAnimationFrame(loop);
+}
+
+init();
+</script>
+</body>
+</html>
