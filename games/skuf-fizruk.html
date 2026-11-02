@@ -217,6 +217,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
       <div class="stat"><span class="dot tired"></span><b id="statTired">0</b><small>без сил</small></div>
     </div>
 
+    <button id="pauseBtn" class="sound-btn" type="button" aria-label="Пауза" title="Пауза (Esc / P)">⏸</button>
     <button id="soundBtn" class="sound-btn" type="button" aria-label="Выключить звук">🔊</button>
   </header>
 
@@ -238,6 +239,16 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         <div class="tip-box"><b>Совет физрука:</b> сачкунов на скамейке и с телефоном возвращает только свисток рядом с ними. Красные студенты падают без сил — не гоняй всех до предела.</div>
         <button id="startBtn" class="start-btn" type="button"><span>НАЧАТЬ УРОК</span><span class="arrow">→</span></button>
         <div class="modal-foot">На телефоне: веди пальцем по залу, команды — кнопками снизу.</div>
+      </div>
+    </div>
+
+    <div id="pauseScreen" class="overlay hidden">
+      <div class="modal">
+        <div class="modal-stripe"></div>
+        <h2>Пауза</h2>
+        <button id="resumeBtn" class="start-btn" type="button">Продолжить</button>
+        <button id="exitBtn" class="start-btn" type="button" style="margin-top:12px">К списку игр</button>
+        <div class="modal-foot">Esc / P — продолжить</div>
       </div>
     </div>
 
@@ -356,6 +367,7 @@ const statTired = document.getElementById('statTired');
 const soundBtn = document.getElementById('soundBtn');
 const startScreen = document.getElementById('startScreen');
 const endScreen = document.getElementById('endScreen');
+const pauseScreen = document.getElementById('pauseScreen');
 const startBtn = document.getElementById('startBtn');
 const restartBtn = document.getElementById('restartBtn');
 const toastEl = document.getElementById('toast');
@@ -363,7 +375,7 @@ const whistleBtn = document.getElementById('whistleBtn');
 const whistleCooldownEl = document.getElementById('whistleCooldown');
 
 /* ---------- игровое состояние ---------- */
-let state = 'intro';            // intro | playing | over
+let state = 'intro';            // intro | playing | paused | over
 let timeLeft = 60;
 let discipline = 100;
 let currentCommand = null;      // squat | run | pushup | lineup | null
@@ -842,6 +854,7 @@ function startGame() {
   state = 'playing';
   startScreen.classList.add('hidden');
   endScreen.classList.add('hidden');
+  pauseScreen.classList.add('hidden');
   showToast('🔔 Урок начался! Отдай приказ: 1–5, свисток — Пробел', 'info', 3200);
   playBeep(760, 0.09, 0.05);
   setTimeout(() => playBeep(980, 0.09, 0.05), 130);
@@ -1616,7 +1629,7 @@ function loop(now) {
     updateGame(dt);
     hudTimer += dt;
     if (hudTimer >= 0.1) { hudTimer = 0; renderHud(); updateCooldownUi(); }
-  } else {
+  } else if (state !== 'paused') {
     /* лёгкая жизнь на фоне меню */
     elapsed += dt;
     for (const b of bots) {
@@ -1643,6 +1656,12 @@ function isMoveCode(code) {
 
 window.addEventListener('keydown', e => {
   if (isMoveCode(e.code) || e.code === 'Space') e.preventDefault();
+
+  if (e.code === 'Escape' || e.code === 'KeyP') {
+    if (!e.repeat) togglePause();
+    return;
+  }
+  if (state === 'paused') return;
 
   if (state === 'intro') {
     if (e.code === 'Enter' || e.code === 'Space') startGame();
@@ -1680,6 +1699,17 @@ document.querySelectorAll('.cmd[data-command]').forEach(btn => {
 });
 whistleBtn.addEventListener('click', () => { initAudio(); triggerWhistle(); });
 
+function togglePause() {
+  if (state !== 'playing' && state !== 'paused') return;
+  state = state === 'playing' ? 'paused' : 'playing';
+  keys.clear();
+  pointerTarget = null;
+  pauseScreen.classList.toggle('hidden', state !== 'paused');
+}
+
+document.getElementById('pauseBtn').addEventListener('click', togglePause);
+document.getElementById('resumeBtn').addEventListener('click', togglePause);
+document.getElementById('exitBtn').addEventListener('click', () => { window.location.href = '../index.html'; });
 startBtn.addEventListener('click', startGame);
 restartBtn.addEventListener('click', startGame);
 

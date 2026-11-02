@@ -744,6 +744,8 @@ button { font-family: inherit; cursor: pointer; }
 
 .menu-foot {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   justify-content: space-between;
   padding: 18px 26px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);

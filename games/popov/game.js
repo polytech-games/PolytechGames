@@ -1080,6 +1080,7 @@
     $('#menu-close').addEventListener('click', closeMenu);
     $('#btn-resume').addEventListener('click', closeMenu);
     $('#btn-to-title').addEventListener('click', goTitle);
+    $('#btn-exit').addEventListener('click', () => { window.location.href = '../../index.html'; });
     el.menu.addEventListener('click', (e) => { if (e.target === el.menu) closeMenu(); });
     document.querySelectorAll('.menu-tabs button').forEach((b) => b.addEventListener('click', () => selectTab(b.dataset.tab)));
 

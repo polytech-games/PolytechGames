@@ -226,6 +226,7 @@
 <div id="pause" class="overlay hidden">
   <div class="logo" style="font-size:42px">ПАУЗА</div>
   <button class="btn" id="resumeBtn">ПРОДОЛЖИТЬ</button>
+  <button class="btn" id="exitBtn">К СПИСКУ ИГР</button>
 </div>
 
 <div id="gameover" class="overlay hidden">
@@ -515,6 +516,10 @@ el("resumeBtn").addEventListener("click", e => {
   e.stopPropagation();
   if (mode === "versus") state = "playing";
   lock();
+});
+el("exitBtn").addEventListener("click", e => {
+  e.stopPropagation();
+  window.location.href = "../index.html";
 });
 ["pause", "gameover"].forEach(id => el(id).addEventListener("click", () => {
   if (state === "paused") { if (mode === "versus") state = "playing"; lock(); }

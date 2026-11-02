@@ -309,6 +309,7 @@
       <div class="btnRow">
         <button class="btn green" id="resumeBtn">Продолжить</button>
         <button class="btn small" id="restartPauseBtn">Начать заново</button>
+        <button class="btn small" id="exitBtn">К списку игр</button>
       </div>
       <p class="hintline">P или Esc — продолжить</p>
     </div>
@@ -1030,6 +1031,7 @@ $('againBtn').addEventListener('click', startGame);
 $('retryBtn').addEventListener('click', startGame);
 $('restartPauseBtn').addEventListener('click', startGame);
 $('resumeBtn').addEventListener('click', () => togglePause(false));
+$('exitBtn').addEventListener('click', () => { window.location.href = '../index.html'; });
 soundBtn.addEventListener('click', toggleSound);
 pauseBtn.addEventListener('click', () => togglePause());
 
