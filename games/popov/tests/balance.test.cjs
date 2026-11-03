@@ -9,14 +9,14 @@ function loadGame(search = '') {
   const math = Object.create(Math);
   math.random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32);
   const element = () => ({
-    style: {}, classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
+    style: {}, children: [], classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
     appendChild() {}, querySelector: () => element(),
   });
   const context = vm.createContext({
     window: { addEventListener() {} },
     document: { querySelector: () => element() },
     localStorage: { getItem() { return null; } },
-    location: { search }, URLSearchParams, Math: math, console, setTimeout, clearTimeout,
+    location: { search }, URLSearchParams, Math: math, console, performance, setTimeout, clearTimeout,
   });
   const read = (name) => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
   vm.runInContext(read('data.js'), context);

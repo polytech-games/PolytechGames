@@ -1,12 +1,12 @@
 """
 Подготовка ассетов для игры.
 
-Берёт исходники из assets/ и складывает готовые к игре файлы в assets/game/:
+Берёт исходники из assets/ и складывает готовые к игре WebP-файлы в assets/game/:
   - спрайты персонажей без фона (PNG с прозрачностью) — фон вырезает нейросеть rembg;
   - 4 плашки-аватара Попова из листа «Комиксные эмоции Д.В.Попова.png»;
   - 3 головы для шкалы из «Эмодзи шкалы ошеломления.png»;
   - фоны ракурсов, сцены из assets/classroom, assets/classroom_reverse
-    и слайды начального экрана из assets/preclass в JPG.
+    и слайды начального экрана из assets/preclass в WebP.
 
 Установка:  python -m pip install "rembg[cpu]"
 Запуск:     python tools/prepare_assets.py                 — всё
@@ -19,6 +19,7 @@ import os
 import sys
 
 from PIL import Image, ImageDraw, ImageFilter
+from optimize_assets import save_runtime
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "assets")
@@ -113,9 +114,8 @@ def fit(img, max_w, max_h):
     return img
 
 
-def save(img, name, **kw):
-    path = os.path.join(OUT, name)
-    img.save(path, optimize=True, **kw)
+def save(img, name):
+    path = save_runtime(img, os.path.join(OUT, name))
     print("  ->", os.path.relpath(path, ROOT), img.size)
 
 
@@ -134,7 +134,7 @@ def sprites(only):
         bbox = cut.getchannel("A").getbbox()
         if bbox:
             cut = cut.crop(bbox)
-        save(cut, name + ".png")
+        save(cut, name + ".webp")
 
 
 def ui():
@@ -144,7 +144,7 @@ def ui():
         part = sheet.crop((cx * w // 2, cy * h // 2, (cx + 1) * w // 2, (cy + 1) * h // 2))
         cut = flood_cut(part, thresh=45, step=8)
         print("popov_avatar", i)
-        save(cut.crop(cut.getchannel("A").getbbox()), "popov_avatar_%d.png" % i)
+        save(cut.crop(cut.getchannel("A").getbbox()), "popov_avatar_%d.webp" % i)
 
     heads = Image.open(os.path.join(SRC, "Эмодзи шкалы ошеломления.png")).convert("RGB")
     w, h = heads.size
@@ -153,35 +153,35 @@ def ui():
         cut = flood_cut(part, thresh=45, step=8)
         cut = fit(cut.crop(cut.getchannel("A").getbbox()), 320, 320)
         print("bar_head", i)
-        save(cut, "bar_head_%d.png" % i)
+        save(cut, "bar_head_%d.webp" % i)
 
 
 def backgrounds():
-    for src, dst in [("Передний ракурс камеры.png", "bg_front.jpg"),
-                     ("Задний ракурс камеры.png", "bg_back.jpg")]:
+    for src, dst in [("Передний ракурс камеры.png", "bg_front.webp"),
+                     ("Задний ракурс камеры.png", "bg_back.webp")]:
         print(dst)
-        save(Image.open(os.path.join(SRC, src)).convert("RGB"), dst, quality=88)
+        save(Image.open(os.path.join(SRC, src)).convert("RGB"), dst)
 
     # preclass — слайдшоу начального экрана
     for path in sorted(glob.glob(os.path.join(SRC, "preclass", "*.png"))):
         name = os.path.splitext(os.path.basename(path))[0]
         print("preclass", name)
         img = Image.open(path).convert("RGB").resize((1536, 1024), Image.LANCZOS)
-        save(img, "preclass_%s.jpg" % name, quality=86)
+        save(img, "preclass_%s.webp" % name)
 
     # classroom — вид на окна (front), classroom_reverse — вид на доску (back)
     for folder, view in [("classroom", "front"), ("classroom_reverse", "back")]:
         for path in sorted(glob.glob(os.path.join(SRC, folder, "*.png"))):
             name = os.path.splitext(os.path.basename(path))[0]
             if name == "classroom_seated":
-                dst = "scene_%s_seated.jpg" % view
+                dst = "scene_%s_seated.webp" % view
             elif name.startswith("popov_at_"):
-                dst = "scene_%s_at_%s.jpg" % (view, name[len("popov_at_"):])
+                dst = "scene_%s_at_%s.webp" % (view, name[len("popov_at_"):])
             else:
                 continue
             print(folder, name)
             img = Image.open(path).convert("RGB").resize((1536, 1024), Image.LANCZOS)
-            save(img, dst, quality=88)
+            save(img, dst)
 
 
 def main():

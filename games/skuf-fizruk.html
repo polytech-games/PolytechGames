@@ -1687,8 +1687,13 @@ window.addEventListener('keydown', e => {
 });
 
 window.addEventListener('keyup', e => keys.delete(e.code));
-window.addEventListener('blur', () => keys.clear());
-document.addEventListener('visibilitychange', () => { if (document.hidden) keys.clear(); });
+function pauseOnFocusLoss() {
+  keys.clear();
+  pointerTarget = null;
+  if (state === 'playing') togglePause();
+}
+window.addEventListener('blur', pauseOnFocusLoss);
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseOnFocusLoss(); });
 
 /* кнопки-приказы */
 document.querySelectorAll('.cmd[data-command]').forEach(btn => {

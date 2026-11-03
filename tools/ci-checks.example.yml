@@ -1,0 +1,25 @@
+name: Project checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Balance, pause, syntax, links and generated HTML
+        run: node --test games/popov/tests/*.test.cjs tests/*.test.cjs
+      - name: Install browser test tools (not required to play)
+        run: |
+          npm install --prefix "$RUNNER_TEMP/browser-tools" playwright-core@1.64.1
+          "$RUNNER_TEMP/browser-tools/node_modules/.bin/playwright-core" install --with-deps chromium
+      - name: Browser lifecycles, local files and GitHub Pages paths
+        run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/browser-tools/node_modules/playwright-core" node tests/browser.cjs

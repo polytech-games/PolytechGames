@@ -120,12 +120,53 @@
     auto: false,
     skip: false,
     ctrlSkip: false,
+    paused: false,
     pickResolve: null,
     choiceResolve: null,
     log: [],
   };
 
   // ------------------------------------------------------------ прерываемые ожидания
+  // Время сценария не идёт, пока открыто меню. Таймеры сохраняют остаток,
+  // поэтому продолжение не пропускает реплику или заставку дня.
+  const gameTimers = new Set();
+  let pausedAt = 0;
+  let pausedDuration = 0;
+  const gameNow = () => (S.paused ? pausedAt : performance.now()) - pausedDuration;
+  function armTimer(timer) {
+    timer.started = performance.now();
+    timer.id = setTimeout(() => {
+      gameTimers.delete(timer);
+      timer.fn();
+    }, timer.remaining);
+  }
+  function gameTimeout(fn, ms) {
+    const timer = { fn, remaining: ms, id: null, started: 0 };
+    gameTimers.add(timer);
+    if (!S.paused) armTimer(timer);
+    return timer;
+  }
+  function cancelTimer(timer) {
+    if (!timer) return;
+    clearTimeout(timer.id);
+    gameTimers.delete(timer);
+  }
+  function setPaused(paused) {
+    if (S.paused === paused) return;
+    if (paused) {
+      pausedAt = performance.now();
+      for (const timer of gameTimers) {
+        clearTimeout(timer.id);
+        timer.remaining = Math.max(0, timer.remaining - (pausedAt - timer.started));
+      }
+    } else {
+      pausedDuration += performance.now() - pausedAt;
+    }
+    S.paused = paused;
+    S.ctrlSkip = false;
+    el.stage.classList.toggle('paused', paused);
+    if (!paused) for (const timer of gameTimers) armTimer(timer);
+  }
   const ABORT = { abort: true };
   const pending = new Set();
   function waitFor(executor) {
@@ -144,17 +185,30 @@
     pending.clear();
     stopTyping();
     advanceResolve = null;
-    clearTimeout(autoTimer);
+    for (const timer of gameTimers) clearTimeout(timer.id);
+    gameTimers.clear();
+    autoTimer = null;
     S.pickResolve = null;
     S.choiceResolve = null;
   }
-  const isSkipping = () => S.skip || S.ctrlSkip;
-  const wait = (ms) => waitFor((res) => setTimeout(res, isSkipping() ? Math.min(ms, 80) : ms));
+  const isSkipping = () => !S.paused && (S.skip || S.ctrlSkip);
+  const wait = (ms) => waitFor((res) => gameTimeout(res, isSkipping() ? Math.min(ms, 80) : ms));
   const runSafe = (p) => p.catch((e) => { if (e !== ABORT) console.error(e); });
 
   // ------------------------------------------------------------ масштаб
   // Сцена ставится в целые пиксели: при дробном смещении края кадра мерцают
   function fit() {
+    const mobile = window.matchMedia('(max-width: 800px), (max-width: 1000px) and (max-height: 500px)').matches;
+    el.stage.classList.toggle('mobile', mobile);
+    const hotspotParent = mobile ? $('#hud') : $('#scene');
+    if (el.hotspots.parentNode !== hotspotParent) hotspotParent.appendChild(el.hotspots);
+    if (mobile) {
+      Object.assign(el.stage.style, { left: '0px', top: '0px', width: '100%', height: '100%', transform: 'none' });
+      el.stage.style.setProperty('--scene-scale', window.innerWidth / STAGE_W);
+      return;
+    }
+    el.stage.style.width = '';
+    el.stage.style.height = '';
     const s = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H);
     el.stage.style.left = Math.round((window.innerWidth - STAGE_W * s) / 2) + 'px';
     el.stage.style.top = Math.round((window.innerHeight - STAGE_H * s) / 2) + 'px';
@@ -218,7 +272,7 @@
       onDone();
       return;
     }
-    const start = performance.now();
+    const start = gameNow();
     let shown = 0;
     const t = {
       finish() {
@@ -229,7 +283,8 @@
       },
     };
     t.timer = setInterval(() => {
-      const n = Math.floor(((performance.now() - start) / 1000) * settings.speed);
+      if (S.paused) return;
+      const n = Math.floor(((gameNow() - start) / 1000) * settings.speed);
       if (n >= text.length || isSkipping()) {
         t.finish();
       } else if (n > shown) {
@@ -263,7 +318,8 @@
       setSpeaker(speaker, name);
       el.dialog.classList.remove('ready');
       const finish = () => {
-        clearTimeout(autoTimer);
+        cancelTimer(autoTimer);
+        autoTimer = null;
         advanceResolve = null;
         el.dialog.classList.remove('ready');
         resolve();
@@ -277,17 +333,23 @@
   }
 
   function scheduleAuto(text) {
-    clearTimeout(autoTimer);
-    if (!advanceResolve) return;
+    cancelTimer(autoTimer);
+    autoTimer = null;
+    if (!advanceResolve || S.paused) return;
+    const next = () => {
+      autoTimer = null;
+      if (advanceResolve && (isSkipping() || S.auto)) advanceResolve();
+    };
     if (isSkipping()) {
-      autoTimer = setTimeout(() => advanceResolve && advanceResolve(), 70);
+      autoTimer = gameTimeout(next, 70);
     } else if (S.auto && !el.menu.classList.contains('show')) {
       const len = text ? text.length : el.text.textContent.length;
-      autoTimer = setTimeout(() => advanceResolve && advanceResolve(), settings.auto * 1000 + len * 18);
+      autoTimer = gameTimeout(next, settings.auto * 1000 + len * 18);
     }
   }
 
   function advance() {
+    if (S.paused) return;
     if (typing) { typing.finish(); return; }
     if (advanceResolve) advanceResolve();
   }
@@ -320,6 +382,7 @@
   function updateBar() {
     const p = clamp(pct(), 0, 100);
     el.fill.style.width = (500 * p) / 100 + 'px';
+    el.stage.style.setProperty('--shock-percent', p + '%');
     const lvl = C.barHeadThresholds.filter((t) => p >= t).length;
     el.headImg.src = D.ui.barHeads[lvl];
     el.head.className = 'lvl-' + lvl;
@@ -392,7 +455,10 @@
       else img.src = src;
     }
     // спина Попова нужна только в пустой аудитории — на сценах он уже нарисован
-    if (popovBack) popovBack.style.display = scene === 'empty' ? '' : 'none';
+    if (popovBack) {
+      popovBack.style.display = scene === 'empty' ? '' : 'none';
+      if (scene === 'empty') popovBack.src = D.ui.popovBack;
+    }
   }
 
   // Портрет ставим на сторону, противоположную месту ученика на картинке
@@ -503,6 +569,8 @@
   async function askQuestion(studentId, diffKey, q, bonus = 1, mode = 'targeted') {
     const diff = D.difficulties[diffKey];
     const ch = charOf(studentId);
+    // Нужные эмоции загружаются во время вопроса, а не все персонажи при старте.
+    preload(Object.values(ch.sprites || {}));
     S.used[diffKey].add(q);
 
     hideActor('*');
@@ -743,6 +811,7 @@
 
   // ------------------------------------------------------------ день
   function resetDay(idx) {
+    S.phase = 'busy';
     S.day = idx;
     S.shock = C.startShock;
     S.asked = 0;
@@ -769,6 +838,7 @@
 
   async function playDay(idx) {
     abortAll();
+    closeMenu();
     hideScreens();
     resetDay(idx);
     const day = D.days[idx];
@@ -911,7 +981,7 @@
     el.slides.innerHTML = '';
     for (const sl of D.ui.preclass || []) {
       const img = document.createElement('img');
-      img.src = sl.src;
+      img.dataset.src = sl.src;
       img.alt = '';
       el.slides.appendChild(img);
     }
@@ -925,7 +995,7 @@
       .join('');
     for (const side of ['left', 'right']) {
       const ch = charOf(cr[side].id);
-      $(`#credits-${side}`).src = ch.sprites[cr[side].sprite] || ch.sprites.neutral;
+      $(`#credits-${side}`).dataset.src = ch.sprites[cr[side].sprite] || ch.sprites.neutral;
       $(`#credits-${side}-name`).textContent = ch.name;
     }
   }
@@ -935,6 +1005,10 @@
     if (!imgs.length) return;
     const prev = imgs[slideIdx];
     const next = imgs[i];
+    if (!next.getAttribute('src')) next.src = next.dataset.src;
+    // Подготовить только следующий слайд, остальные пока не запрашивать.
+    const upcoming = imgs[(i + 1) % imgs.length];
+    preload([upcoming.dataset.src]);
     // Новый слайд проявляется поверх старого; старый гасим только когда новый уже непрозрачен,
     // иначе на полпути сквозь оба просвечивает сцена игры
     if (prev && prev !== next) {
@@ -1027,13 +1101,14 @@
   function openMenu(tab) {
     if (S.phase === 'idle' && !el.title.classList.contains('show')) return;
     el.menu.classList.add('show');
-    clearTimeout(autoTimer);
+    setPaused(true);
     selectTab(tab || 'history');
     $('#btn-to-title').style.display = el.title.classList.contains('show') ? 'none' : '';
   }
   function closeMenu() {
     el.menu.classList.remove('show');
-    scheduleAuto();
+    setPaused(false);
+    if (!autoTimer) scheduleAuto();
     if (el.cards.children.length) renderCards();
   }
   function selectTab(tab) {
@@ -1117,15 +1192,14 @@
       refreshTitle();
     });
     $('#btn-title-settings').addEventListener('click', () => openMenu('settings'));
-    $('#btn-credits').addEventListener('click', () => $('#credits').classList.add('show'));
+    $('#btn-credits').addEventListener('click', () => {
+      for (const img of document.querySelectorAll('#credits img[data-src]')) img.src = img.dataset.src;
+      $('#credits').classList.add('show');
+    });
     $('#credits-close').addEventListener('click', () => $('#credits').classList.remove('show'));
     $('#credits').addEventListener('click', (e) => { if (e.target.id === 'credits') $('#credits').classList.remove('show'); });
 
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Control') {
-        if (!S.ctrlSkip) { S.ctrlSkip = true; advance(); scheduleAuto(); }
-        return;
-      }
       if (e.key === 'Escape') {
         if ($('#credits').classList.contains('show')) $('#credits').classList.remove('show');
         else if (el.menu.classList.contains('show')) closeMenu();
@@ -1134,6 +1208,10 @@
       }
       if (el.menu.classList.contains('show')) return;
       if (el.title.classList.contains('show') || el.result.classList.contains('show')) return;
+      if (e.key === 'Control') {
+        if (!S.ctrlSkip) { S.ctrlSkip = true; advance(); scheduleAuto(); }
+        return;
+      }
 
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
@@ -1151,24 +1229,26 @@
     });
     window.addEventListener('keyup', (e) => { if (e.key === 'Control') S.ctrlSkip = false; });
     window.addEventListener('blur', () => { S.ctrlSkip = false; });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && !el.title.classList.contains('show') && S.phase !== 'result') openMenu('history');
+    });
   }
 
   // ------------------------------------------------------------ старт
-  function preload() {
-    const srcs = new Set([
-      ...D.ui.popovAvatars, ...D.ui.barHeads, D.ui.popovBack,
-      ...['front', 'back'].flatMap((v) => [D.ui.scenes[v].seated, ...Object.values(D.ui.scenes[v].at)]),
-      D.ui.backgrounds.front, D.ui.backgrounds.back,
-    ]);
-    for (const ch of Object.values(D.characters)) {
-      for (const s of Object.values(ch.sprites || {})) srcs.add(s);
+  const preloaded = new Set();
+  function preload(srcs) {
+    for (const src of srcs) {
+      if (!src || preloaded.has(src)) continue;
+      preloaded.add(src);
+      const img = new Image();
+      img.onerror = () => preloaded.delete(src);
+      img.src = src;
     }
-    for (const s of srcs) { const i = new Image(); i.src = s; }
   }
 
   function init() {
     fit();
-    preload();
+    preload([...D.ui.popovAvatars, ...D.ui.barHeads]);
     $('#title-head').src = D.ui.barHeads[1];
     buildSlides();
     buildCredits();
@@ -1176,7 +1256,6 @@
     popovBack = document.createElement('img');
     popovBack.className = 'actor in';
     popovBack.alt = '';
-    popovBack.src = D.ui.popovBack;
     popovBack.dataset.view = 'back';
     placeActor(popovBack, 'popovBack');
     el.actors.appendChild(popovBack);

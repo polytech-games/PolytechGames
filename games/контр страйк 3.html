@@ -428,7 +428,7 @@ window.addEventListener("keydown", e => {
   keys[e.code] = true;
   if (state !== "playing") return;
   if (mode === "versus") {
-    if (e.code === "Escape") { state = "paused"; show("pause"); }
+    if (e.code === "Escape") pauseGame();
     return;                                  // в дуэли остальное читается покадрово
   }
   if (e.code === "KeyR") tryReload();
@@ -440,6 +440,24 @@ window.addEventListener("keydown", e => {
   if (e.code === "KeyF") useAbility(2);
 }, { passive: false });
 window.addEventListener("keyup", e => { keys[e.code] = false; });
+
+function resetInput() {
+  for (const code of Object.keys(keys)) delete keys[code];
+  shooting = false;
+  aiming = false;
+  mouseL = false;
+  mouseDX = 0;
+  mouseDY = 0;
+}
+function pauseGame() {
+  resetInput();
+  if (state !== "playing") return;
+  state = "paused";
+  show("pause");
+  if (document.pointerLockElement === cvs) document.exitPointerLock();
+}
+window.addEventListener("blur", pauseGame);
+document.addEventListener("visibilitychange", () => { if (document.hidden) pauseGame(); });
 
 /* ================= мышь ================= */
 const SENS = 0.0022, PITCH_SENS = 0.9;
@@ -471,7 +489,7 @@ window.addEventListener("wheel", e => {
 
 document.addEventListener("pointerlockchange", () => {
   if (document.pointerLockElement === cvs) { state = "playing"; hideAllOverlays(); }
-  else if (state === "playing") { state = "paused"; aiming = false; shooting = false; show("pause"); }
+  else if (state === "playing") pauseGame();
 });
 function lock() { const p = cvs.requestPointerLock(); if (p && p.catch) p.catch(() => {}); }
 
@@ -527,6 +545,7 @@ el("exitBtn").addEventListener("click", e => {
 
 /* ================= старт ================= */
 function startGame() {
+  resetInput();
   mode = "solo";
   applyModeUI();
   setFullViewport();
@@ -587,6 +606,7 @@ const K2 = { fwd: "ArrowUp", back: "ArrowDown", left: "ArrowLeft", right: "Arrow
   laser: "ShiftRight", reload: "Numpad1", run: "ControlRight" };
 
 function startVersus() {
+  resetInput();
   mode = "versus";
   applyModeUI();
   abCd[0] = abCd[1] = abCd[2] = 0;
