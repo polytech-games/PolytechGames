@@ -19,6 +19,8 @@
       --text-muted: #7c879d;
       --text-dim: #4b556b;
       --white: #ffffff;
+      --vip: #c9a45a;
+      --vip-line: rgba(201, 164, 90, 0.35);
       --mono: 'JetBrains Mono', monospace;
       --sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
     }
@@ -130,6 +132,78 @@
       gap: 24px;
     }
 
+    /* Полки каталога: VIP и обычные */
+    .shelf + .shelf {
+      margin-top: 72px;
+    }
+
+    .shelf-head {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .shelf-title {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .shelf-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .shelf-count {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .shelf-note {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .shelf--vip .grid {
+      grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+    }
+
+    .shelf--regular .grid {
+      grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    }
+
+    .shelf--vip .shelf-title {
+      color: var(--vip);
+    }
+
+    .shelf--vip .shelf-rule {
+      background: var(--vip-line);
+    }
+
+    .shelf--vip .item:hover {
+      border-color: var(--vip-line);
+    }
+
+    .shelf--vip .item-media::after {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 2px;
+      background: var(--vip);
+    }
+
+    .shelf--vip .item-index {
+      color: var(--vip);
+      border-color: var(--vip-line);
+    }
+
     .item {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -172,6 +246,7 @@
 
     .item-index {
       position: absolute;
+      z-index: 1;
       top: 14px;
       left: 14px;
       background: rgba(9, 10, 15, 0.85);
@@ -186,6 +261,7 @@
 
     .item-genre {
       position: absolute;
+      z-index: 1;
       top: 14px;
       right: 14px;
       background: rgba(9, 10, 15, 0.85);
@@ -308,8 +384,11 @@
       .catalog {
         padding: 16px 20px 64px;
       }
-      .grid {
+      .shelf .grid {
         grid-template-columns: 1fr;
+      }
+      .shelf + .shelf {
+        margin-top: 56px;
       }
       footer {
         padding: 24px 20px;
@@ -341,101 +420,146 @@
   </section>
 
   <main class="catalog">
-    <div class="grid">
 
-      <!-- Попов -->
-      <a class="item" href="./games/popov/index.html">
-        <div class="item-media">
-          <span class="item-index">01</span>
-          <span class="item-genre">VISUAL NOVEL</span>
-          <img src="./screenshots/popov-game.png" alt="Худшая Группа Попова" />
-        </div>
-        <div class="item-content">
-          <div class="item-header">
-            <h2 class="item-title">Худшая Группа Попова</h2>
-            <span class="item-arrow">↗</span>
-          </div>
-          <div class="item-authors">Камиль Нурмагамбетов (@miilxxwizi), Кирилл Акиншин, ChatGPT, Claude</div>
-          <p class="item-desc">
-            Визуальная новелла про суровые пары информатики у Д.В. Попова. Экзаменуйте студентов по JS, реагируйте на дикие ивенты с Бахытжаном и заполняйте шкалу ошеломления.
-          </p>
-          <div class="item-footer">
-            <span>JavaScript / Novel</span>
-            <span class="item-action">Play game <span>→</span></span>
-          </div>
-        </div>
-      </a>
+    <section class="shelf shelf--vip" aria-labelledby="shelf-vip">
+      <div class="shelf-head">
+        <h2 class="shelf-title" id="shelf-vip">VIP</h2>
+        <span class="shelf-rule"></span>
+        <span class="shelf-count">02</span>
+      </div>
+      <p class="shelf-note">Большие сюжетные игры про нашу группу.</p>
+      <div class="grid">
 
-      <!-- Запишите -->
-      <a class="item" href="./games/записывайте.html">
-        <div class="item-media">
-          <span class="item-index">02</span>
-          <span class="item-genre">TOP-DOWN SIM</span>
-          <img src="./screenshots/zapisyvayte.png" alt="ЗАПИШИТЕ!" />
-        </div>
-        <div class="item-content">
-          <div class="item-header">
-            <h2 class="item-title">ЗАПИШИТЕ!</h2>
-            <span class="item-arrow">↗</span>
+        <!-- Попов -->
+        <a class="item" href="./games/popov/index.html">
+          <div class="item-media">
+            <span class="item-index">01</span>
+            <span class="item-genre">VISUAL NOVEL</span>
+            <img src="./screenshots/popov-game.png" alt="Худшая Группа Попова" />
           </div>
-          <div class="item-authors">Кирилл Акиншин, Владислав Евполов, DeepSeek v4.1 Flash</div>
-          <p class="item-desc">
-            Ироничный симулятор ведения урока. 12 студентов залипают в телефоны — курсируйте между партами, кричите фразы и держите дистанцию от спящего Бахытжана у батареи.
-          </p>
-          <div class="item-footer">
-            <span>Canvas / 2D</span>
-            <span class="item-action">Play game <span>→</span></span>
+          <div class="item-content">
+            <div class="item-header">
+              <h3 class="item-title">Худшая Группа Попова</h3>
+              <span class="item-arrow">↗</span>
+            </div>
+            <div class="item-authors">Камиль Нурмагамбетов (@miilxxwizi), Кирилл Акиншин, ChatGPT, Claude</div>
+            <p class="item-desc">
+              Визуальная новелла про суровые пары информатики у Д.В. Попова. Экзаменуйте студентов по JS, реагируйте на дикие ивенты с Бахытжаном и заполняйте шкалу ошеломления.
+            </p>
+            <div class="item-footer">
+              <span>JavaScript / Novel</span>
+              <span class="item-action">Play game <span>→</span></span>
+            </div>
           </div>
-        </div>
-      </a>
+        </a>
 
-      <!-- CS 3 -->
-      <a class="item" href="./games/контр%20страйк%203.html">
-        <div class="item-media">
-          <span class="item-index">03</span>
-          <span class="item-genre">RAYCAST 3D FPS</span>
-          <img src="./screenshots/cs3-zombie-ops.png" alt="CS-GO 3: Zombie Ops" />
-        </div>
-        <div class="item-content">
-          <div class="item-header">
-            <h2 class="item-title">CS-GO 3: Zombie Ops</h2>
-            <span class="item-arrow">↗</span>
+        <!-- Жан на грани -->
+        <a class="item" href="./games/zhan-na-grani/index.html">
+          <div class="item-media">
+            <span class="item-index">02</span>
+            <span class="item-genre">COMEDY NOVEL</span>
+            <img src="./screenshots/zhan-na-grani.png" alt="Жан на грани" />
           </div>
-          <div class="item-authors">Владислав Евполов (@skippingclass), DeepSeek v4.1 Flash</div>
-          <p class="item-desc">
-            Рейкастинг-шутер от первого лица с суперсилами Хоумлендера: лазерный взгляд, полет и неуязвимость против орд зомби. Поддерживает локальный Split-Screen 1v1 за одной клавиатурой.
-          </p>
-          <div class="item-footer">
-            <span>Pseudo-3D / Split-Screen</span>
-            <span class="item-action">Play game <span>→</span></span>
+          <div class="item-content">
+            <div class="item-header">
+              <h3 class="item-title">Жан на грани</h3>
+              <span class="item-arrow">↗</span>
+            </div>
+            <div class="item-authors">Кирилл Акиншин (@AKDWorks), ChatGPT, Claude</div>
+            <p class="item-desc">
+              Одна пара, три друга и терпение Жана. Обливайте его из водяного пистолета, выключайте ему ноутбук и ловите смешное лицо на фото — только не доведите до жалобы.
+            </p>
+            <div class="item-footer">
+              <span>PixiJS / Mini-games</span>
+              <span class="item-action">Play game <span>→</span></span>
+            </div>
           </div>
-        </div>
-      </a>
+        </a>
 
-      <!-- Физрук -->
-      <a class="item" href="./games/skuf-fizruk.html">
-        <div class="item-media">
-          <span class="item-index">04</span>
-          <span class="item-genre">ARCADE SIM</span>
-          <img src="./screenshots/skuf-fizruk.png" alt="Симулятор Скуфа-Физрука" />
-        </div>
-        <div class="item-content">
-          <div class="item-header">
-            <h2 class="item-title">Симулятор Скуфа-Физрука</h2>
-            <span class="item-arrow">↗</span>
-          </div>
-          <div class="item-authors">Кирилл Акиншин (@AKDWorks), DeepSeek v4.1 Flash</div>
-          <p class="item-desc">
-            60 секунд, 25 неуправляемых студентов и свисток. Гоняйте сачков, заставляйте приседать и бегать, балансируя между дисциплиной и обмороками учеников.
-          </p>
-          <div class="item-footer">
-            <span>Canvas / Time-Attack</span>
-            <span class="item-action">Play game <span>→</span></span>
-          </div>
-        </div>
-      </a>
+      </div>
+    </section>
 
-    </div>
+    <section class="shelf shelf--regular" aria-labelledby="shelf-regular">
+      <div class="shelf-head">
+        <h2 class="shelf-title" id="shelf-regular">Обычные</h2>
+        <span class="shelf-rule"></span>
+        <span class="shelf-count">03</span>
+      </div>
+      <p class="shelf-note">Короткие аркады и шутер — на одну перемену.</p>
+      <div class="grid">
+
+        <!-- Запишите -->
+        <a class="item" href="./games/записывайте.html">
+          <div class="item-media">
+            <span class="item-index">03</span>
+            <span class="item-genre">TOP-DOWN SIM</span>
+            <img src="./screenshots/zapisyvayte.png" alt="ЗАПИШИТЕ!" />
+          </div>
+          <div class="item-content">
+            <div class="item-header">
+              <h3 class="item-title">ЗАПИШИТЕ!</h3>
+              <span class="item-arrow">↗</span>
+            </div>
+            <div class="item-authors">Кирилл Акиншин, Владислав Евполов, DeepSeek v4.1 Flash</div>
+            <p class="item-desc">
+              Ироничный симулятор ведения урока. 12 студентов залипают в телефоны — курсируйте между партами, кричите фразы и держите дистанцию от спящего Бахытжана у батареи.
+            </p>
+            <div class="item-footer">
+              <span>Canvas / 2D</span>
+              <span class="item-action">Play game <span>→</span></span>
+            </div>
+          </div>
+        </a>
+
+        <!-- CS 3 -->
+        <a class="item" href="./games/контр%20страйк%203.html">
+          <div class="item-media">
+            <span class="item-index">04</span>
+            <span class="item-genre">RAYCAST 3D FPS</span>
+            <img src="./screenshots/cs3-zombie-ops.png" alt="CS-GO 3: Zombie Ops" />
+          </div>
+          <div class="item-content">
+            <div class="item-header">
+              <h3 class="item-title">CS-GO 3: Zombie Ops</h3>
+              <span class="item-arrow">↗</span>
+            </div>
+            <div class="item-authors">Владислав Евполов (@skippingclass), DeepSeek v4.1 Flash</div>
+            <p class="item-desc">
+              Рейкастинг-шутер от первого лица с суперсилами Хоумлендера: лазерный взгляд, полет и неуязвимость против орд зомби. Поддерживает локальный Split-Screen 1v1 за одной клавиатурой.
+            </p>
+            <div class="item-footer">
+              <span>Pseudo-3D / Split-Screen</span>
+              <span class="item-action">Play game <span>→</span></span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Физрук -->
+        <a class="item" href="./games/skuf-fizruk.html">
+          <div class="item-media">
+            <span class="item-index">05</span>
+            <span class="item-genre">ARCADE SIM</span>
+            <img src="./screenshots/skuf-fizruk.png" alt="Симулятор Скуфа-Физрука" />
+          </div>
+          <div class="item-content">
+            <div class="item-header">
+              <h3 class="item-title">Симулятор Скуфа-Физрука</h3>
+              <span class="item-arrow">↗</span>
+            </div>
+            <div class="item-authors">Кирилл Акиншин (@AKDWorks), DeepSeek v4.1 Flash</div>
+            <p class="item-desc">
+              60 секунд, 25 неуправляемых студентов и свисток. Гоняйте сачков, заставляйте приседать и бегать, балансируя между дисциплиной и обмороками учеников.
+            </p>
+            <div class="item-footer">
+              <span>Canvas / Time-Attack</span>
+              <span class="item-action">Play game <span>→</span></span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
   </main>
 
   <footer>
