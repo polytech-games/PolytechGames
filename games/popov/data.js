@@ -51,8 +51,9 @@ window.GAME_DATA = {
     maxShock: 100,            // размер шкалы
     startShock: 0,            // с чего начинается каждый день
     questionsPerDay: 18,      // если шкала не заполнилась за это число вопросов — день провален
-    eventsPerDay: [1, 2],     // сколько событий может случиться за день (мин, макс)
-    eventFirstQuestion: 2,    // событие не появится раньше этого вопроса
+    eventsPerDay: [3, 4],     // сколько событий может случиться за день (мин, макс)
+    eventFirstQuestion: 1,    // событие не появится раньше этого вопроса
+    eventQuestionGap: 2,      // интервал между событиями, плюс 0–1 вопрос
     // Шанс, что Попов спросит конкретного ученика (подойдёт к нему).
     // В остальных случаях вопрос задаётся всей группе, а отвечает кто-то с места.
     targetedChance: 0.3,
@@ -70,8 +71,8 @@ window.GAME_DATA = {
   // right   — очки при правильном ответе (отрицательное = шкала падает)
   // faceWrong / faceRight — лицо Попова после ответа (0 спокоен … 3 череп)
   difficulties: {
-    hard:   { label: 'Сложный', color: 'red',    chance: 0.30, wrong: 14, right: -20, faceWrong: 1, faceRight: 0 },
-    medium: { label: 'Средний', color: 'yellow', chance: 0.50, wrong: 20, right: -10, faceWrong: 2, faceRight: 0 },
+    hard:   { label: 'Сложный', color: 'red',    chance: 0.30, wrong: 14, right: -8, faceWrong: 1, faceRight: 0 },
+    medium: { label: 'Средний', color: 'yellow', chance: 0.50, wrong: 20, right: -6, faceWrong: 2, faceRight: 0 },
     easy:   { label: 'Легкий',  color: 'blue',   chance: 0.80, wrong: 40, right: -5,  faceWrong: 3, faceRight: 0 },
   },
   difficultyOrder: ['hard', 'medium', 'easy'],
@@ -510,7 +511,7 @@ window.GAME_DATA = {
   ],
 
   // СОБЫТИЯ. Появляются кнопкой на сцене во время выбора вопроса.
-  // Если игрок выбирает вопрос, не нажав на событие, — оно пропадает.
+  // Событие ждёт реакции даже после вопроса. Пропустить можно крестиком.
   //   id       — уникальный ключ
   //   title    — подпись на кнопке события
   //   hotspot  — где появится кнопка (см. hotspots)

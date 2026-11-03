@@ -51,14 +51,6 @@
   const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const randInt = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-  const shuffle = (arr) => {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  };
   const charOf = (id) => D.characters[id] || { name: id, color: '#fff' };
   // Имя для показа: с небольшим шансом — альтернативное (altNames в data.js)
   const displayName = (id) => {
@@ -116,6 +108,7 @@
     shock: 0,
     asked: 0,
     wrongCount: 0,
+    answerBalance: {},
     view: 'front',
     absent: new Set(),
     used: {},
@@ -430,7 +423,7 @@
     const p = activeEvent();
     const hs = D.hotspots[p.ev.hotspot];
     const where = hs.view === S.view ? '' : ' (обернитесь ↻)';
-    present('narrator', `Что-то происходит: «${p.ev.title}»${where}. Можно отреагировать — или проигнорировать и задать вопрос.`);
+    present('narrator', `Что-то происходит: «${p.ev.title}»${where}. Можно отреагировать сейчас или после вопроса. Крестик — пропустить событие.`);
   }
 
   function showActor(id, sprite, at) {
@@ -495,6 +488,17 @@
     return id;
   }
 
+  // У каждой сложности свой баланс: число ответов отклоняется от суммы
+  // ожидаемых вероятностей меньше чем на один. Случайность остаётся,
+  // но длинная удачная серия компенсируется следующими ответами.
+  function rollAnswer(diffKey, studentId) {
+    const chance = clamp(D.difficulties[diffKey].chance + (charOf(studentId).skill || 0), 0.02, 0.98);
+    const balance = (S.answerBalance[diffKey] || 0) + chance;
+    const ok = Math.random() < clamp(balance, 0, 1);
+    S.answerBalance[diffKey] = balance - Number(ok);
+    return ok;
+  }
+
   // mode: 'targeted' — Попов подходит к ученику; 'class' — вопрос всей группе, отвечает вызвавшийся
   async function askQuestion(studentId, diffKey, q, bonus = 1, mode = 'targeted') {
     const diff = D.difficulties[diffKey];
@@ -524,8 +528,7 @@
       await wait(250);
     }
 
-    const chance = clamp(diff.chance + (ch.skill || 0), 0.02, 0.98);
-    const ok = Math.random() < chance;
+    const ok = rollAnswer(diffKey, studentId);
     setActorSprite(studentId, ok ? ch.answer.right : ch.answer.wrong, true);
     const answer = ok
       ? rand(ch.rightPrefix || ['']) + q.a
@@ -552,7 +555,7 @@
       const b = document.createElement('button');
       b.className = 'card ' + d.color;
       const odds = settings.odds
-        ? `<div class="card-odds">Шанс ответа <b>${Math.round(d.chance * 100)}%</b> · провал <b>+${d.wrong}</b> · ответ <b>${d.right > 0 ? '+' : ''}${d.right}</b></div>`
+        ? `<div class="card-odds">В среднем ответ <b>${Math.round(d.chance * 100)}%</b> · провал <b>+${d.wrong}</b> · ответ <b>${d.right > 0 ? '+' : ''}${d.right}</b></div>`
         : '';
       b.innerHTML =
         `<span class="card-tag">${escapeHtml(d.label)}</span>` +
@@ -630,8 +633,10 @@
       });
     }
     // событие на этом вопросе?
-    const due = S.plan.find((p) => p.state === 'pending' && p.at === S.asked + 1);
-    if (due) due.state = 'shown';
+    if (!activeEvent()) {
+      const due = S.plan.find((p) => p.state === 'pending' && p.at <= S.asked + 1);
+      if (due) due.state = 'shown';
+    }
     if (activeEvent()) presentEventHint();
     else present('popov', introLine || rand(D.popovLines.turnStart));
 
@@ -722,10 +727,13 @@
       const idx = bag.findIndex((e) => (r -= e.weight || 1) < 0);
       chosen.push(bag.splice(idx < 0 ? 0 : idx, 1)[0]);
     }
-    const slots = shuffle(
-      Array.from({ length: Math.max(1, C.questionsPerDay - 3 - C.eventFirstQuestion + 1) }, (_, i) => i + C.eventFirstQuestion),
-    );
-    S.plan = chosen.map((ev, i) => ({ ev, at: slots[i % slots.length], state: 'pending' }));
+    // Первое событие — в начале дня, следующие — через 2–3 вопроса.
+    // Поздние события не теряются: просроченные ждут завершения текущего.
+    let nextAt = C.eventFirstQuestion;
+    S.plan = chosen.map((ev, i) => {
+      if (i) nextAt += C.eventQuestionGap + randInt(0, 1);
+      return { ev, at: Math.min(C.questionsPerDay, nextAt), state: 'pending' };
+    });
     // Проверка своего события: index.html?event=<id> — оно появится на первом вопросе
     const forced = new URLSearchParams(location.search).get('event');
     const forcedEv = forced && D.events.find((e) => e.id === forced);
@@ -739,6 +747,7 @@
     S.shock = C.startShock;
     S.asked = 0;
     S.wrongCount = 0;
+    S.answerBalance = {};
     S.cards = null;
     S.absent = new Set();
     S.lastStudent = null;
@@ -797,8 +806,6 @@
         intro = 'Так. Вернёмся к теме.';
         continue;
       }
-      const shown = activeEvent();
-      if (shown) skipEvent(shown);
       S.asked++;
       S.cards = null;
       const targeted = Math.random() < C.targetedChance;
