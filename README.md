@@ -34,7 +34,7 @@ cd PolytechGamesBackup
 | [ЗАПИШИТЕ!](./games/записывайте.html) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Владислав Евполов (@skippingclass)](https://github.com/skippingclass), DeepSeek v4.1 Flash |
 | [CS-GO 3: Zombie Ops](./games/контр%20страйк%203.html) | [Владислав Евполов (@skippingclass)](https://github.com/skippingclass) | [Владислав Евполов (@skippingclass)](https://github.com/skippingclass), DeepSeek v4.1 Flash |
 | [Худшая Группа Попова](./games/popov/index.html) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks), ChatGPT | [Камиль Нурмагамбетов (@miilxxwizi)](https://github.com/miilxxwizi), Claude |
-| [Жан на грани](./games/zhan-na-grani/index.html) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) |
+| [Жан на грани](./games/zhan-na-grani/index.html) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks), ChatGPT | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks), Claude |
 
 ## Игры и управление
 
