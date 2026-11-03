@@ -34,6 +34,7 @@ cd PolytechGamesBackup
 | [ЗАПИШИТЕ!](./games/записывайте.html) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Владислав Евполов (@skippingclass)](https://github.com/skippingclass), DeepSeek v4.1 Flash |
 | [CS-GO 3: Zombie Ops](./games/контр%20страйк%203.html) | [Владислав Евполов (@skippingclass)](https://github.com/skippingclass) | [Владислав Евполов (@skippingclass)](https://github.com/skippingclass), DeepSeek v4.1 Flash |
 | [Худшая Группа Попова](./games/popov/index.html) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks), ChatGPT | [Камиль Нурмагамбетов (@miilxxwizi)](https://github.com/miilxxwizi), Claude |
+| [Жан на грани](./games/zhan-na-grani/index.html) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) | [Кирилл Акиншин (@AKDWorks)](https://github.com/AKDWorks) |
 
 ## Игры и управление
 
@@ -53,6 +54,25 @@ cd PolytechGamesBackup
 - `Tab` / «↻ Ракурс» — сменить ракурс аудитории.
 - `Ctrl` — промотка; `AUTO` — авточтение.
 - `L` / `LOG` — история реплик; `Esc` — открыть или закрыть игровое меню во время игры.
+
+</details>
+
+### 💦 Жан на грани
+
+![Жан на грани](./screenshots/zhan-na-grani.png)
+
+Одна пара, три друга и предел терпения Жана. Чередуй пакости Влада, Адиля и Кирилла, набери 100 веселья до звонка в 14:20 и не доведи Жана до жалобы. Если он закипает, угости его — терпение вернётся.
+
+<details>
+<summary>Управление</summary>
+
+- Клик, `Пробел` или `Enter` — продолжить диалог.
+- `1` / `2` / `3` или клик по карточке — пакость Влада, Адиля или Кирилла.
+- Водяной пистолет: целься мышью и кликай; попадание в шею даёт больше всего очков.
+- Ноутбук: держи `Пробел` или кнопку мыши и отпусти, когда Жан оглядывается.
+- Фото: клик или `Пробел`, когда у Жана смешное лицо.
+- `T` — угостить Жана.
+- `Esc` или ⏸ — пауза, настройки и выход к списку игр.
 
 </details>
 
@@ -128,6 +148,8 @@ games/
 ├── skuf-fizruk.html         # Физрук: разметка, стили и логика в одном файле
 ├── записывайте.html         # Симулятор учителя
 ├── контр страйк 3.html      # Шутер и локальная дуэль
+├── zhan-na-grani/
+│   └── index.html          # Жан на грани: собранная игра, картинки встроены
 └── popov/
     ├── index.html          # Разметка новеллы
     ├── game.js             # Логика и интерфейс
