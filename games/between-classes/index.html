@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c1420">
+  <title>Между парами — Polytech Games</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <main id="game">
+    <div class="backdrop" aria-hidden="true"></div>
+    <header class="topbar">
+      <a class="brand" href="#menu" aria-label="Polytech Games — главное меню"><span class="brand-mark">П</span> POLYTECH <span>GAMES</span></a>
+      <span class="edition">VIP / СТУДЕНЧЕСКАЯ НОВЕЛЛА</span>
+      <button class="icon-button" id="settings-button" aria-label="Настройки" title="Настройки">⚙</button>
+    </header>
+
+    <section id="menu-screen" class="screen menu-screen" aria-labelledby="game-title">
+      <div class="menu-copy">
+        <div class="eyebrow"><span class="status-dot"></span> ASTANA POLYTECHNIC · П-24-67Б</div>
+        <h1 id="game-title">Между<br><span>парами</span><span class="title-period">.</span></h1>
+        <p class="tagline">Три корпуса. Одно расписание.<br>И целая история между звонками.</p>
+        <nav class="menu-buttons" aria-label="Главное меню">
+          <button class="primary" id="new-game"><span class="play-icon">▶</span><span id="new-game-label">Выбрать персонажа</span><span class="button-arrow">↗</span></button>
+          <button id="how-to">Как играть <span class="button-arrow">?</span></button>
+          <button id="menu-settings">Настройки <span class="button-arrow">⚙</span></button>
+        </nav>
+        <p class="save-note" id="save-note">Твоя история начинается с выбора.</p>
+      </div>
+      <div class="menu-cast" aria-hidden="true">
+        <img class="cast-back cast-left" src="assets/characters/adil/idle.webp" alt="">
+        <img class="cast-back cast-right" src="assets/characters/kirill/idle.webp" alt="">
+        <img class="cast-front" id="menu-actor" src="assets/characters/vlad/idle.png" alt="">
+      </div>
+      <div class="scene-caption"><span class="caption-line"></span> ЗНАКОМОЕ МЕСТО.<br><strong>НОВАЯ ИСТОРИЯ.</strong></div>
+    </section>
+
+    <section id="select-screen" class="screen select-screen" aria-labelledby="select-title" hidden>
+      <div class="section-heading">
+        <button class="back-button" id="back-menu">← <span>В меню</span></button>
+        <div><div class="eyebrow">ТВОЯ ИСТОРИЯ / 01</div><h2 id="select-title">За кого играем?</h2></div>
+        <span class="roster-count">8 <span>ПЕРСОНАЖЕЙ</span></span>
+      </div>
+      <div class="selection-layout">
+        <div class="character-preview">
+          <span class="preview-label">П-24-67Б / ЛИЧНОЕ ДЕЛО</span>
+          <span class="preview-number" id="preview-number" aria-hidden="true">01</span>
+          <img id="preview-image" class="preview-image" src="assets/characters/vlad/idle.png" alt="Влад">
+          <div class="preview-name"><span>ТВОЙ ПЕРСОНАЖ</span><h3 id="preview-name">Влад</h3><p>Студент Astana Polytechnic</p></div>
+        </div>
+        <div class="roster-panel">
+          <p class="selection-intro">Знакомые лица. Теперь — твоя точка зрения.</p>
+          <div id="roster" class="roster" role="radiogroup" aria-label="Игровой персонаж"></div>
+          <div class="selection-footer">
+            <p>Выбери себя или проживи этот день<br>за кого-нибудь из ребят.</p>
+            <button id="confirm-character" class="primary">Играть за Влада <span>→</span></button>
+          </div>
+          <p class="keyboard-hint"><kbd>←</kbd><kbd>→</kbd> выбрать <span>·</span> <kbd>Enter</kbd> подтвердить <span>·</span> <kbd>Esc</kbd> в меню</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="ready-screen" class="screen ready-screen" aria-labelledby="ready-title" hidden>
+      <div class="ready-copy"><div class="eyebrow"><span class="status-dot"></span> ПЕРСОНАЖ ВЫБРАН</div><h2 id="ready-title">Влад,<br>увидимся на паре.</h2><p>Выбор сохранён на этом устройстве.<br>Твоя история в Политехе начинается здесь.</p><button class="primary" id="ready-menu">В главное меню <span>→</span></button><button class="ghost" id="change-character">Сменить персонажа</button></div>
+      <img id="ready-image" class="ready-image" src="assets/characters/vlad/happy.png" alt="Влад">
+    </section>
+
+    <footer class="bottom-bar"><span>POLYTECH GAMES <span class="footer-divider">/</span> МЕЖДУ ПАРАМИ</span><span>ВЫБОР ПЕРСОНАЖА · v0.1</span></footer>
+    <p id="announcement" class="sr-only" aria-live="polite"></p>
+  </main>
+
+  <dialog id="help-dialog" aria-labelledby="help-title"><button class="dialog-close" aria-label="Закрыть">×</button><div class="eyebrow">ПЕРВЫЙ УЧЕБНЫЙ ДЕНЬ</div><h2 id="help-title">Между звонками</h2><p>Ты — студент Политеха. По задумке игры нужно ходить между тремя корпусами по расписанию, а каждая пара станет отдельной микроновеллой.</p><p>Сейчас готов первый шаг: выбери одного из восьми персонажей. Выбор сохранится в браузере. Перемещения и пары появятся на следующих этапах.</p><button class="primary" id="help-select">Выбрать персонажа →</button></dialog>
+  <dialog id="settings-dialog" aria-labelledby="settings-title"><button class="dialog-close" aria-label="Закрыть">×</button><div class="eyebrow">ПОД СЕБЯ</div><h2 id="settings-title">Настройки</h2><label class="setting-row"><span>Анимации<small>Плавные переходы и появление персонажей</small></span><input id="animations" type="checkbox" checked></label><label class="setting-row"><span>Крупный текст<small>Увеличить подписи и кнопки</small></span><input id="large-text" type="checkbox"></label><p class="settings-note">Настройки сохраняются на этом устройстве.</p></dialog>
+</body>
+</html>

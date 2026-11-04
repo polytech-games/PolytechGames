@@ -1,0 +1,168 @@
+{
+  "assets": [
+    {
+      "file": "damir/neutral.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/damir_neutral.webp",
+      "size": [
+        653,
+        900
+      ],
+      "sha256": "54ceb4ccf7bb0cc1aee1fb780a3c9767b35ff6666f60305693c618b499536bc3"
+    },
+    {
+      "file": "damir/confident.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/damir_confident.webp",
+      "size": [
+        652,
+        900
+      ],
+      "sha256": "296b15fb4a447263f193313d8e184da6c38a29ee448196cd48cd1d599e00fd35"
+    },
+    {
+      "file": "bakhytzhan/neutral.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/bakhytzhan_neutral.webp",
+      "size": [
+        644,
+        900
+      ],
+      "sha256": "3dd0ffd455a890701d56f951cee5f2e27fa42c40bdba607a3da7ec3ee473f8da"
+    },
+    {
+      "file": "bakhytzhan/smug.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/bakhytzhan_smug.webp",
+      "size": [
+        578,
+        900
+      ],
+      "sha256": "e74cd4d677b785e381581109b1d122539bcaf743d1eddc4fff03f10e5d4c52ed"
+    },
+    {
+      "file": "elaman/neutral.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/elaman_neutral.webp",
+      "size": [
+        571,
+        900
+      ],
+      "sha256": "d6043751d20ae5a4ac0a6c2b809b3ddf5a0fd34572003296310cb1d5c071c80d"
+    },
+    {
+      "file": "elaman/confident.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/elaman_confident.webp",
+      "size": [
+        669,
+        900
+      ],
+      "sha256": "ac55ee0e97e087017655b1400289c507b8868ec93517b0df612a8f4db39f548d"
+    },
+    {
+      "file": "student1/neutral.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/student1_neutral.webp",
+      "size": [
+        621,
+        900
+      ],
+      "sha256": "34ff1f86c9214e8b9e6f931b619f82ee64d51461e6cb050ba62f585a0c4cb980"
+    },
+    {
+      "file": "student1/confident.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/student1_confident.webp",
+      "size": [
+        622,
+        900
+      ],
+      "sha256": "7e520da82e5a7c951cce3761046c86c3e0fb7e0bfdb230bfd88db1524aaab8d2"
+    },
+    {
+      "file": "student2/neutral.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/student2_neutral.webp",
+      "size": [
+        547,
+        900
+      ],
+      "sha256": "4dce9f1a1bbecffc39a383d23729f5785092d30516712250befee05674f9ed5d"
+    },
+    {
+      "file": "student2/confident.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/student2_confident.webp",
+      "size": [
+        549,
+        900
+      ],
+      "sha256": "bab4979ed9158e5a12fabf87290e08f2851621b54d2216e411c5e38d690ff852"
+    },
+    {
+      "file": "jan/idle.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/zhan-na-grani/assets/jan_idle.webp",
+      "size": [
+        386,
+        1246
+      ],
+      "sha256": "14dc7995c03faa3346b117f93b7000a0e710688e1e4ef0684fba18d29857e19a"
+    },
+    {
+      "file": "jan/smug.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/zhan-na-grani/assets/jan_smug.webp",
+      "size": [
+        343,
+        1246
+      ],
+      "sha256": "d24663c3dd282f26060230d11ee71c4d09792f6d74a4b03c43b9010a3322ac8d"
+    },
+    {
+      "file": "vlad/idle.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/zhan-na-grani/assets/vlad_idle.webp",
+      "size": [
+        389,
+        1344
+      ],
+      "sha256": "42e7e95a365df6fb34cc7f2c835712ba04ae7433c9d91f6419e53d057df443c3"
+    },
+    {
+      "file": "vlad/happy.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/zhan-na-grani/assets/vlad_happy.webp",
+      "size": [
+        415,
+        1344
+      ],
+      "sha256": "b98e7782d7e0564514aad76a94b9ce34a3857a6fb0c122abfa50a57f3bfe3648"
+    },
+    {
+      "file": "adil/idle.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/zhan-na-grani/assets/adil_idle.webp",
+      "size": [
+        391,
+        1281
+      ],
+      "sha256": "09d9a633b1f7fe9db94ac526f2cff2cb452e1cd8860e1bbb2ec65b998ca84a48"
+    },
+    {
+      "file": "adil/happy.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/zhan-na-grani/assets/adil_happy.webp",
+      "size": [
+        394,
+        1281
+      ],
+      "sha256": "7c8eaebd5ca169e9f847d50f584ed990b9393175cabd6c4ef7e1b102ad0eefe0"
+    },
+    {
+      "file": "kirill/idle.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/zhan-na-grani/assets/kirill_idle.webp",
+      "size": [
+        329,
+        1211
+      ],
+      "sha256": "e101320d87dc8a9682cf923d6eba3eb79f45d86a6bb59cece69eb4b18e9d43aa"
+    },
+    {
+      "file": "kirill/happy.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/zhan-na-grani/assets/kirill_happy.webp",
+      "size": [
+        377,
+        1211
+      ],
+      "sha256": "bdcd848538a2824e8cbbcbf2f775c3d317658a35e5ec3fb0d5f494f417a60d61"
+    }
+  ],
+  "count": 18,
+  "characters": 9
+}

@@ -5,7 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { execFileSync } = require('node:child_process');
 const root = path.resolve(__dirname, '..');
-const entries = ['index.html', 'games/skuf-fizruk.html', 'games/записывайте.html', 'games/контр страйк 3.html', 'games/popov/index.html', 'games/zhan-na-grani/index.html', 'games/zhan-na-grani/dev.html'];
+const entries = ['index.html', 'games/skuf-fizruk.html', 'games/записывайте.html', 'games/контр страйк 3.html', 'games/popov/index.html', 'games/zhan-na-grani/index.html', 'games/zhan-na-grani/dev.html', 'games/between-classes/index.html'];
 
 test('catalog and game HTML reference existing local resources', () => {
   for (const name of entries) {
@@ -22,7 +22,7 @@ test('inline and external game JavaScript parses', () => {
     const html = fs.readFileSync(path.join(root, name), 'utf8');
     for (const [, script] of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) new vm.Script(script, { filename: name });
   }
-  for (const name of ['games/popov/game.js', 'games/popov/data.js', 'games/zhan-na-grani/src/game.js', 'games/zhan-na-grani/src/vendor/pixi.js']) {
+  for (const name of ['games/popov/game.js', 'games/popov/data.js', 'games/zhan-na-grani/src/game.js', 'games/zhan-na-grani/src/vendor/pixi.js', 'games/between-classes/game.js']) {
     new vm.Script(fs.readFileSync(path.join(root, name), 'utf8'), { filename: name });
   }
 });
