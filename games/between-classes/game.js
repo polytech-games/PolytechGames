@@ -32,6 +32,7 @@ function updateMenu() {
   $('new-game-label').textContent = character ? 'Сменить персонажа' : 'Выбрать персонажа';
   $('save-note').textContent = character ? `Твой персонаж — ${character.name}.${storageAvailable ? ' Выбор сохранён.' : ' Выбран для этой сессии.'}` : 'Твоя история начинается с выбора.';
   $('menu-actor').src = asset(character?.image || CHARACTERS[0].image);
+  $('continue-game').hidden = !character;
 }
 function applyPreferences() {
   document.body.classList.toggle('no-animation', !preferences.animations);
@@ -93,7 +94,10 @@ $('confirm-character').addEventListener('click', () => {
   $('ready-screen').querySelector('.ready-copy>p').innerHTML = storageAvailable ? 'Выбор сохранён на этом устройстве.<br>Твоя история в Политехе начинается здесь.' : 'Персонаж выбран для этой сессии.<br>Браузер не разрешил сохранить выбор.';
   showScreen('ready');
 });
-$('ready-menu').addEventListener('click', () => showScreen('menu'));
+function enterCampus() { if (confirmedId) location.href = `campus.html?character=${encodeURIComponent(confirmedId)}`; }
+$('ready-menu').addEventListener('click', enterCampus);
+$('continue-game').addEventListener('click', enterCampus);
+$('ready-to-menu').addEventListener('click', () => showScreen('menu'));
 $('change-character').addEventListener('click', openSelection);
 $('how-to').addEventListener('click', () => $('help-dialog').showModal());
 for (const id of ['settings-button', 'menu-settings']) $(id).addEventListener('click', () => $('settings-dialog').showModal());

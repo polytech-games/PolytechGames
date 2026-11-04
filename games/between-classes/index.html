@@ -24,6 +24,7 @@
         <p class="tagline">Три корпуса. Одно расписание.<br>И целая история между звонками.</p>
         <nav class="menu-buttons" aria-label="Главное меню">
           <button class="primary" id="new-game"><span class="play-icon">▶</span><span id="new-game-label">Выбрать персонажа</span><span class="button-arrow">↗</span></button>
+          <button id="continue-game" hidden>Выйти во двор <span class="button-arrow">→</span></button>
           <button id="how-to">Как играть <span class="button-arrow">?</span></button>
           <button id="menu-settings">Настройки <span class="button-arrow">⚙</span></button>
         </nav>
@@ -63,15 +64,15 @@
     </section>
 
     <section id="ready-screen" class="screen ready-screen" aria-labelledby="ready-title" hidden>
-      <div class="ready-copy"><div class="eyebrow"><span class="status-dot"></span> ПЕРСОНАЖ ВЫБРАН</div><h2 id="ready-title">Влад,<br>увидимся на паре.</h2><p>Выбор сохранён на этом устройстве.<br>Твоя история в Политехе начинается здесь.</p><button class="primary" id="ready-menu">В главное меню <span>→</span></button><button class="ghost" id="change-character">Сменить персонажа</button></div>
+      <div class="ready-copy"><div class="eyebrow"><span class="status-dot"></span> ПЕРСОНАЖ ВЫБРАН</div><h2 id="ready-title">Влад,<br>увидимся на паре.</h2><p>Выбор сохранён на этом устройстве.<br>Твоя история в Политехе начинается здесь.</p><button class="primary" id="ready-menu">Выйти во двор <span>→</span></button><button class="ghost" id="ready-to-menu">В главное меню</button><button class="ghost" id="change-character">Сменить персонажа</button></div>
       <img id="ready-image" class="ready-image" src="assets/characters/vlad/happy.png" alt="Влад">
     </section>
 
-    <footer class="bottom-bar"><span>POLYTECH GAMES <span class="footer-divider">/</span> МЕЖДУ ПАРАМИ</span><span>ВЫБОР ПЕРСОНАЖА · v0.1</span></footer>
+    <footer class="bottom-bar"><span>POLYTECH GAMES <span class="footer-divider">/</span> МЕЖДУ ПАРАМИ</span><span>КАМПУС И ПАРЫ · v0.2</span></footer>
     <p id="announcement" class="sr-only" aria-live="polite"></p>
   </main>
 
-  <dialog id="help-dialog" aria-labelledby="help-title"><button class="dialog-close" aria-label="Закрыть">×</button><div class="eyebrow">ПЕРВЫЙ УЧЕБНЫЙ ДЕНЬ</div><h2 id="help-title">Между звонками</h2><p>Ты — студент Политеха. По задумке игры нужно ходить между тремя корпусами по расписанию, а каждая пара станет отдельной микроновеллой.</p><p>Сейчас готов первый шаг: выбери одного из восьми персонажей. Выбор сохранится в браузере. Перемещения и пары появятся на следующих этапах.</p><button class="primary" id="help-select">Выбрать персонажа →</button></dialog>
+  <dialog id="help-dialog" aria-labelledby="help-title"><button class="dialog-close" aria-label="Закрыть">×</button><div class="eyebrow">ПЕРВЫЙ УЧЕБНЫЙ ДЕНЬ</div><h2 id="help-title">Между звонками</h2><p>Ты — студент Политеха. По задумке игры нужно ходить между тремя корпусами по расписанию, а каждая пара станет отдельной микроновеллой.</p><p>Выбери персонажа и выйди во двор. WASD или стрелки — ходьба, клик по карте — маршрут. У входа нажми E (У в русской раскладке) или «Войти»: в первом корпусе ждёт Стасиншина, в третьем — Попов. Escape открывает паузу. Сейчас доступны короткие начальные сцены; расписание добавим позже.</p><button class="primary" id="help-select">Выбрать персонажа →</button></dialog>
   <dialog id="settings-dialog" aria-labelledby="settings-title"><button class="dialog-close" aria-label="Закрыть">×</button><div class="eyebrow">ПОД СЕБЯ</div><h2 id="settings-title">Настройки</h2><label class="setting-row"><span>Анимации<small>Плавные переходы и появление персонажей</small></span><input id="animations" type="checkbox" checked></label><label class="setting-row"><span>Крупный текст<small>Увеличить подписи и кнопки</small></span><input id="large-text" type="checkbox"></label><p class="settings-note">Настройки сохраняются на этом устройстве.</p></dialog>
 </body>
 </html>
