@@ -1,0 +1,108 @@
+{
+  "mode": "Built-in image_gen",
+  "layout": {
+    "columns": 3,
+    "rows": 4,
+    "directions": [
+      "south",
+      "west",
+      "east",
+      "north"
+    ],
+    "frames": [
+      "idle",
+      "left-step",
+      "right-step"
+    ],
+    "anchor": [
+      0.5,
+      0.9
+    ]
+  },
+  "jobs": [
+    {
+      "id": "vlad",
+      "ref": "vlad/idle.png",
+      "extra": "Vlad: voluminous curly light-brown hair, white loose short-sleeved T-shirt, BLACK REGULAR STRAIGHT-CUT JEANS with comfortable leg room (never skinny), white chunky sneakers. Preserve face, hairstyle and reference clothes. No water pistol.",
+      "prompt": "Use case: stylized-concept. Asset: production SPRITE SHEET for a student walking in an elevated 2.5D campus game. Input1 identity/clothing reference, not camera reference. Exactly 12 separate full-body drawings of SAME recognizable young adult student on GENUINELY TRANSPARENT background. Sheet layout MUST be exactly THREE COLUMNS and FOUR ROWS, equal square cells, 1536x2048 canvas, 512x512 per cell. No visible grid, no labels. Row1 SOUTH/front walking toward bottom of screen; row2 WEST/left facing left; row3 EAST/right facing right; row4 NORTH/back walking away toward top. Each row's columns: col1 IDLE standing feet comfortably together arms relaxed; col2 WALK contact pose LEFT foot forward RIGHT foot back, arms counter-swing; col3 opposite contact pose RIGHT foot forward LEFT foot back, arms counter-swing. Each row must contain its OWN direction consistently; back view genuinely shows BACK of head/body, profiles genuinely face left/right. Steep elevated camera looking down about 50 degrees above ground, orthographic projection, head top/shoulder tops visible, shortened projected legs, compatible with near-top-down 2.5D game map; NOT eye-level portraits. Coherent identical scale, body proportions and clothing across all frames. Game-readable polished anime 2D illustration, crisp outlines, simple restrained cel shading, slightly simplified details for small on-screen sprite, head approx quarter of projected height (not giant chibi). Center every sprite horizontally in its cell, feet ground anchor at same relative y=90% of cell, full hair/arms/feet inside its own cell, generous transparent separation, no frame overlap. All sprites approx 82% cell height. Keep hands out of pockets when walking, natural gait, no accessories or props unless specified. No cast shadows baked into transparent ground, no ground planes, no scenery, no text, no UI, no watermark, no checkerboard. Vlad: voluminous curly light-brown hair, white loose short-sleeved T-shirt, BLACK REGULAR STRAIGHT-CUT JEANS with comfortable leg room (never skinny), white chunky sneakers. Preserve face, hairstyle and reference clothes. No water pistol."
+    },
+    {
+      "id": "adil",
+      "ref": "adil/idle.webp",
+      "extra": "Adil: messy short black hair, rectangular black glasses, open light-grey zip hoodie over black T-shirt, loose light-grey sweatpants, grey-white sneakers. Preserve face, glasses and clothes.",
+      "prompt": "Use case: stylized-concept. Asset: production SPRITE SHEET for a student walking in an elevated 2.5D campus game. Input1 identity/clothing reference, not camera reference. Exactly 12 separate full-body drawings of SAME recognizable young adult student on GENUINELY TRANSPARENT background. Sheet layout MUST be exactly THREE COLUMNS and FOUR ROWS, equal square cells, 1536x2048 canvas, 512x512 per cell. No visible grid, no labels. Row1 SOUTH/front walking toward bottom of screen; row2 WEST/left facing left; row3 EAST/right facing right; row4 NORTH/back walking away toward top. Each row's columns: col1 IDLE standing feet comfortably together arms relaxed; col2 WALK contact pose LEFT foot forward RIGHT foot back, arms counter-swing; col3 opposite contact pose RIGHT foot forward LEFT foot back, arms counter-swing. Each row must contain its OWN direction consistently; back view genuinely shows BACK of head/body, profiles genuinely face left/right. Steep elevated camera looking down about 50 degrees above ground, orthographic projection, head top/shoulder tops visible, shortened projected legs, compatible with near-top-down 2.5D game map; NOT eye-level portraits. Coherent identical scale, body proportions and clothing across all frames. Game-readable polished anime 2D illustration, crisp outlines, simple restrained cel shading, slightly simplified details for small on-screen sprite, head approx quarter of projected height (not giant chibi). Center every sprite horizontally in its cell, feet ground anchor at same relative y=90% of cell, full hair/arms/feet inside its own cell, generous transparent separation, no frame overlap. All sprites approx 82% cell height. Keep hands out of pockets when walking, natural gait, no accessories or props unless specified. No cast shadows baked into transparent ground, no ground planes, no scenery, no text, no UI, no watermark, no checkerboard. Adil: messy short black hair, rectangular black glasses, open light-grey zip hoodie over black T-shirt, loose light-grey sweatpants, grey-white sneakers. Preserve face, glasses and clothes."
+    },
+    {
+      "id": "kirill",
+      "ref": "kirill/idle.webp",
+      "extra": "Kirill: straight medium-length sandy/light-brown hair, beige hoodie with understated existing white geometric chest design, loose black trousers, white-grey sneakers. Preserve face and reference outfit.",
+      "prompt": "Use case: stylized-concept. Asset: production SPRITE SHEET for a student walking in an elevated 2.5D campus game. Input1 identity/clothing reference, not camera reference. Exactly 12 separate full-body drawings of SAME recognizable young adult student on GENUINELY TRANSPARENT background. Sheet layout MUST be exactly THREE COLUMNS and FOUR ROWS, equal square cells, 1536x2048 canvas, 512x512 per cell. No visible grid, no labels. Row1 SOUTH/front walking toward bottom of screen; row2 WEST/left facing left; row3 EAST/right facing right; row4 NORTH/back walking away toward top. Each row's columns: col1 IDLE standing feet comfortably together arms relaxed; col2 WALK contact pose LEFT foot forward RIGHT foot back, arms counter-swing; col3 opposite contact pose RIGHT foot forward LEFT foot back, arms counter-swing. Each row must contain its OWN direction consistently; back view genuinely shows BACK of head/body, profiles genuinely face left/right. Steep elevated camera looking down about 50 degrees above ground, orthographic projection, head top/shoulder tops visible, shortened projected legs, compatible with near-top-down 2.5D game map; NOT eye-level portraits. Coherent identical scale, body proportions and clothing across all frames. Game-readable polished anime 2D illustration, crisp outlines, simple restrained cel shading, slightly simplified details for small on-screen sprite, head approx quarter of projected height (not giant chibi). Center every sprite horizontally in its cell, feet ground anchor at same relative y=90% of cell, full hair/arms/feet inside its own cell, generous transparent separation, no frame overlap. All sprites approx 82% cell height. Keep hands out of pockets when walking, natural gait, no accessories or props unless specified. No cast shadows baked into transparent ground, no ground planes, no scenery, no text, no UI, no watermark, no checkerboard. Kirill: straight medium-length sandy/light-brown hair, beige hoodie with understated existing white geometric chest design, loose black trousers, white-grey sneakers. Preserve face and reference outfit."
+    },
+    {
+      "id": "jan",
+      "ref": "jan/idle.webp",
+      "extra": "Zhan: short dark-brown textured hair, cream long-sleeved sweatshirt over white T-shirt, relaxed pale-blue jeans, white sneakers. Preserve face and clothing.",
+      "prompt": "Use case: stylized-concept. Asset: production SPRITE SHEET for a student walking in an elevated 2.5D campus game. Input1 identity/clothing reference, not camera reference. Exactly 12 separate full-body drawings of SAME recognizable young adult student on GENUINELY TRANSPARENT background. Sheet layout MUST be exactly THREE COLUMNS and FOUR ROWS, equal square cells, 1536x2048 canvas, 512x512 per cell. No visible grid, no labels. Row1 SOUTH/front walking toward bottom of screen; row2 WEST/left facing left; row3 EAST/right facing right; row4 NORTH/back walking away toward top. Each row's columns: col1 IDLE standing feet comfortably together arms relaxed; col2 WALK contact pose LEFT foot forward RIGHT foot back, arms counter-swing; col3 opposite contact pose RIGHT foot forward LEFT foot back, arms counter-swing. Each row must contain its OWN direction consistently; back view genuinely shows BACK of head/body, profiles genuinely face left/right. Steep elevated camera looking down about 50 degrees above ground, orthographic projection, head top/shoulder tops visible, shortened projected legs, compatible with near-top-down 2.5D game map; NOT eye-level portraits. Coherent identical scale, body proportions and clothing across all frames. Game-readable polished anime 2D illustration, crisp outlines, simple restrained cel shading, slightly simplified details for small on-screen sprite, head approx quarter of projected height (not giant chibi). Center every sprite horizontally in its cell, feet ground anchor at same relative y=90% of cell, full hair/arms/feet inside its own cell, generous transparent separation, no frame overlap. All sprites approx 82% cell height. Keep hands out of pockets when walking, natural gait, no accessories or props unless specified. No cast shadows baked into transparent ground, no ground planes, no scenery, no text, no UI, no watermark, no checkerboard. Zhan: short dark-brown textured hair, cream long-sleeved sweatshirt over white T-shirt, relaxed pale-blue jeans, white sneakers. Preserve face and clothing."
+    },
+    {
+      "id": "damir",
+      "ref": "damir/neutral.webp",
+      "extra": "Damir: thick short black hair, rectangular black glasses, plain cream short-sleeved T-shirt, black backpack worn on BOTH shoulders for walking, dark straight trousers and simple white sneakers. Backpack must consistently appear on back view. Preserve recognizable face.",
+      "prompt": "Use case: stylized-concept. Asset: production SPRITE SHEET for a student walking in an elevated 2.5D campus game. Input1 identity/clothing reference, not camera reference. Exactly 12 separate full-body drawings of SAME recognizable young adult student on GENUINELY TRANSPARENT background. Sheet layout MUST be exactly THREE COLUMNS and FOUR ROWS, equal square cells, 1536x2048 canvas, 512x512 per cell. No visible grid, no labels. Row1 SOUTH/front walking toward bottom of screen; row2 WEST/left facing left; row3 EAST/right facing right; row4 NORTH/back walking away toward top. Each row's columns: col1 IDLE standing feet comfortably together arms relaxed; col2 WALK contact pose LEFT foot forward RIGHT foot back, arms counter-swing; col3 opposite contact pose RIGHT foot forward LEFT foot back, arms counter-swing. Each row must contain its OWN direction consistently; back view genuinely shows BACK of head/body, profiles genuinely face left/right. Steep elevated camera looking down about 50 degrees above ground, orthographic projection, head top/shoulder tops visible, shortened projected legs, compatible with near-top-down 2.5D game map; NOT eye-level portraits. Coherent identical scale, body proportions and clothing across all frames. Game-readable polished anime 2D illustration, crisp outlines, simple restrained cel shading, slightly simplified details for small on-screen sprite, head approx quarter of projected height (not giant chibi). Center every sprite horizontally in its cell, feet ground anchor at same relative y=90% of cell, full hair/arms/feet inside its own cell, generous transparent separation, no frame overlap. All sprites approx 82% cell height. Keep hands out of pockets when walking, natural gait, no accessories or props unless specified. No cast shadows baked into transparent ground, no ground planes, no scenery, no text, no UI, no watermark, no checkerboard. Damir: thick short black hair, rectangular black glasses, plain cream short-sleeved T-shirt, black backpack worn on BOTH shoulders for walking, dark straight trousers and simple white sneakers. Backpack must consistently appear on back view. Preserve recognizable face."
+    },
+    {
+      "id": "bakhytzhan",
+      "ref": "bakhytzhan/neutral.webp",
+      "extra": "Bakhytzhan: short straight black hair, charcoal blazer open over plain white T-shirt, straight dark trousers and black casual shoes. Preserve recognizable face, natural posture.",
+      "prompt": "Use case: stylized-concept. Asset: production SPRITE SHEET for a student walking in an elevated 2.5D campus game. Input1 identity/clothing reference, not camera reference. Exactly 12 separate full-body drawings of SAME recognizable young adult student on GENUINELY TRANSPARENT background. Sheet layout MUST be exactly THREE COLUMNS and FOUR ROWS, equal square cells, 1536x2048 canvas, 512x512 per cell. No visible grid, no labels. Row1 SOUTH/front walking toward bottom of screen; row2 WEST/left facing left; row3 EAST/right facing right; row4 NORTH/back walking away toward top. Each row's columns: col1 IDLE standing feet comfortably together arms relaxed; col2 WALK contact pose LEFT foot forward RIGHT foot back, arms counter-swing; col3 opposite contact pose RIGHT foot forward LEFT foot back, arms counter-swing. Each row must contain its OWN direction consistently; back view genuinely shows BACK of head/body, profiles genuinely face left/right. Steep elevated camera looking down about 50 degrees above ground, orthographic projection, head top/shoulder tops visible, shortened projected legs, compatible with near-top-down 2.5D game map; NOT eye-level portraits. Coherent identical scale, body proportions and clothing across all frames. Game-readable polished anime 2D illustration, crisp outlines, simple restrained cel shading, slightly simplified details for small on-screen sprite, head approx quarter of projected height (not giant chibi). Center every sprite horizontally in its cell, feet ground anchor at same relative y=90% of cell, full hair/arms/feet inside its own cell, generous transparent separation, no frame overlap. All sprites approx 82% cell height. Keep hands out of pockets when walking, natural gait, no accessories or props unless specified. No cast shadows baked into transparent ground, no ground planes, no scenery, no text, no UI, no watermark, no checkerboard. Bakhytzhan: short straight black hair, charcoal blazer open over plain white T-shirt, straight dark trousers and black casual shoes. Preserve recognizable face, natural posture."
+    },
+    {
+      "id": "kamil",
+      "ref": "kamil/neutral.webp",
+      "extra": "Kamil: tousled medium dark-brown hair, open light-grey zip hoodie over white T-shirt with existing red-grey abstract brush graphic, straight black jeans and white sneakers. Preserve face and reference outfit.",
+      "prompt": "Use case: stylized-concept. Asset: production SPRITE SHEET for a student walking in an elevated 2.5D campus game. Input1 identity/clothing reference, not camera reference. Exactly 12 separate full-body drawings of SAME recognizable young adult student on GENUINELY TRANSPARENT background. Sheet layout MUST be exactly THREE COLUMNS and FOUR ROWS, equal square cells, 1536x2048 canvas, 512x512 per cell. No visible grid, no labels. Row1 SOUTH/front walking toward bottom of screen; row2 WEST/left facing left; row3 EAST/right facing right; row4 NORTH/back walking away toward top. Each row's columns: col1 IDLE standing feet comfortably together arms relaxed; col2 WALK contact pose LEFT foot forward RIGHT foot back, arms counter-swing; col3 opposite contact pose RIGHT foot forward LEFT foot back, arms counter-swing. Each row must contain its OWN direction consistently; back view genuinely shows BACK of head/body, profiles genuinely face left/right. Steep elevated camera looking down about 50 degrees above ground, orthographic projection, head top/shoulder tops visible, shortened projected legs, compatible with near-top-down 2.5D game map; NOT eye-level portraits. Coherent identical scale, body proportions and clothing across all frames. Game-readable polished anime 2D illustration, crisp outlines, simple restrained cel shading, slightly simplified details for small on-screen sprite, head approx quarter of projected height (not giant chibi). Center every sprite horizontally in its cell, feet ground anchor at same relative y=90% of cell, full hair/arms/feet inside its own cell, generous transparent separation, no frame overlap. All sprites approx 82% cell height. Keep hands out of pockets when walking, natural gait, no accessories or props unless specified. No cast shadows baked into transparent ground, no ground planes, no scenery, no text, no UI, no watermark, no checkerboard. Kamil: tousled medium dark-brown hair, open light-grey zip hoodie over white T-shirt with existing red-grey abstract brush graphic, straight black jeans and white sneakers. Preserve face and reference outfit."
+    },
+    {
+      "id": "elaman",
+      "ref": "elaman/neutral.webp",
+      "extra": "Elaman: close buzz-cut dark hair, wooden brown bead necklace, green short-sleeve T-shirt with reference black pixel-face design tucked into grey drawstring sweatpants, dark sneakers. Preserve recognizable face and clothes; necklace visible in front views.",
+      "prompt": "Use case: stylized-concept. Asset: production SPRITE SHEET for a student walking in an elevated 2.5D campus game. Input1 identity/clothing reference, not camera reference. Exactly 12 separate full-body drawings of SAME recognizable young adult student on GENUINELY TRANSPARENT background. Sheet layout MUST be exactly THREE COLUMNS and FOUR ROWS, equal square cells, 1536x2048 canvas, 512x512 per cell. No visible grid, no labels. Row1 SOUTH/front walking toward bottom of screen; row2 WEST/left facing left; row3 EAST/right facing right; row4 NORTH/back walking away toward top. Each row's columns: col1 IDLE standing feet comfortably together arms relaxed; col2 WALK contact pose LEFT foot forward RIGHT foot back, arms counter-swing; col3 opposite contact pose RIGHT foot forward LEFT foot back, arms counter-swing. Each row must contain its OWN direction consistently; back view genuinely shows BACK of head/body, profiles genuinely face left/right. Steep elevated camera looking down about 50 degrees above ground, orthographic projection, head top/shoulder tops visible, shortened projected legs, compatible with near-top-down 2.5D game map; NOT eye-level portraits. Coherent identical scale, body proportions and clothing across all frames. Game-readable polished anime 2D illustration, crisp outlines, simple restrained cel shading, slightly simplified details for small on-screen sprite, head approx quarter of projected height (not giant chibi). Center every sprite horizontally in its cell, feet ground anchor at same relative y=90% of cell, full hair/arms/feet inside its own cell, generous transparent separation, no frame overlap. All sprites approx 82% cell height. Keep hands out of pockets when walking, natural gait, no accessories or props unless specified. No cast shadows baked into transparent ground, no ground planes, no scenery, no text, no UI, no watermark, no checkerboard. Elaman: close buzz-cut dark hair, wooden brown bead necklace, green short-sleeve T-shirt with reference black pixel-face design tucked into grey drawstring sweatpants, dark sneakers. Preserve recognizable face and clothes; necklace visible in front views."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "vlad",
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-fe6c18db-1921-459e-b8a1-087ee4890161.png"
+    },
+    {
+      "id": "adil",
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-8d4467e9-4e95-4d87-8aa3-90e3c8cecb63.png"
+    },
+    {
+      "id": "kirill",
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-d2201744-7843-4b1d-9427-093db0f19238.png",
+      "initialSource": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-79e461c2-f351-429e-a08c-72e5e0ebc356.png",
+      "cleanupPrompt": "kirill-alpha-cleanup.prompt.txt"
+    },
+    {
+      "id": "jan",
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-fc770266-017e-429f-98ac-0aaa40bc428a.png"
+    },
+    {
+      "id": "damir",
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-67bc74b0-21fe-49e0-886e-c9db387064cb.png"
+    },
+    {
+      "id": "bakhytzhan",
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-163efd09-aa59-4b9e-8690-c7ffca55db63.png"
+    },
+    {
+      "id": "kamil",
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-74896767-ea8c-4b83-87a3-0ad894d44763.png"
+    },
+    {
+      "id": "elaman",
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-7e75d68f-e27b-493d-9190-b52740f20b61.png"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Проверка ходьбы — Между парами</title>
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="walk-preview.css">
+  <script src="walk-preview.js" defer></script>
+</head>
+<body class="walk-page">
+  <header class="walk-toolbar"><a href="index.html">← Главное меню</a><h1>Проверка ходьбы</h1><label>Персонаж <select id="walk-character"><option value="vlad">Влад</option><option value="adil">Адиль</option><option value="kirill">Кирилл</option><option value="jan">Жан</option><option value="damir">Дамир</option><option value="bakhytzhan">Бакытжан</option><option value="kamil">Камиль</option><option value="elaman">Еламан</option></select></label><button id="walk-pause">Пауза</button></header>
+  <main class="walk-main"><p>WASD / стрелки или клик по карте — идти. Здесь проверяем спрайты: стены пока можно проходить.</p><div class="map-frame"><canvas id="walk-canvas" width="1536" height="1024" tabindex="0" aria-label="Карта кампуса для проверки ходьбы персонажа"></canvas><p id="walk-status" role="status">Загрузка карты и персонажа…</p></div><div class="walk-bottom"><span id="walk-direction">Влад · вниз</span><div class="direction-pad" aria-label="Управление ходьбой"><button data-direction="up" aria-label="Идти вверх">↑</button><div><button data-direction="left" aria-label="Идти влево">←</button><button data-direction="down" aria-label="Идти вниз">↓</button><button data-direction="right" aria-label="Идти вправо">→</button></div></div><label>Размер <input id="walk-size" type="range" min="36" max="100" value="64" aria-label="Размер персонажа"></label></div></main>
+</body></html>
