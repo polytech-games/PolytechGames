@@ -8,422 +8,209 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta name="description" content="Игры студентов Astana Polytechnic: визуальные новеллы, аркады и зомби-шутер. Выбирай игру и запускай прямо в браузере." />
+  <meta name="theme-color" content="#080b12" />
   <style>
     :root {
-      --bg: #090a0f;
-      --surface: #11131a;
-      --surface-raised: #181b26;
-      --border: #222634;
-      --border-hover: #3b4259;
-      --text: #e2e8f0;
-      --text-muted: #7c879d;
-      --text-dim: #4b556b;
-      --white: #ffffff;
-      --vip: #c9a45a;
-      --vip-line: rgba(201, 164, 90, 0.35);
+      color-scheme: dark;
+      --bg: #080b12;
+      --surface: #101622;
+      --border: #252e42;
+      --text: #eef1f8;
+      --muted: #9aa6bc;
+      --accent: #9aafe8;
+      --accent-solid: #4a5d92;
       --mono: 'JetBrains Mono', monospace;
-      --sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --sans: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    body::before { content: ''; position: absolute; inset: 0 0 auto; height: 780px; z-index: -1; background: radial-gradient(ellipse at 15% 5%, #9aafe809, transparent 60%); pointer-events: none; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
+    ::selection { background: var(--accent); color: var(--bg); }
+    [hidden] { display: none !important; }
+    .wrap { width: min(1280px, calc(100% - 96px)); margin-inline: auto; }
+    .skip-link { position: absolute; top: -80px; left: 24px; z-index: 5; padding: 12px 20px; background: var(--accent); color: var(--bg); }
+    .skip-link:focus { top: 12px; }
+    .topbar { height: 100px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--border); }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { display: grid; place-items: center; width: 42px; height: 42px; background: #232c45; border: 1px solid #3b466c; border-radius: 12px; transform: rotate(-7deg); }
+    .brand img { width: 27px; height: 27px; transform: rotate(7deg); }
+    .brand-name { font-size: 19px; font-weight: 800; letter-spacing: -.8px; line-height: 1.2; }
+    .brand-name small { display: block; font: 9px var(--mono); letter-spacing: 1.7px; color: var(--muted); margin-top: 5px; }
+    .nav { display: flex; gap: 30px; align-items: center; font-size: 13px; font-weight: 600; }
+    .nav a { color: var(--muted); transition: color .2s; }
+    .nav a:hover { color: var(--accent); }
+    .meta-tag { display: inline-flex; gap: 9px; align-items: center; font: 11px var(--mono); border: 1px solid var(--border); padding: 9px 12px; border-radius: 6px; }
+    .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px #9aafe840; }
+    .hero { display: grid; grid-template-columns: 1.05fr 1fr; align-items: center; gap: 52px; padding-block: 68px 62px; }
+    .eyebrow { display: flex; align-items: center; gap: 10px; font: 10px var(--mono); letter-spacing: 1.6px; text-transform: uppercase; color: var(--accent); }
+    .eyebrow::before { content: ''; width: 22px; height: 1px; background: currentColor; }
+    .hero-title { font-size: clamp(48px, 5.2vw, 78px); font-weight: 800; letter-spacing: -.065em; line-height: 1.06; margin: 25px 0 22px; }
+    .hero-title span { color: var(--accent); }
+    .hero-desc { color: var(--muted); font-size: 15px; max-width: 420px; line-height: 1.8; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 29px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 22px; min-height: 48px; padding: 12px 21px; border-radius: 7px; font-size: 12px; font-weight: 700; border: 1px solid var(--border); background: transparent; color: var(--text); transition: background .2s, transform .2s; }
+    .button:hover { background: #ffffff09; transform: translateY(-2px); }
+    .button--primary { background: var(--accent-solid); border-color: #6175ac; color: #f3f5ff; }
+    .button--primary:hover { background: #5c71ab; }
+    .hero-note { font: 10px var(--mono); color: var(--muted); margin-top: 22px; display: flex; gap: 18px; }
+    .hero-note span::before { content: '+'; color: var(--accent); margin-right: 7px; }
+    .hero-visual { position: relative; padding: 14px 0 16px; }
+    .feature { display: block; height: 370px; position: relative; overflow: hidden; border: 1px solid #ffffff20; border-radius: 16px; background: #161e30; transform: rotate(2deg); transition: transform .3s; }
+    .feature:hover { transform: rotate(0); }
+    .feature img { position: absolute; width: 160%; height: 100%; max-width: none; object-fit: cover; right: 0; }
+    .feature::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #080d192e 25%, #080d19e8); }
+    .feature-top { position: absolute; z-index: 1; top: 22px; left: 22px; font: 9px var(--mono); letter-spacing: 1px; border: 1px solid #ffffff40; padding: 6px 9px; border-radius: 4px; background: #080b1266; }
+    .feature-info { position: absolute; bottom: 25px; left: 26px; right: 26px; z-index: 1; padding-right: 48px; }
+    .feature-info small { color: var(--accent); font: 9px var(--mono); letter-spacing: 1.5px; }
+    .feature-info strong { display: block; font-size: 33px; letter-spacing: -1.2px; margin-top: 5px; }
+    .feature-info p { color: #b7c2d8; font-size: 12px; }
+    .feature-play { position: absolute; right: 0; bottom: 8px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--accent-solid); color: var(--text); font-size: 21px; }
+    .sticker { position: absolute; right: -16px; top: -4px; z-index: 2; width: 88px; height: 88px; border-radius: 50%; background: #283655; border: 1px solid #4a5d92; color: #dce5ff; display: grid; align-content: center; text-align: center; font: 10px var(--mono); line-height: 1.5; transform: rotate(13deg); box-shadow: 0 0 0 6px var(--bg); }
+    .sticker b { font-size: 24px; line-height: 1.2; }
+    .visual-caption { display: flex; justify-content: space-between; color: var(--muted); font: 9px var(--mono); margin: 23px 4px 0; letter-spacing: .6px; }
+    .catalog { padding-bottom: 72px; }
+    .catalog-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding-top: 30px; border-top: 1px solid var(--border); }
+    .section-kicker { font: 9px var(--mono); letter-spacing: 1.5px; color: var(--muted); margin-bottom: 7px; }
+    .catalog-heading h2 { font-size: 29px; letter-spacing: -1px; line-height: 1.3; }
+    .catalog-heading h2 span { color: var(--muted); font: 11px var(--mono); vertical-align: top; margin-left: 9px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+    .filter { border: 1px solid transparent; background: transparent; color: var(--muted); padding: 8px 13px; border-radius: 6px; font-size: 11px; transition: color .2s, background .2s; }
+    .filter:hover { color: var(--text); }
+    .filter[aria-pressed="true"] { background: #293754; color: #f3f5ff; font-weight: 700; }
+    .shelf { margin-top: 34px; }
+    .shelf + .shelf { margin-top: 44px; }
+    .shelf-head { display: flex; align-items: center; gap: 12px; margin-bottom: 5px; }
+    .shelf-title { font-size: 14px; font-weight: 700; }
+    .shelf--vip .shelf-title { color: var(--accent); }
+    .shelf-rule { height: 1px; background: var(--border); flex: 1; }
+    .shelf-count { font: 10px var(--mono); color: var(--muted); }
+    .shelf-note { font-size: 12px; color: var(--muted); margin-bottom: 19px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .shelf--vip .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .item { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform .25s, border-color .25s, box-shadow .25s; }
+    .item:hover { transform: translateY(-5px); border-color: #4a5d92; box-shadow: 0 16px 40px #0003; }
+    .item-media { position: relative; aspect-ratio: 16/9; overflow: hidden; background: #151d2e; border-bottom: 1px solid var(--border); }
+    .item-media img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .4s; }
+    .item:hover .item-media img { transform: scale(1.035); }
+    .item-index, .item-genre { position: absolute; z-index: 1; top: 13px; padding: 5px 8px; background: #080b12e6; border: 1px solid #ffffff25; border-radius: 4px; font: 9px var(--mono); }
+    .item-index { left: 13px; color: var(--accent); }
+    .item-genre { right: 13px; color: #eef1f8; }
+    .item-content { display: flex; flex-direction: column; flex: 1; padding: 22px; }
+    .item-header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+    .item-title { font-size: 19px; letter-spacing: -.5px; line-height: 1.4; }
+    .shelf--vip .item-title { font-size: 24px; }
+    .item-arrow { color: var(--accent); transition: transform .2s; }
+    .item:hover .item-arrow { transform: translate(2px, -2px); }
+    .item-authors { font-size: 10px; color: #9aa9ca; line-height: 1.7; margin-bottom: 13px; }
+    .item-desc { color: var(--muted); font-size: 12px; line-height: 1.85; flex: 1; margin-bottom: 22px; }
+    .item-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding-top: 15px; border-top: 1px solid var(--border); font: 9px var(--mono); color: var(--muted); }
+    .item-action { display: flex; align-items: center; gap: 12px; color: var(--accent); font: 600 11px var(--sans); }
+    .contribute { border: 1px solid var(--border); border-radius: 12px; margin-top: 44px; padding: 27px 30px; display: flex; gap: 24px; align-items: center; background: repeating-linear-gradient(135deg, transparent 0 10px, #ffffff02 10px 11px); }
+    .contribute-icon { color: var(--accent); font: 27px var(--mono); }
+    .contribute h2 { font-size: 18px; letter-spacing: -.5px; }
+    .contribute p { color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .contribute .button { margin-left: auto; white-space: nowrap; }
+    footer { border-top: 1px solid var(--border); padding-block: 26px; display: flex; justify-content: space-between; gap: 20px; align-items: center; color: var(--muted); font: 10px var(--mono); }
+    .footer-links { display: flex; gap: 22px; }
+    footer a:hover { color: var(--accent); }
+    @media (min-width: 1600px) { .hero { padding-block: 85px; } }
+    @media (max-width: 1000px) {
+      .wrap { width: calc(100% - 56px); }
+      .hero { gap: 30px; }
+      .hero-title { font-size: 56px; }
+      .feature { height: 340px; }
+      .nav { gap: 18px; }
+      .nav .meta-tag { display: none; }
+      .catalog-heading { align-items: start; flex-direction: column; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      line-height: 1.5;
+    @media (max-width: 700px) {
+      .wrap { width: calc(100% - 36px); }
+      .topbar { height: 80px; }
+      .brand-name { font-size: 17px; }
+      .brand-name small { font-size: 8px; }
+      .nav a:first-child { display: none; }
+      .nav { font-size: 11px; }
+      .hero { grid-template-columns: 1fr; padding-block: 38px; gap: 30px; }
+      .hero-title { font-size: clamp(48px, 10.5vw, 68px); margin-top: 20px; }
+      .hero-desc { font-size: 14px; max-width: 480px; }
+      .hero-visual { margin: 0 9px; }
+      .feature { height: 310px; }
+      .sticker { width: 72px; height: 72px; right: -10px; font-size: 8px; }
+      .sticker b { font-size: 21px; }
+      .feature-info strong { font-size: 29px; }
+      .catalog-heading h2 { font-size: 26px; }
+      .filters { gap: 3px; }
+      .filter { padding: 8px 10px; }
+      .grid, .shelf--vip .grid { grid-template-columns: 1fr; }
+      .shelf--vip .item-title { font-size: 22px; }
+      .contribute { flex-wrap: wrap; padding: 22px; gap: 14px; }
+      .contribute-icon { display: none; }
+      .contribute .button { margin-left: 0; }
+      footer { flex-direction: column; align-items: flex-start; font-size: 9px; }
     }
-
-    /* Top utility bar */
-    .topbar {
-      border-bottom: 1px solid var(--border);
-      padding: 14px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-family: var(--mono);
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .brand img {
-      width: 20px;
-      height: 20px;
-      opacity: 0.9;
-    }
-
-    .meta-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 3px 10px;
-      background: var(--surface-raised);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      font-size: 11px;
-      color: #94a3b8;
-    }
-
-    .pulse {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
-    }
-
-    /* Hero section */
-    .hero {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 72px 32px 48px;
-    }
-
-    .hero-meta {
-      font-family: var(--mono);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--text-dim);
-      margin-bottom: 16px;
-    }
-
-    .hero-title {
-      font-size: clamp(38px, 6vw, 68px);
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1.05;
-      color: var(--white);
-      margin-bottom: 20px;
-    }
-
-    .hero-desc {
-      font-size: 17px;
-      color: var(--text-muted);
-      max-width: 620px;
-      line-height: 1.6;
-    }
-
-    /* Games Grid */
-    .catalog {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 16px 32px 96px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 24px;
-    }
-
-    /* Полки каталога: VIP и обычные */
-    .shelf + .shelf {
-      margin-top: 72px;
-    }
-
-    .shelf-head {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 8px;
-    }
-
-    .shelf-title {
-      font-family: var(--mono);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--text);
-    }
-
-    .shelf-rule {
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .shelf-count {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .shelf-note {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-    }
-
-    .shelf--vip .grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
-    }
-
-    .shelf--regular .grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-    }
-
-    .shelf--vip .shelf-title {
-      color: var(--vip);
-    }
-
-    .shelf--vip .shelf-rule {
-      background: var(--vip-line);
-    }
-
-    .shelf--vip .item:hover {
-      border-color: var(--vip-line);
-    }
-
-    .shelf--vip .item-media::after {
-      content: "";
-      position: absolute;
-      inset: 0 0 auto;
-      height: 2px;
-      background: var(--vip);
-    }
-
-    .shelf--vip .item-index {
-      color: var(--vip);
-      border-color: var(--vip-line);
-    }
-
-    .item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      text-decoration: none;
-      color: inherit;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .item:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-2px);
-    }
-
-    .item-media {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: #0d0f14;
-      overflow: hidden;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .item-media img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.35s ease, filter 0.35s ease;
-      filter: saturate(0.92) contrast(1.02);
-    }
-
-    .item:hover .item-media img {
-      transform: scale(1.03);
-      filter: saturate(1.05) contrast(1.05);
-    }
-
-    .item-index {
-      position: absolute;
-      z-index: 1;
-      top: 14px;
-      left: 14px;
-      background: rgba(9, 10, 15, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-family: var(--mono);
-      font-size: 11px;
-      color: #cbd5e1;
-      padding: 3px 8px;
-      border-radius: 4px;
-      backdrop-filter: blur(8px);
-    }
-
-    .item-genre {
-      position: absolute;
-      z-index: 1;
-      top: 14px;
-      right: 14px;
-      background: rgba(9, 10, 15, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-family: var(--mono);
-      font-size: 11px;
-      color: #94a3b8;
-      padding: 3px 8px;
-      border-radius: 4px;
-      backdrop-filter: blur(8px);
-    }
-
-    .item-content {
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-
-    .item-header {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 6px;
-    }
-
-    .item-title {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--white);
-    }
-
-    .item-arrow {
-      font-family: var(--mono);
-      font-size: 16px;
-      color: var(--text-dim);
-      transition: transform 0.2s, color 0.2s;
-    }
-
-    .item:hover .item-arrow {
-      color: var(--white);
-      transform: translate(2px, -2px);
-    }
-
-    .item-authors {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: #818cf8;
-      margin-bottom: 14px;
-    }
-
-    .item-desc {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.55;
-      margin-bottom: 24px;
-      flex: 1;
-    }
-
-    .item-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .item-action {
-      color: var(--white);
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Footer */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px;
-      max-width: 1280px;
-      margin: 0 auto;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text-dim);
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    footer a {
-      color: var(--text-muted);
-      text-decoration: none;
-      transition: color 0.15s;
-    }
-
-    footer a:hover {
-      color: var(--white);
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 20px;
-    }
-
-    @media (max-width: 768px) {
-      .topbar {
-        padding: 12px 20px;
-      }
-      .hero {
-        padding: 48px 20px 32px;
-      }
-      .catalog {
-        padding: 16px 20px 64px;
-      }
-      .shelf .grid {
-        grid-template-columns: 1fr;
-      }
-      .shelf + .shelf {
-        margin-top: 56px;
-      }
-      footer {
-        padding: 24px 20px;
-        flex-direction: column;
-        align-items: flex-start;
-      }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; }
     }
   </style>
 </head>
 <body>
-
-  <div class="topbar">
-    <a href="#" class="brand">
-      <img src="./assets/astana-polytechnic-logo.svg" alt="" />
-      <span>ASTANA POLYTECHNIC</span>
+  <a class="skip-link" href="#catalog">Перейти к играм</a>
+  <header class="topbar wrap">
+    <a href="./index.html" class="brand" aria-label="Polytech Games — главная">
+      <span class="brand-mark"><img src="./assets/astana-polytechnic-logo.svg" alt="" /></span>
+      <span class="brand-name">polytech.games<small>ASTANA POLYTECHNIC</small></span>
     </a>
-    <div class="meta-tag">
-      <span class="pulse"></span>
-      <span>GROUP П-24-67Б</span>
-    </div>
-  </div>
+    <nav class="nav" aria-label="Основная навигация">
+      <a href="#catalog">Каталог игр</a>
+      <a href="https://github.com/skippingclass/PolytechGamesBackup">GitHub ↗</a>
+      <span class="meta-tag"><span class="pulse"></span>П-24-67Б / 2026</span>
+    </nav>
+  </header>
 
-  <section class="hero">
-    <div class="hero-meta">Student Game Archives // 2026</div>
-    <h1 class="hero-title">Polytech Games</h1>
-    <p class="hero-desc">
-      Коллекция инди-игр, навайбкоженных боссами политеха. Никаких серверов и сборок — чистый HTML5/JS прямо в браузере.
-    </p>
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <div class="eyebrow">Сделано студентами. Заряжено мемами.</div>
+      <h1 class="hero-title" id="hero-title">После пар.<br><span>Вне правил.</span></h1>
+      <p class="hero-desc">Здесь обычная пара становится новеллой, физра — испытанием, а перемена — зомби-апокалипсисом. Отборный ИИ-слоп, приправленный мемами и локальными приколами от боссов политеха. Прямо в твоём браузере.</p>
+      <div class="hero-actions">
+        <a class="button button--primary" href="#catalog">Выбрать игру <span aria-hidden="true">↘</span></a>
+        <button class="button" id="random-game" type="button">Случайная игра <span aria-hidden="true">⤨</span></button>
+      </div>
+      <div class="hero-note"><span>Без установки</span><span>Без регистрации</span></div>
+    </div>
+    <div class="hero-visual">
+      <span class="sticker" aria-label="5 игр, 0 установок"><b>5 игр</b>0 установок</span>
+      <a class="feature" href="./games/zhan-na-grani/index.html" aria-label="Играть в Жан на грани">
+        <img src="./screenshots/zhan-na-grani.png" alt="Друзья устраивают пакости на паре в игре Жан на грани" fetchpriority="high" />
+        <span class="feature-top">В ЦЕНТРЕ ВНИМАНИЯ</span>
+        <div class="feature-info"><small>COMEDY / VISUAL NOVEL</small><strong>Жан на грани</strong><p>Одна пара. Три друга. Ноль спокойствия.</p><span class="feature-play" aria-hidden="true">↗</span></div>
+      </a>
+      <div class="visual-caption"><span>LOCAL STORIES. REAL CHAOS.</span><span>EST. 2026 ↗</span></div>
+    </div>
   </section>
 
-  <main class="catalog">
+  <main class="catalog wrap" id="catalog">
+    <div class="catalog-heading">
+      <div><p class="section-kicker">ВЫБИРАЙ СВОЙ СЦЕНАРИЙ</p><h2>Во что играем?<span id="games-count" role="status" aria-live="polite">05 / ИГР</span></h2></div>
+      <div class="filters" role="group" aria-label="Фильтр по жанру">
+        <button class="filter" type="button" data-filter="all" aria-pressed="true">Все игры</button>
+        <button class="filter" type="button" data-filter="novel" aria-pressed="false">Новеллы</button>
+        <button class="filter" type="button" data-filter="arcade" aria-pressed="false">Аркады</button>
+        <button class="filter" type="button" data-filter="shooter" aria-pressed="false">Шутер</button>
+      </div>
+    </div>
 
     <section class="shelf shelf--vip" aria-labelledby="shelf-vip">
       <div class="shelf-head">
-        <h2 class="shelf-title" id="shelf-vip">VIP</h2>
+        <h2 class="shelf-title" id="shelf-vip">✦ VIP / Сюжетные игры</h2>
         <span class="shelf-rule"></span>
         <span class="shelf-count">02</span>
       </div>
@@ -431,7 +218,7 @@
       <div class="grid">
 
         <!-- Попов -->
-        <a class="item" href="./games/popov/index.html">
+        <a class="item" data-category="novel" href="./games/popov/index.html">
           <div class="item-media">
             <span class="item-index">01</span>
             <span class="item-genre">VISUAL NOVEL</span>
@@ -448,13 +235,13 @@
             </p>
             <div class="item-footer">
               <span>JavaScript / Novel</span>
-              <span class="item-action">Play game <span>→</span></span>
+              <span class="item-action">Играть <span aria-hidden="true">↗</span></span>
             </div>
           </div>
         </a>
 
         <!-- Жан на грани -->
-        <a class="item" href="./games/zhan-na-grani/index.html">
+        <a class="item" data-category="novel" href="./games/zhan-na-grani/index.html">
           <div class="item-media">
             <span class="item-index">02</span>
             <span class="item-genre">COMEDY NOVEL</span>
@@ -471,7 +258,7 @@
             </p>
             <div class="item-footer">
               <span>PixiJS / Mini-games</span>
-              <span class="item-action">Play game <span>→</span></span>
+              <span class="item-action">Играть <span aria-hidden="true">↗</span></span>
             </div>
           </div>
         </a>
@@ -481,7 +268,7 @@
 
     <section class="shelf shelf--regular" aria-labelledby="shelf-regular">
       <div class="shelf-head">
-        <h2 class="shelf-title" id="shelf-regular">Обычные</h2>
+        <h2 class="shelf-title" id="shelf-regular">На одну перемену</h2>
         <span class="shelf-rule"></span>
         <span class="shelf-count">03</span>
       </div>
@@ -489,7 +276,7 @@
       <div class="grid">
 
         <!-- Запишите -->
-        <a class="item" href="./games/записывайте.html">
+        <a class="item" data-category="arcade" href="./games/записывайте.html">
           <div class="item-media">
             <span class="item-index">03</span>
             <span class="item-genre">TOP-DOWN SIM</span>
@@ -506,13 +293,13 @@
             </p>
             <div class="item-footer">
               <span>Canvas / 2D</span>
-              <span class="item-action">Play game <span>→</span></span>
+              <span class="item-action">Играть <span aria-hidden="true">↗</span></span>
             </div>
           </div>
         </a>
 
         <!-- CS 3 -->
-        <a class="item" href="./games/контр%20страйк%203.html">
+        <a class="item" data-category="shooter" href="./games/контр%20страйк%203.html">
           <div class="item-media">
             <span class="item-index">04</span>
             <span class="item-genre">RAYCAST 3D FPS</span>
@@ -529,13 +316,13 @@
             </p>
             <div class="item-footer">
               <span>Pseudo-3D / Split-Screen</span>
-              <span class="item-action">Play game <span>→</span></span>
+              <span class="item-action">Играть <span aria-hidden="true">↗</span></span>
             </div>
           </div>
         </a>
 
         <!-- Физрук -->
-        <a class="item" href="./games/skuf-fizruk.html">
+        <a class="item" data-category="arcade" href="./games/skuf-fizruk.html">
           <div class="item-media">
             <span class="item-index">05</span>
             <span class="item-genre">ARCADE SIM</span>
@@ -552,7 +339,7 @@
             </p>
             <div class="item-footer">
               <span>Canvas / Time-Attack</span>
-              <span class="item-action">Play game <span>→</span></span>
+              <span class="item-action">Играть <span aria-hidden="true">↗</span></span>
             </div>
           </div>
         </a>
@@ -560,16 +347,46 @@
       </div>
     </section>
 
+    <aside class="contribute" aria-labelledby="contribute-title">
+      <span class="contribute-icon" aria-hidden="true">&lt;/&gt;</span>
+      <div><h2 id="contribute-title">Твоя игра — следующая?</h2><p>Создавай, экспериментируй и пополняй коллекцию нашей группы.</p></div>
+      <a class="button" href="https://github.com/skippingclass/PolytechGamesBackup/blob/main/CONTRIBUTING.md">Добавить игру <span aria-hidden="true">↗</span></a>
+    </aside>
   </main>
 
-  <footer>
-    <div>Astana Polytechnic // П-24-67Б</div>
+  <footer class="wrap">
+    <div>© 2026 Polytech Games · Сделано между парами.</div>
     <div class="footer-links">
       <a href="https://github.com/skippingclass/PolytechGamesBackup">GitHub</a>
-      <a href="./CONTRIBUTING.md">Contributing</a>
-      <a href="./README.md">Docs</a>
+      <a href="https://github.com/skippingclass/PolytechGamesBackup/blob/main/CONTRIBUTING.md">Участникам</a>
+      <a href="./README.md">Об играх</a>
     </div>
   </footer>
 
+  <script>
+    const cards = [...document.querySelectorAll('a.item')];
+    const shelves = [...document.querySelectorAll('.shelf')];
+    const filters = [...document.querySelectorAll('[data-filter]')];
+
+    filters.forEach(button => {
+      button.addEventListener('click', () => {
+        const category = button.dataset.filter;
+        filters.forEach(filter => filter.setAttribute('aria-pressed', String(filter === button)));
+        cards.forEach(card => { card.hidden = category !== 'all' && card.dataset.category !== category; });
+        shelves.forEach(shelf => {
+          const count = shelf.querySelectorAll('.item:not([hidden])').length;
+          shelf.hidden = count === 0;
+          shelf.querySelector('.shelf-count').textContent = String(count).padStart(2, '0');
+        });
+        const count = cards.filter(card => !card.hidden).length;
+        document.getElementById('games-count').textContent = `${String(count).padStart(2, '0')} / ИГР`;
+      });
+    });
+
+    document.getElementById('random-game').addEventListener('click', () => {
+      const card = cards[Math.floor(Math.random() * cards.length)];
+      window.location.href = card.href;
+    });
+  </script>
 </body>
 </html>
