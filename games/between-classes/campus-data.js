@@ -65,20 +65,20 @@
   }
   const lessons = {
     stasinshina: {
-      teacher: 'Стасиншина', title: 'Первый корпус · Пара Стасиншиной', portrait: 'stasinshina', background: 'assets/classrooms/popov/bg-windows.webp',
+      teacher: 'Стасиншина', courseId: 'web-layout', title: 'Первый корпус · HTML-вёрстка', portrait: 'stasinshina', background: 'assets/classrooms/popov/bg-windows.webp',
       nodes: {
-        start: { speaker: 'Рассказчик', text: '{name} заходит в аудиторию. На доске — тема занятия, на столе уже ждёт журнал.', emotion: 'calm', next: 'greeting' },
-        greeting: { speaker: 'Стасиншина', text: 'Проходи, {name}. Как раз начинаем. Готов работать?', emotion: 'calm', choices: [{ text: 'Да, я готов. С чего начнём?', next: 'ready' }, { text: 'Я сначала уточню: мы точно в нужном корпусе?', next: 'campus' }] },
-        ready: { speaker: 'Стасиншина', text: 'Вот это правильный настрой. Открывай тетрадь — начнём с небольшого задания.', emotion: 'calm', next: 'task' },
-        campus: { speaker: 'Стасиншина', text: 'В первом. И на нужной паре. Уже неплохое начало дня!', emotion: 'surprised', next: 'task' },
-        task: { speaker: 'Стасиншина', text: 'Для начала расскажи, что запомнил с прошлого занятия.', emotion: 'calm', choices: [{ text: 'Попробовать ответить своими словами.', next: 'answer' }, { text: 'Попросить минуту, чтобы посмотреть записи.', next: 'notes' }] },
-        answer: { speaker: 'Стасиншина', text: 'Хорошо, мысль понятна. Теперь давай разберём её подробнее.', emotion: 'calm', next: 'end' },
-        notes: { speaker: 'Стасиншина', text: 'Минута есть. Только записи открывай свои, а не переписку группы.', emotion: 'surprised', next: 'end' },
-        end: { speaker: 'Рассказчик', text: 'Первое знакомство с парой состоялось. Можно вернуться во двор и заглянуть в третий корпус к Попову.', emotion: 'calm', end: true },
+        start: { speaker: 'Рассказчик', text: '{name} заходит в аудиторию 1406. На доске — HTML-вёрстка: сегодня нужно собрать первую веб-страницу.', emotion: 'calm', next: 'greeting' },
+        greeting: { speaker: 'Стасиншина', text: 'Проходи, {name}. Открывай редактор — начинаем вёрстку. Готов?', emotion: 'calm', choices: [{ text: 'Да, я готов. С чего начнём?', next: 'ready' }, { text: 'Я сначала уточню: мы точно в нужном корпусе?', next: 'campus' }] },
+        ready: { speaker: 'Стасиншина', text: 'Создай index.html. Добавим заголовок страницы, абзац и ссылку — сначала без оформления.', emotion: 'calm', next: 'task' },
+        campus: { speaker: 'Стасиншина', text: 'В первом корпусе, в 1406. И на HTML-вёрстке. Адрес страницы будем выяснять уже в браузере.', emotion: 'surprised', next: 'task' },
+        task: { speaker: 'Стасиншина', text: 'Что задаёт структуру веб-страницы?', emotion: 'calm', choices: [{ text: 'HTML: элементы и их вложенность.', next: 'answer' }, { text: 'CSS: цвета и размеры шрифта.', next: 'styles' }] },
+        answer: { speaker: 'Стасиншина', text: 'Верно. HTML задаёт структуру, а CSS отвечает за оформление. Начни с <h1>, <p> и <a href="...">.', emotion: 'calm', next: 'end' },
+        styles: { speaker: 'Стасиншина', text: 'Это оформление. Для структуры нужен HTML: например, <h1> для заголовка и <p> для абзаца. Сначала каркас, потом красота.', emotion: 'surprised', next: 'end' },
+        end: { speaker: 'Рассказчик', text: 'Каркас первой страницы готов. В браузере видны заголовок, текст и ссылка. Можно вернуться во двор.', emotion: 'calm', end: true },
       },
     },
     popov: {
-      teacher: 'Попов', title: 'Третий корпус · Пара Попова', portrait: 'popov', background: 'assets/classrooms/popov/bg-board.webp',
+      teacher: 'Попов', courseId: 'web-platforms', title: 'Третий корпус · Пара Попова', portrait: 'popov', background: 'assets/classrooms/popov/bg-board.webp',
       nodes: {
         start: { speaker: 'Рассказчик', text: '{name} открывает дверь компьютерного класса. Попов отрывается от монитора.', emotion: 'calm', next: 'greeting' },
         greeting: { speaker: 'Попов', text: '{name}, проходи. Раз уж пришёл — проверим, что помнишь про JavaScript.', emotion: 'calm', next: 'question' },
