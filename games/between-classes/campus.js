@@ -8,7 +8,7 @@ const requested=new URLSearchParams(location.search).get('character')||menuSave.
 const character=Object.hasOwn(D.characters,requested)?requested:'vlad';
 let state=Day.restore(readSave(STORAGE_KEY),character);
 if(!D.canStand(state.position.x,state.position.y))state.position={x:810,y:865,row:0};
-const player={...state.position,phase:0},keys=new Map(),pad=new Set();
+const player={...state.position,phase:0},keys=new Map();
 const keyMap={ArrowUp:'up',w:'up',ц:'up',ArrowDown:'down',s:'down',ы:'down',ArrowLeft:'left',a:'left',ф:'left',ArrowRight:'right',d:'right',в:'right'};
 let map=null,sprite=null,route=[],paused=false,lastTime=0,lastSave=0,nearbyId=null,actionRevision=0;
 const actionDialog=ui('day-action-dialog'),pauseDialog=ui('campus-pause-dialog');
@@ -17,7 +17,7 @@ document.body.classList.toggle('large-text',menuSave.largeText===true);
 document.body.classList.toggle('no-animation',menuSave.animations===false);
 ui('campus-player').textContent=D.characters[character];
 function save(){state.position={x:player.x,y:player.y,row:player.row};try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch{}}
-function clearMovement(){keys.clear();pad.clear();route=[];player.phase=0;document.querySelectorAll('[data-move]').forEach(b=>b.classList.remove('active'));}
+function clearMovement(){keys.clear();route=[];player.phase=0;}
 function message(text){ui('campus-message').textContent=text;}
 function worldActive(){return !!map&&!!sprite&&!paused&&!state.scene&&!state.finished&&!document.hidden&&!actionDialog.open&&!pauseDialog.open;}
 function inertWorld(value){document.querySelector('.campus-header').inert=value;document.querySelector('.campus-page>main').inert=value;}
@@ -104,7 +104,7 @@ function draw(){context.clearRect(0,0,1536,1024);if(map)context.drawImage(map,0,
 function tick(time){const elapsed=lastTime?Math.max(0,(time-lastTime)/1000):0,dt=Math.min(elapsed,.05);lastTime=time;
   if(worldActive()){
     Day.advance(state,elapsed);if(state.finished)showResults();
-    const active=new Set([...keys.values(),...pad]);let dx=Number(active.has('right'))-Number(active.has('left')),dy=Number(active.has('down'))-Number(active.has('up')),distance=185*dt;
+    const active=new Set(keys.values());let dx=Number(active.has('right'))-Number(active.has('left')),dy=Number(active.has('down'))-Number(active.has('up')),distance=185*dt;
     if(!dx&&!dy&&route.length){const goal=route[0];dx=goal.x-player.x;dy=goal.y-player.y;if(Math.hypot(dx,dy)<2){route.shift();dx=dy=0;}else distance=Math.min(distance,Math.hypot(dx,dy));}
     const length=Math.hypot(dx,dy),before={x:player.x,y:player.y};if(length){dx/=length;dy/=length;const x=player.x+dx*distance,y=player.y+dy*distance;if(D.canStand(x,player.y))player.x=x;if(D.canStand(player.x,y))player.y=y;player.row=Math.abs(dx)>Math.abs(dy)?(dx>0?2:1):(dy>0?0:3);}
     player.phase=Math.hypot(player.x-before.x,player.y-before.y)>.01?player.phase+dt*7:0;
@@ -123,7 +123,6 @@ document.addEventListener('keydown',event=>{
 });
 document.addEventListener('keyup',event=>{keys.delete(event.code);save();});
 window.addEventListener('blur',()=>{clearMovement();save();});document.addEventListener('visibilitychange',()=>{lastTime=performance.now();if(document.hidden){clearMovement();save();if(!paused&&!state.finished)pause();}});window.addEventListener('pagehide',save);
-for(const button of document.querySelectorAll('[data-move]')){const start=()=>{if(!worldActive())return;pad.add(button.dataset.move);route=[];button.classList.add('active');},stop=()=>{pad.delete(button.dataset.move);button.classList.remove('active');save();};button.addEventListener('pointerdown',event=>{event.preventDefault();button.setPointerCapture(event.pointerId);start();});for(const event of ['pointerup','pointercancel','lostpointercapture','blur'])button.addEventListener(event,stop);button.addEventListener('keydown',event=>{if(event.key===' '||event.key==='Enter'){event.preventDefault();start();}});button.addEventListener('keyup',stop);}
 ui('enter-building').addEventListener('click',interact);ui('leave-lesson').addEventListener('click',exitScene);ui('campus-pause').addEventListener('click',pause);ui('campus-resume').addEventListener('click',()=>pauseDialog.close());pauseDialog.addEventListener('close',resume);
 ui('skip-lesson').addEventListener('click',()=>{if(!worldActive())return;const d=Day.next(state);if(!d)return;action('Прогулять пару?',`${d.title} · ${d.teacher} · ${Day.format(d.start)}–${Day.format(d.end)}. Время перейдёт к концу занятия.`,[{label:`Прогулять и дождаться ${Day.format(d.end)}`,primary:true,run:()=>{Day.skip(state,d.id);updateHUD();if(state.finished)showResults();}},closeOption()]);});
 ui('replay-day').addEventListener('click',()=>{state=Day.create(character);Object.assign(player,state.position,{phase:0});ui('day-results').hidden=true;inertWorld(false);lastTime=performance.now();save();canvas.focus({preventScroll:true});});

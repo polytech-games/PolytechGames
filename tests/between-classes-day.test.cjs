@@ -12,11 +12,11 @@ test('browser schedule is generated from the canonical JSON without fetching',()
   const box={window:{}};vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../games/between-classes/data/schedule.browser.js'),'utf8'),box);
   assert.equal(JSON.stringify(box.window.CampusSchedule),JSON.stringify(require('../games/between-classes/data/schedule.json')));
 });
-test('clock scale is 3.5 seconds per minute and inactive/dialog time does not advance',()=>{
-  const s=Day.create('vlad');Day.advance(s,3.5);assert.equal(s.clock,Day.START+60);
+test('clock scale is 1.33 seconds per minute and inactive/dialog time does not advance',()=>{
+  const s=Day.create('vlad');Day.advance(s,1.33);assert.equal(s.clock,Day.START+60);
   Day.advance(s,100,false);assert.equal(s.clock,Day.START+60);
   s.scene={type:'lesson',recordId:first.id};Day.advance(s,100);assert.equal(s.clock,Day.START+60);
-  s.scene=null;Day.advance(s,66.5);assert.equal(s.clock,first.start);
+  s.scene=null;Day.advance(s,25.27);assert.equal(s.clock,first.start);
 });
 test('admission respects exact 10 minute, 30 minute and end boundaries',()=>{
   for(const [delay,result] of [[-1,'early'],[0,'on-time'],[1,'late'],[600,'late'],[600.001,'warning'],[1800,'warning'],[1800.001,'permit']])assert.equal(Day.admission(at(first.start+delay),first.id),result,`${delay} seconds`);

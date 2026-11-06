@@ -3,7 +3,7 @@
   else root.CampusDay = factory(root.CampusSchedule);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (schedule) {
   'use strict';
-  const START = 8 * 3600 + 10 * 60, RATE = 60 / 3.5;
+  const START = 8 * 3600 + 10 * 60, RATE = 60 / 1.33;
   const seconds = text => { const [h,m]=text.split(':').map(Number);return h*3600+m*60; };
   const definitions = schedule.days.find(d=>d.id==='friday').lessons.slice(0,2).map(entry=>{
     const slot=schedule.timeSlots.find(s=>s.number===entry.slot),course=schedule.courses[entry.courseId];
