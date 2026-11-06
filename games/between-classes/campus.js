@@ -1,167 +1,132 @@
 'use strict';
-
-const D = window.CampusData;
-const ui = id => document.getElementById(id);
-const canvas = ui('campus-canvas'), context = canvas.getContext('2d');
-const STORAGE_KEY = 'polytech-between-classes-campus-v1';
-function readSave(key) { try { const value = JSON.parse(localStorage.getItem(key) || '{}'); return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; } catch { return {}; } }
-const menuSave = readSave('polytech-between-classes-v1'), worldSave = readSave(STORAGE_KEY);
-const requested = new URLSearchParams(location.search).get('character') || menuSave.characterId;
-const character = Object.hasOwn(D.characters, requested) ? requested : 'vlad';
-const completed = new Set(Array.isArray(worldSave.completed) ? worldSave.completed.filter(id => Object.hasOwn(D.lessons, id)) : []);
-const oldPosition = worldSave.position;
-const player = oldPosition && D.canStand(oldPosition.x, oldPosition.y) ? { x: oldPosition.x, y: oldPosition.y, row: 0, phase: 0 } : { x: 810, y: 865, row: 0, phase: 0 };
-const keys = new Map(), pad = new Set();
-const keyMap = { ArrowUp:'up', w:'up', ц:'up', ArrowDown:'down', s:'down', ы:'down', ArrowLeft:'left', a:'left', ф:'left', ArrowRight:'right', d:'right', в:'right' };
-let map = null, sprite = null, route = [], paused = false, activeLesson = null, nodeId = null, enteredAt = null, lastTime = 0, nearbyId = null;
-
-document.body.classList.toggle('large-text', menuSave.largeText === true);
-document.body.classList.toggle('no-animation', menuSave.animations === false);
-ui('campus-player').textContent = D.characters[character];
-function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:1, position:{x:player.x,y:player.y}, completed:[...completed] })); } catch { /* The current session remains playable without storage. */ } }
-function clearMovement() { keys.clear(); pad.clear(); route = []; player.phase = 0; document.querySelectorAll('[data-move]').forEach(b => b.classList.remove('active')); }
-function message(text) { ui('campus-message').textContent = text; }
-function updateProgress() { ui('campus-progress').textContent = `Знакомства с парами: ${completed.size} / 2`; }
-function isActive() { return !!map && !!sprite && !paused && !activeLesson && !document.hidden; }
-function updatePrompt() {
-  const entrance = isActive() ? D.nearEntrance(player) : null;
-  ui('entry-prompt').hidden = !entrance;
-  if (!entrance) { nearbyId = null; return; }
-  if (nearbyId === entrance.id) return;
-  nearbyId = entrance.id;
-  ui('entry-description').textContent = `${entrance.name}\n${entrance.teacher || 'Пара пока не назначена'}${completed.has(entrance.lesson) ? ' · можно повторить' : ''}`;
-  ui('enter-building').disabled = !entrance.lesson;
+const D=window.CampusData, Day=window.CampusDay;
+const ui=id=>document.getElementById(id), canvas=ui('campus-canvas'), context=canvas.getContext('2d');
+const STORAGE_KEY='polytech-between-classes-campus-v2';
+function readSave(key){try{const v=JSON.parse(localStorage.getItem(key)||'{}');return v&&typeof v==='object'?v:{};}catch{return {};}}
+const menuSave=readSave('polytech-between-classes-v1');
+const requested=new URLSearchParams(location.search).get('character')||menuSave.characterId;
+const character=Object.hasOwn(D.characters,requested)?requested:'vlad';
+let state=Day.restore(readSave(STORAGE_KEY),character);
+if(!D.canStand(state.position.x,state.position.y))state.position={x:810,y:865,row:0};
+const player={...state.position,phase:0},keys=new Map(),pad=new Set();
+const keyMap={ArrowUp:'up',w:'up',ц:'up',ArrowDown:'down',s:'down',ы:'down',ArrowLeft:'left',a:'left',ф:'left',ArrowRight:'right',d:'right',в:'right'};
+let map=null,sprite=null,route=[],paused=false,lastTime=0,lastSave=0,nearbyId=null,actionRevision=0;
+const actionDialog=ui('day-action-dialog'),pauseDialog=ui('campus-pause-dialog');
+const HEAD_PORTRAIT='assets/characters/head/calm.png',HEAD_OFFICE='assets/classrooms/head/office.png';
+document.body.classList.toggle('large-text',menuSave.largeText===true);
+document.body.classList.toggle('no-animation',menuSave.animations===false);
+ui('campus-player').textContent=D.characters[character];
+function save(){state.position={x:player.x,y:player.y,row:player.row};try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch{}}
+function clearMovement(){keys.clear();pad.clear();route=[];player.phase=0;document.querySelectorAll('[data-move]').forEach(b=>b.classList.remove('active'));}
+function message(text){ui('campus-message').textContent=text;}
+function worldActive(){return !!map&&!!sprite&&!paused&&!state.scene&&!state.finished&&!document.hidden&&!actionDialog.open&&!pauseDialog.open;}
+function inertWorld(value){document.querySelector('.campus-header').inert=value;document.querySelector('.campus-page>main').inert=value;}
+function action(title,text,options){
+  clearMovement();ui('action-title').textContent=title;ui('action-text').textContent=text;
+  const revision=++actionRevision,buttons=ui('action-buttons');buttons.replaceChildren();
+  for(const option of options){const button=document.createElement('button');button.textContent=option.label;if(option.primary)button.className='primary';button.addEventListener('click',()=>{if(revision!==actionRevision)return;actionRevision++;actionDialog.close();option.run?.();save();});buttons.append(button);}
+  if(!actionDialog.open)actionDialog.showModal();
 }
-function startLesson() {
-  if (!isActive()) return;
-  // Always check proximity again at activation time, rather than trusting UI state.
-  const entrance = D.nearEntrance(player);
-  if (!entrance?.lesson) return;
-  enteredAt = { x:player.x, y:player.y, row:player.row };
-  activeLesson = { ...D.lessons[entrance.lesson], id:entrance.lesson };
-  clearMovement(); updatePrompt();
-  ui('novel-background').src = activeLesson.background;
-  ui('lesson-title').textContent = activeLesson.title;
-  ui('novel').hidden = false;
-  document.querySelector('.campus-header').inert = true;
-  document.querySelector('.campus-page>main').inert = true;
-  showNode('start'); save();
+function closeOption(){return {label:'Вернуться во двор',run:()=>canvas.focus({preventScroll:true})};}
+actionDialog.addEventListener('close',()=>{lastTime=performance.now();save();if(!state.scene&&!state.finished)canvas.focus({preventScroll:true});});
+function updateHUD(){
+  ui('day-clock').textContent=Day.format(state.clock);
+  const d=Day.next(state),pending=Day.pendingPermits(state)[0];
+  ui('day-lesson').textContent=d?`${state.clock<d.start?'Следующая':'Сейчас'}: ${d.title} · ${Day.format(d.start)}–${Day.format(d.end)} · ${d.room}`:'Две пары позади';
+  let goal='Демо-день завершён';
+  if(d){const r=Day.record(state,d.id);goal=pending?'Допуск: заведующая в первом корпусе':r.permitGranted&&r.admittedAt===null?`Допуск получен — вернись в корпус ${d.building}`:r.admittedAt!==null?`Вернись на пару: корпус ${d.building}, ${d.room}`:`${state.clock<d.start?'До звонка':'На пару'}: корпус ${d.building}, аудитория ${d.room}`;}
+  ui('day-goal').textContent=goal;ui('skip-lesson').disabled=!d||!worldActive();
+  ui('campus-progress').textContent=`Пройдено: ${state.records.filter(r=>r.status==='completed').length} / 2`;
 }
-function showNode(id) {
-  nodeId = id;
-  const node = activeLesson.nodes[id];
-  ui('novel-speaker').textContent = node.speaker;
-  ui('novel-text').textContent = node.text.replaceAll('{name}', D.characters[character]);
-  ui('teacher-portrait').src = `assets/characters/${activeLesson.portrait}/${node.emotion || 'calm'}.${activeLesson.portrait === 'popov' ? 'webp' : 'png'}`;
-  ui('teacher-portrait').alt = activeLesson.teacher;
-  const choices = ui('novel-choices'); choices.replaceChildren();
-  for (const [index, choice] of (node.choices || []).entries()) {
-    const button = document.createElement('button'); button.textContent = `${index + 1}. ${choice.text}`;
-    button.addEventListener('click', () => { if (!paused && activeLesson?.nodes[nodeId] === node) showNode(choice.next); });
-    choices.append(button);
+function updatePrompt(){const entrance=worldActive()?D.nearEntrance(player):null;ui('entry-prompt').hidden=!entrance;nearbyId=entrance?.id||null;if(!entrance)return;
+  const d=Day.forLesson(entrance.lesson);
+  ui('entry-description').textContent=entrance.building===1?'Первый корпус\nСтасиншина / заведующая':d?`${entrance.name}\n${d.teacher}`:`${entrance.name}\nПара пока не назначена`;
+  ui('enter-building').disabled=!d;
+}
+function interact(){if(!worldActive())return;const e=D.nearEntrance(player);if(!e?.lesson)return;clearMovement();
+  if(e.building===1)action('Первый корпус','К кому идём?',[{label:'К Стасиншиной · HTML-вёрстка',primary:true,run:()=>requestLesson('stasinshina')},{label:'К заведующей · получить допуск',run:openHead},closeOption()]);else requestLesson(e.lesson);
+}
+function requestLesson(lessonId){const d=Day.forLesson(lessonId);if(!d)return;const result=Day.admit(state,d.id);save();
+  if(result==='closed'){action('Пара закончилась','На это занятие уже не зайти. Посмотри следующую пару в расписании.',[closeOption()]);return;}
+  if(result==='early'){action('До звонка ещё есть время',`${d.title} начинается в ${Day.format(d.start)}. Подождать у аудитории?`,[{label:'Дождаться начала пары',primary:true,run:()=>{Day.jump(state,d.start);requestLesson(lessonId);}},closeOption()]);return;}
+  if(result==='permit'){openScene({type:'reaction',recordId:d.id,reason:'permit'});return;}
+  if(result==='resume'){openScene({type:'lesson',recordId:d.id});return;}
+  openScene({type:'reaction',recordId:d.id,reason:result});
+}
+function openHead(){const pending=Day.pendingPermits(state)[0];
+  if(!pending){action('Кабинет заведующей','Сейчас действующий допуск не требуется. Если пара уже закончилась, разрешение не отменит прогул.',[closeOption()]);return;}
+  openScene({type:'head',recordId:pending.id});
+}
+function openScene(scene){clearMovement();state.scene=scene;ui('novel').hidden=false;inertWorld(true);renderScene();updatePrompt();save();}
+function finishScene(){state.scene=null;ui('novel').hidden=true;inertWorld(false);clearMovement();lastTime=performance.now();save();canvas.focus({preventScroll:true});updateHUD();updatePrompt();if(state.finished)showResults();}
+function exitScene(){const scene=state.scene;if(!scene)return;if(scene.type==='lesson'||(scene.type==='reaction'&&Day.record(state,scene.recordId).admittedAt!==null))Day.leave(state,scene.recordId);finishScene();message('Ты снова во дворе. Часы идут.');}
+function renderScene(){const scene=state.scene;if(!scene)return;const d=Day.definition(scene.recordId),r=Day.record(state,d.id),lesson=D.lessons[d.lessonId];
+  const isHead=scene.type.startsWith('head');
+  ui('novel-background').src=isHead?HEAD_OFFICE:lesson.background;
+  ui('novel-background').alt=isHead?'Кабинет заведующей':'Аудитория';
+  ui('lesson-title').textContent=isHead?'Первый корпус · Кабинет заведующей':lesson.title;
+  const portrait=ui('teacher-portrait');portrait.src=isHead?HEAD_PORTRAIT:`assets/characters/${lesson.portrait}/${scene.type==='reaction'&&scene.reason!=='on-time'?'surprised':scene.type==='lesson'?(lesson.nodes[r.node]?.emotion||'calm'):'calm'}.${lesson.portrait==='popov'?'webp':'png'}`;portrait.alt=isHead?'Заведующая':lesson.teacher;portrait.classList.toggle('head-portrait',isHead);
+  const choices=ui('novel-choices');choices.replaceChildren();ui('novel-next').hidden=false;
+  let text='',speaker=isHead?'Заведующая':lesson.teacher,nextLabel='Дальше →',nextAction=null;
+  function choice(label,run){const button=document.createElement('button');button.textContent=`${choices.children.length+1}. ${label}`;button.addEventListener('click',()=>{if(paused||state.scene!==scene)return;run();save();});choices.append(button);}
+  if(scene.type==='reaction'){
+    if(scene.reason==='permit'){text=`Больше получаса опоздания, ${D.characters[character]}. Сначала получи допуск у заведующей в первом корпусе, потом возвращайся — до ${Day.format(d.end)}.`;nextLabel='Идти за допуском →';nextAction=()=>{finishScene();message('Заведующая — первый корпус. Допуск нужен именно на эту пару.');};}
+    else {text=scene.reason==='on-time'?`Вовремя, ${D.characters[character]}. Проходи, начинаем.`:scene.reason==='warning'?`Уже ${Math.ceil(r.lateSeconds/60)} минут опоздания. Это выговор, ${D.characters[character]}. Проходи, но больше так не делай.`:scene.reason==='with-permit'?'Допуск вижу. Проходи. В следующий раз приходи вовремя.':`Немного опоздал, ${D.characters[character]}. Заходи тихо, уже начали.`;nextAction=()=>{state.scene={type:'lesson',recordId:d.id};renderScene();save();};}
+  } else if(scene.type==='head') {
+    text=`${D.characters[character]}, снова опоздание? Нужен допуск на «${d.title}». Что случилось?`;
+    for(const reason of ['Проспал. Постараюсь больше не опаздывать.','Перепутал корпус. Теперь дорогу запомнил.'])choice(reason,()=>{if(!Day.grant(state,d.id,reason)){finishScene();return;}state.scene={type:'head-granted',recordId:d.id};renderScene();});
+  } else if(scene.type==='head-granted') {
+    text=r.permitReason?.startsWith('Проспал')?'Будильник завтра поставь заранее. Допуск подписан. Возвращайся к преподавателю.':'Сначала смотри расписание, потом гуляй между корпусами. Допуск подписан, иди на пару.';
+    nextLabel='Вернуться во двор →';nextAction=finishScene;
+  } else {
+    if(!Object.hasOwn(lesson.nodes,r.node))r.node='start';const node=lesson.nodes[r.node];
+    speaker=node.speaker;text=node.text.replaceAll('{name}',D.characters[character]);
+    if(node.choices)for(const c of node.choices)choice(c.text,()=>{r.node=c.next;renderScene();});
+    nextLabel=node.end?'Закончить пару →':'Дальше →';nextAction=()=>{if(node.end){Day.complete(state,d.id);finishScene();message(`Звонок. ${Day.format(d.end)} — пара закончилась.`);}else{r.node=node.next;renderScene();save();}};
   }
-  ui('novel-next').hidden = !!node.choices;
-  ui('novel-next').textContent = node.end ? 'Выйти во двор →' : 'Дальше →';
-  (node.choices ? choices.firstElementChild : ui('novel-next')).focus({preventScroll:true});
+  ui('novel-speaker').textContent=speaker;ui('novel-text').textContent=text;ui('novel-next').textContent=nextLabel;ui('novel-next').hidden=choices.children.length>0;
+  ui('novel-next').onclick=()=>{if(!paused&&state.scene===scene)nextAction?.();save();};
+  (choices.firstElementChild||ui('novel-next')).focus({preventScroll:true});
 }
-function leaveLesson(finished = false) {
-  if (!activeLesson) return;
-  const teacher = activeLesson.teacher;
-  if (finished) completed.add(activeLesson.id);
-  activeLesson = null; nodeId = null; clearMovement();
-  if (enteredAt) Object.assign(player, enteredAt);
-  enteredAt = null; ui('novel').hidden = true;
-  document.querySelector('.campus-header').inert = false;
-  document.querySelector('.campus-page>main').inert = false;
-  updateProgress(); updatePrompt(); save(); canvas.focus({preventScroll:true});
-  message(finished ? `Знакомство с парой завершено. ${teacher} остаётся в своём корпусе.` : 'Ты снова во дворе. В пару можно зайти ещё раз.');
-}
-function advance() { if (!activeLesson || paused) return; const node = activeLesson.nodes[nodeId]; if (node.choices) return; if (node.end) leaveLesson(true); else if (node.next) showNode(node.next); }
-function pause() { if (paused) return; paused = true; clearMovement(); updatePrompt(); save(); ui('campus-pause-dialog').showModal(); }
-function resume() { paused = false; updatePrompt(); if (activeLesson) (ui('novel-choices').firstElementChild || ui('novel-next')).focus({preventScroll:true}); else canvas.focus({preventScroll:true}); }
-
-function draw() {
-  context.clearRect(0,0,1536,1024);
-  if (map) context.drawImage(map,0,0,1536,1024);
-  if (map) for (const entrance of D.entrances.filter(e => e.lesson)) {
-    const close = nearbyId === entrance.id;
-    context.fillStyle = close ? '#5fd4ff' : '#12263de8'; context.strokeStyle = '#8fe3ff'; context.lineWidth = 2;
-    context.beginPath(); context.arc(entrance.x,entrance.y-12,17,0,Math.PI*2); context.fill(); context.stroke();
-    context.fillStyle = close ? '#0b1c30' : '#f4f1ea'; context.font = 'bold 17px Nunito, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillText(String(entrance.building), entrance.x,entrance.y-12);
+function showResults(){clearMovement();ui('day-results').hidden=false;ui('novel').hidden=true;inertWorld(true);const list=ui('results-list');list.replaceChildren();
+  for(const r of Day.summary(state)){const article=document.createElement('article');article.className='result-card';const title=document.createElement('h3');title.textContent=`${r.slot}. ${r.title}`;article.append(title);
+    const lines=[r.status==='completed'?'Пара пройдена':r.status==='missed'?'Прогул':'Ушёл раньше окончания',`Опоздание: ${r.lateMinutes} мин. · Выговор: ${r.warning?'да':'нет'} · Допуск: ${r.permitGranted?'получен'+(r.status==='missed'?' (пара всё равно пропущена)':''):r.permitRequested?'не получен':'не требовался'}`,`Ранний уход: ${r.leftEarly?'да':'нет'}`,r.comment];
+    for(const text of lines){const p=document.createElement('p');p.textContent=text;article.append(p);}list.append(article);
   }
-  if (sprite) {
-    const sw=sprite.naturalWidth/3, sh=sprite.naturalHeight/4, height=72, width=height*sw/sh;
-    const column=[0,1,0,2][Math.floor(player.phase)%4];
-    context.fillStyle='#07162455';context.beginPath();context.ellipse(player.x,player.y,11,4,0,0,Math.PI*2);context.fill();
-    context.drawImage(sprite,column*sw,player.row*sh,sw,sh,player.x-width/2,player.y-height*.9,width,height);
+  ui('replay-day').focus({preventScroll:true});save();
+}
+function pause(){if(paused||state.finished)return;paused=true;clearMovement();save();if(!pauseDialog.open)pauseDialog.showModal();updatePrompt();}
+function resume(){paused=false;lastTime=performance.now();if(state.scene)renderScene();else canvas.focus({preventScroll:true});}
+function draw(){context.clearRect(0,0,1536,1024);if(map)context.drawImage(map,0,0,1536,1024);
+  if(map)for(const e of D.entrances.filter(e=>e.lesson)){context.fillStyle=nearbyId===e.id?'#5fd4ff':'#12263de8';context.strokeStyle='#8fe3ff';context.lineWidth=2;context.beginPath();context.arc(e.x,e.y-12,17,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#f4f1ea';context.font='bold 17px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(String(e.building),e.x,e.y-12);}
+  if(sprite){const sw=sprite.naturalWidth/3,sh=sprite.naturalHeight/4,height=72,width=height*sw/sh,column=[0,1,0,2][Math.floor(player.phase)%4];context.fillStyle='#07162455';context.beginPath();context.ellipse(player.x,player.y,11,4,0,0,Math.PI*2);context.fill();context.drawImage(sprite,column*sw,player.row*sh,sw,sh,player.x-width/2,player.y-height*.9,width,height);}
+}
+function tick(time){const elapsed=lastTime?Math.max(0,(time-lastTime)/1000):0,dt=Math.min(elapsed,.05);lastTime=time;
+  if(worldActive()){
+    Day.advance(state,elapsed);if(state.finished)showResults();
+    const active=new Set([...keys.values(),...pad]);let dx=Number(active.has('right'))-Number(active.has('left')),dy=Number(active.has('down'))-Number(active.has('up')),distance=185*dt;
+    if(!dx&&!dy&&route.length){const goal=route[0];dx=goal.x-player.x;dy=goal.y-player.y;if(Math.hypot(dx,dy)<2){route.shift();dx=dy=0;}else distance=Math.min(distance,Math.hypot(dx,dy));}
+    const length=Math.hypot(dx,dy),before={x:player.x,y:player.y};if(length){dx/=length;dy/=length;const x=player.x+dx*distance,y=player.y+dy*distance;if(D.canStand(x,player.y))player.x=x;if(D.canStand(player.x,y))player.y=y;player.row=Math.abs(dx)>Math.abs(dy)?(dx>0?2:1):(dy>0?0:3);}
+    player.phase=Math.hypot(player.x-before.x,player.y-before.y)>.01?player.phase+dt*7:0;
+    if(time-lastSave>1000){save();lastSave=time;}
   }
+  updateHUD();updatePrompt();draw();requestAnimationFrame(tick);
 }
-function tick(time) {
-  const dt=lastTime ? Math.min((time-lastTime)/1000,.05) : 0; lastTime=time;
-  if (isActive()) {
-    const active = new Set([...keys.values(),...pad]);
-    let dx=Number(active.has('right'))-Number(active.has('left')), dy=Number(active.has('down'))-Number(active.has('up'));
-    let distance=185*dt;
-    if (!dx && !dy && route.length) {
-      const target=route[0];dx=target.x-player.x;dy=target.y-player.y;
-      if (Math.hypot(dx,dy)<2) { route.shift(); if (!route.length) save(); dx=dy=0; }
-      else distance=Math.min(distance,Math.hypot(dx,dy));
-    }
-    const length=Math.hypot(dx,dy), before={x:player.x,y:player.y};
-    if (length) {
-      dx/=length;dy/=length;
-      const x=player.x+dx*distance,y=player.y+dy*distance;
-      if (D.canStand(x,player.y)) player.x=x;
-      if (D.canStand(player.x,y)) player.y=y;
-      player.row=Math.abs(dx)>Math.abs(dy)?(dx>0?2:1):(dy>0?0:3);
-    }
-    if (Math.hypot(player.x-before.x,player.y-before.y)>.01) player.phase+=dt*7;
-    else player.phase=0;
-  }
-  updatePrompt();draw();requestAnimationFrame(tick);
-}
-function goTo(x,y) {
-  if (!isActive()) return;
-  const entrance = D.entrances.find(e=>Math.hypot(x-e.x,y-e.y)<60);
-  const goal = entrance ? {x:entrance.x,y:entrance.y} : {x,y};
-  const path = D.findPath(player,goal);
-  clearMovement(); route=path;
-  message(path.length ? (entrance ? `Идём: ${entrance.name.toLowerCase()}. У двери нажми E или «Войти».` : '') : 'Здесь не пройти. Выбери место на дорожке.');
-}
+function goTo(x,y){if(!worldActive())return;const e=D.entrances.find(e=>Math.hypot(x-e.x,y-e.y)<60),goal=e?{x:e.x,y:e.y}:{x,y};clearMovement();route=D.findPath(player,goal);message(route.length?(e?`Идём: ${e.name.toLowerCase()}. У двери нажми E.`:''):'Здесь не пройти. Выбери дорожку.');}
 canvas.addEventListener('pointerdown',event=>{canvas.focus({preventScroll:true});const r=canvas.getBoundingClientRect();goTo((event.clientX-r.left)*1536/r.width,(event.clientY-r.top)*1024/r.height);});
 document.addEventListener('keydown',event=>{
-  if (event.key==='Escape') { if (!ui('campus-pause-dialog').open) { event.preventDefault();pause(); } return; }
-  if (paused) return;
-  if (activeLesson) {
-    if (event.repeat) return;
-    const choice=Number(event.key)-1;
-    if (/^[1-9]$/.test(event.key)) { const button=ui('novel-choices').children[choice];if(button){event.preventDefault();button.click();} }
-    else if ((event.key===' '||event.key==='Enter') && !event.target.closest('button,a,input,select')) {event.preventDefault();advance();}
-    return;
-  }
-  if ((event.key.toLowerCase()==='e'||event.key.toLowerCase()==='у') && !event.repeat && !event.target.closest('a,input,select')) { event.preventDefault();startLesson();return; }
-  if (event.target.closest('button,a,input,select')) return;
-  const direction=keyMap[event.key] || keyMap[event.key.toLowerCase()];if(direction){event.preventDefault();keys.set(event.code,direction);route=[];}
+  if(event.key==='Escape'){if(!pauseDialog.open&&!actionDialog.open&&!state.finished){event.preventDefault();pause();}return;}
+  if(paused||actionDialog.open||state.finished)return;
+  if(state.scene){if(event.repeat)return;if(/^[1-9]$/.test(event.key)){event.preventDefault();ui('novel-choices').children[Number(event.key)-1]?.click();}else if((event.key===' '||event.key==='Enter')&&!event.target.closest('button,a,input,select')){event.preventDefault();ui('novel-next').click();}return;}
+  if(['e','у'].includes(event.key.toLowerCase())&&!event.repeat&&!event.target.closest('a,input,select')){event.preventDefault();interact();return;}
+  if(event.target.closest('button,a,input,select'))return;const direction=keyMap[event.key]||keyMap[event.key.toLowerCase()];if(direction){event.preventDefault();keys.set(event.code,direction);route=[];}
 });
-document.addEventListener('keyup',event=>{keys.delete(event.code);if(!keys.size)save();});
-window.addEventListener('blur',()=>{clearMovement();save();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){clearMovement();save();if(!paused)pause();}});
-window.addEventListener('pagehide',save);
-for (const button of document.querySelectorAll('[data-move]')) {
-  const start=()=>{if(!isActive())return;pad.add(button.dataset.move);route=[];button.classList.add('active');};
-  const stop=()=>{pad.delete(button.dataset.move);button.classList.remove('active');save();};
-  button.addEventListener('pointerdown',event=>{event.preventDefault();button.setPointerCapture(event.pointerId);start();});
-  for(const event of ['pointerup','pointercancel','lostpointercapture','blur'])button.addEventListener(event,stop);
-  button.addEventListener('keydown',event=>{if(event.key===' '||event.key==='Enter'){event.preventDefault();start();}});button.addEventListener('keyup',stop);
-}
-ui('enter-building').addEventListener('click',startLesson);
-ui('novel-next').addEventListener('click',advance);
-ui('leave-lesson').addEventListener('click',()=>leaveLesson(false));
-ui('campus-pause').addEventListener('click',pause);
-ui('campus-resume').addEventListener('click',()=>ui('campus-pause-dialog').close());
-ui('campus-pause-dialog').addEventListener('close',resume);
+document.addEventListener('keyup',event=>{keys.delete(event.code);save();});
+window.addEventListener('blur',()=>{clearMovement();save();});document.addEventListener('visibilitychange',()=>{lastTime=performance.now();if(document.hidden){clearMovement();save();if(!paused&&!state.finished)pause();}});window.addEventListener('pagehide',save);
+for(const button of document.querySelectorAll('[data-move]')){const start=()=>{if(!worldActive())return;pad.add(button.dataset.move);route=[];button.classList.add('active');},stop=()=>{pad.delete(button.dataset.move);button.classList.remove('active');save();};button.addEventListener('pointerdown',event=>{event.preventDefault();button.setPointerCapture(event.pointerId);start();});for(const event of ['pointerup','pointercancel','lostpointercapture','blur'])button.addEventListener(event,stop);button.addEventListener('keydown',event=>{if(event.key===' '||event.key==='Enter'){event.preventDefault();start();}});button.addEventListener('keyup',stop);}
+ui('enter-building').addEventListener('click',interact);ui('leave-lesson').addEventListener('click',exitScene);ui('campus-pause').addEventListener('click',pause);ui('campus-resume').addEventListener('click',()=>pauseDialog.close());pauseDialog.addEventListener('close',resume);
+ui('skip-lesson').addEventListener('click',()=>{if(!worldActive())return;const d=Day.next(state);if(!d)return;action('Прогулять пару?',`${d.title} · ${d.teacher} · ${Day.format(d.start)}–${Day.format(d.end)}. Время перейдёт к концу занятия.`,[{label:`Прогулять и дождаться ${Day.format(d.end)}`,primary:true,run:()=>{Day.skip(state,d.id);updateHUD();if(state.finished)showResults();}},closeOption()]);});
+ui('replay-day').addEventListener('click',()=>{state=Day.create(character);Object.assign(player,state.position,{phase:0});ui('day-results').hidden=true;inertWorld(false);lastTime=performance.now();save();canvas.focus({preventScroll:true});});
 function loadImage(path){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error(path));image.src=path;});}
-Promise.all([loadImage('assets/campus/campus-map-v4.png'),loadImage(`assets/walk/${character}.png`)]).then(([background,actor])=>{
-  map=background;sprite=actor;ui('campus-loading').hidden=true;updatePrompt();canvas.focus({preventScroll:true});
-}).catch(()=>{ui('campus-loading').textContent='Не удалось загрузить кампус. Обнови страницу, чтобы попробовать ещё раз.';});
-updateProgress();requestAnimationFrame(tick);
+Promise.all([loadImage('assets/campus/campus-map-v4.png'),loadImage(`assets/walk/${character}.png`)]).then(([background,actor])=>{map=background;sprite=actor;ui('campus-loading').hidden=true;if(state.finished)showResults();else if(state.scene){const r=Day.record(state,state.scene.recordId),d=Day.definition(state.scene.recordId);if(!Object.hasOwn(D.lessons[d.lessonId].nodes,r.node))r.node='start';openScene(state.scene);}else canvas.focus({preventScroll:true});lastTime=performance.now();}).catch(()=>{ui('campus-loading').textContent='Не удалось загрузить кампус. Обнови страницу.';});
+updateHUD();requestAnimationFrame(tick);
