@@ -3,11 +3,11 @@ const assert = require('node:assert/strict');
 const schedule = require('../games/between-classes/data/schedule.json');
 const { lessons } = require('../games/between-classes/campus-data.js');
 
-test('weekly schedule preserves source slots, valid references and unspecified times/rooms', () => {
+test('weekly schedule preserves source slots, valid references and bell times and unspecified rooms', () => {
   assert.equal(schedule.group, 'П-24-67Б');
   assert.deepEqual(schedule.days.map(day=>day.lessons.map(lesson=>lesson.slot)), [[1,2,3,4],[2,3,4,5],[1,2,3],[4,5,6],[1,2,3,4]]);
   assert.equal(schedule.days.flatMap(day=>day.lessons).length, 18);
-  assert.ok(schedule.timeSlots.every(slot=>slot.start===null&&slot.end===null));
+  assert.deepEqual(schedule.timeSlots.map(slot=>[slot.start,slot.end]), [['08:30','10:00'],['10:10','11:40'],['12:10','13:40'],['13:50','15:20'],['15:40','17:10'],['17:20','18:50']]);
   for(const day of schedule.days) {
     for(const entry of day.lessons) {
       assert.ok(schedule.courses[entry.courseId], entry.courseId);
