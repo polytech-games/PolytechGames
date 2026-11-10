@@ -50,7 +50,7 @@ async function main() {
       };
 
       await go('index.html');
-      assert.equal(await page.locator('a.item').count(), 5);
+      assert.equal(await page.locator('a.item').count(), 6);
       for (const image of await page.locator('img').all()) {
         assert.equal(await image.evaluate(img => img.complete && img.naturalWidth > 0), true);
       }
