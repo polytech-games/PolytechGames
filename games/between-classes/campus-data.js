@@ -64,6 +64,44 @@
     return [];
   }
   const lessons = {
+    abdrakhmanova: {
+      teacher: 'Абдрахманова', teacherId: 'abdrakhmanova', courseId: 'program-structure', title: 'Первый корпус · Структура программы · 1415', portrait: 'abdrakhmanova', reactionEmotion: 'calm', background: 'assets/classrooms/popov/bg-windows.webp',
+      nodes: {
+        start: { speaker: 'Рассказчик', text: '{name} заходит в 1415. Абдрахманова откладывает телефон и поворачивается к группе.', emotion: 'calm', next: 'greeting' },
+        greeting: { speaker: 'Абдрахманова', text: 'Сегодня делим программу на модули. Представь приложение с расписанием: где будут данные, где логика, где интерфейс?', emotion: 'calm', choices: [{ text: 'Сделаю отдельные модули для данных, времени и экрана.', next: 'split' }, { text: 'Напишу всё в одном файле, а потом как-нибудь разберусь.', next: 'tangle' }] },
+        split: { speaker: 'Абдрахманова', text: 'Хорошо. Тогда изменение оформления не должно ломать расчёт времени. У каждого модуля своя ответственность.', emotion: 'calm', next: 'task' },
+        tangle: { speaker: 'Абдрахманова', text: '«Потом» обычно наступает, когда уже ничего не найти. Давай сразу отделим данные, обработку и отображение.', emotion: 'calm', next: 'task' },
+        task: { speaker: 'Абдрахманова', text: 'Один и тот же расчёт нужен в трёх местах. Что сделаешь?', emotion: 'calm', choices: [{ text: 'Вынесу в функцию и буду вызывать её.', next: 'function' }, { text: 'Скопирую три раза. Быстрее же.', next: 'copy' }] },
+        function: { speaker: 'Абдрахманова', text: 'Именно. Задай входные данные, верни результат. Так исправление формулы потребуется только в одном месте.', emotion: 'calm', next: 'end' },
+        copy: { speaker: 'Абдрахманова', text: 'А исправлять будешь тоже три раза? Повторяющуюся логику лучше оформить функцией.', emotion: 'calm', next: 'end' },
+        end: { speaker: 'Рассказчик', text: 'Модули разложены по файлам, повторяющийся расчёт стал функцией. Абдрахманова проверяет работу — можно собираться на перемену.', emotion: 'calm', end: true },
+      },
+    },
+    'abdrakhmanova-lifecycle': {
+      teacher: 'Абдрахманова', teacherId: 'abdrakhmanova', courseId: 'product-lifecycle', title: 'Первый корпус · Жизненный цикл приложения · 1415', portrait: 'abdrakhmanova', reactionEmotion: 'calm', background: 'assets/classrooms/popov/bg-windows.webp',
+      nodes: {
+        start: { speaker: 'Абдрахманова', text: '{name}, теперь спланируем приложение до того, как начнём его писать. Для кого оно и какую задачу решает?', emotion: 'calm', choices: [{ text: 'Для студентов: показывает пары, корпуса и время начала.', next: 'requirements' }, { text: 'Сначала сделаю красивую кнопку, а там посмотрим.', next: 'button' }] },
+        requirements: { speaker: 'Абдрахманова', text: 'Это уже понятная цель. Запишем требования, затем спроектируем, реализуем и проверим приложение.', emotion: 'calm', next: 'support' },
+        button: { speaker: 'Абдрахманова', text: 'Кнопка пригодится. Но сначала определим задачу и требования, чтобы понять, что она должна делать.', emotion: 'calm', next: 'support' },
+        support: { speaker: 'Абдрахманова', text: 'Приложение выпущено, а расписание изменилось. Работа закончена?', emotion: 'calm', choices: [{ text: 'Нет, нужны сопровождение и обновление данных.', next: 'end' }, { text: 'Можно написать: «Расписание приблизительное».', next: 'update' }] },
+        update: { speaker: 'Абдрахманова', text: 'Студенту у закрытой аудитории это не поможет. После выпуска приложение всё равно нужно сопровождать.', emotion: 'calm', next: 'end' },
+        end: { speaker: 'Рассказчик', text: 'На листе готов план: требования, проектирование, реализация, тестирование и сопровождение. Абдрахманова принимает работу.', emotion: 'calm', end: true },
+      },
+    },
+    atantaeva: {
+      teacher: 'Атантаева', teacherId: 'atantaeva', courseId: 'programming-methods', title: 'Первый корпус · Способы программирования · 1311', portrait: 'atantaeva', reactionEmotion: 'calm', background: 'assets/classrooms/popov/bg-board.webp',
+      nodes: {
+        start: { speaker: 'Рассказчик', text: 'В 1311 Атантаева раздаёт задания. {name} получает лист с описанием приложения.', emotion: 'calm', next: 'approach' },
+        approach: { speaker: 'Атантаева', text: 'Есть список студентов. Нужно вывести тех, кто пришёл на пару. С чего начнёшь?', emotion: 'calm', choices: [{ text: 'Опишу данные и условие отбора, затем пройду по списку.', next: 'algorithm' }, { text: 'Найду готовый код и сразу вставлю.', next: 'paste' }] },
+        algorithm: { speaker: 'Атантаева', text: 'Да. Сначала понятный алгоритм, потом код. Для такой задачи достаточно функции и прохода по списку.', emotion: 'calm', next: 'modules' },
+        paste: { speaker: 'Атантаева', text: 'А если в готовом коде другие данные? Сначала разберём задачу и алгоритм, чтобы понимать, что переносим.', emotion: 'calm', next: 'modules' },
+        modules: { speaker: 'Атантаева', text: 'В другом модуле нужно хранить состояние занятия и действия над ним. Как можно это организовать?', emotion: 'calm', choices: [{ text: 'Объединить связанные данные и методы в объекте.', next: 'object' }, { text: 'Сделать побольше глобальных переменных.', next: 'globals' }] },
+        object: { speaker: 'Атантаева', text: 'Подходит. Выбираем способ под задачу: простой расчёт — функция, связанные состояние и действия — объект.', emotion: 'calm', next: 'end' },
+        globals: { speaker: 'Атантаева', text: 'И потом искать, кто их поменял? Лучше явно объединить связанные состояние и действия и ограничить доступ к ним.', emotion: 'calm', next: 'end' },
+        end: { speaker: 'Рассказчик', text: 'Алгоритм записан, способ реализации выбран. Атантаева забирает лист и напоминает сохранить код перед звонком.', emotion: 'calm', end: true },
+      },
+    },
+
     stasinshina: {
       teacher: 'Стасиншина', courseId: 'web-layout', title: 'Первый корпус · HTML-вёрстка', portrait: 'stasinshina', background: 'assets/classrooms/popov/bg-windows.webp',
       nodes: {
@@ -88,7 +126,7 @@
         followup: { speaker: 'Попов', text: 'Открой редактор. На практике сразу станет понятно.', emotion: 'calm', choices: [{ text: 'Открыть редактор и начать задание.', next: 'work' }, { text: 'Спросить, можно ли сегодня без ошибок.', next: 'errors' }] },
         work: { speaker: 'Попов', text: 'Отлично. Сначала пробуешь сам, потом разбираем вместе.', emotion: 'calm', next: 'end' },
         errors: { speaker: 'Попов', text: 'Можно. Но тогда отлаживать будет нечего. Начинай уже.', emotion: 'surprised', next: 'end' },
-        end: { speaker: 'Рассказчик', text: 'Работа закончена. Звенит звонок — пора во двор. Следующая пара — HTML-вёрстка у Стасиншиной в первом корпусе.', emotion: 'calm', end: true },
+        end: { speaker: 'Рассказчик', text: 'Работа закончена. Звенит звонок — пора во двор. Дальше сверяемся с расписанием и идём на следующую пару.', emotion: 'calm', end: true },
       },
     },
   };

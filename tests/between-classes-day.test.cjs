@@ -7,6 +7,38 @@ const vm=require('node:vm');
 const Day=require('../games/between-classes/day.js');
 const [first,second]=Day.definitions;
 function at(time){const state=Day.create('vlad');state.clock=time;return state;}
+test('Friday extends through Abdrakhmanova and Tuesday follows its own real timetable',()=>{
+  assert.deepEqual(Day.definitions.map(d=>d.lessonId),['popov','stasinshina','abdrakhmanova']);
+  assert.equal(Day.format(Day.END),'13:40');
+  const tuesday=Day.createModel('tuesday');
+  assert.equal(tuesday.format(tuesday.START),'09:50');
+  assert.equal(tuesday.format(tuesday.END),'17:10');
+  assert.deepEqual(tuesday.definitions.map(d=>[d.slot,d.lessonId,d.room]),[[2,'abdrakhmanova','1415'],[3,'atantaeva','1311'],[4,'stasinshina','1406'],[5,'abdrakhmanova-lifecycle','1415']]);
+  assert.equal(Day.createModel('unknown').dayId,'friday');
+});
+test('Tuesday attendance, permits and the two Abdrakhmanova scenes stay independent',()=>{
+  const model=Day.createModel('tuesday'),s=model.create('vlad');
+  const [structure,methods,,lifecycle]=model.definitions;
+  model.jump(s,structure.start);model.admit(s,structure.id);model.record(s,structure.id).node='task';
+  model.complete(s,structure.id);
+  assert.equal(model.record(s,lifecycle.id).status,'pending');
+  assert.equal(model.record(s,lifecycle.id).node,'start');
+  model.jump(s,methods.start+1801);assert.equal(model.admit(s,methods.id),'permit');
+  model.grant(s,methods.id,'Проспал');s.scene={type:'head-granted',recordId:methods.id};
+  const restored=model.restore(JSON.parse(JSON.stringify(s)),'vlad');
+  assert.equal(restored.scene.recordId,methods.id);assert.equal(restored.records[1].permitGranted,true);
+  assert.equal(restored.records[3].permitGranted,false);
+  assert.equal(Day.restore(s,'vlad').clock,Day.START);
+});
+test('old two-class Friday saves continue to the newly available third lesson',()=>{
+  const s=Day.create('vlad');
+  for(const d of Day.definitions.slice(0,2)){Day.jump(s,d.start);Day.admit(s,d.id);Day.complete(s,d.id);}
+  delete s.dayId;s.records=s.records.slice(0,2);s.finished=true;
+  const restored=Day.restore(s,'vlad');
+  assert.equal(restored.finished,false);assert.equal(restored.clock,second.end);
+  assert.equal(restored.records[2].status,'pending');
+  assert.equal(Day.next(restored).lessonId,'abdrakhmanova');
+});
 test('browser schedule is generated from the canonical JSON without fetching',()=>{
   execFileSync(process.execPath,['games/between-classes/tools/build-schedule.cjs','--check'],{cwd:path.resolve(__dirname,'..')});
   const box={window:{}};vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../games/between-classes/data/schedule.browser.js'),'utf8'),box);
@@ -44,7 +76,7 @@ test('natural no-show and deliberate skipping produce the same absence; repeat s
   const deliberate=Day.create();assert.equal(Day.skip(deliberate,first.id),true);
   assert.equal(Day.record(natural,first.id).status,'missed');assert.deepEqual(natural.records,deliberate.records);
   assert.equal(Day.skip(deliberate,first.id),false);assert.equal(Day.skip(deliberate,second.id),true);
-  assert.equal(deliberate.finished,true);assert.ok(Day.summary(deliberate).every(r=>r.status==='missed'));
+  assert.equal(deliberate.finished,false);assert.equal(Day.skip(deliberate,Day.definitions[2].id),true);assert.equal(deliberate.finished,true);assert.ok(Day.summary(deliberate).every(r=>r.status==='missed'));
 });
 test('unfinished attendance is early departure, not a no-show, at the end bell',()=>{
   const s=at(first.start);Day.admit(s,first.id);Day.leave(s,first.id);Day.jump(s,first.end);

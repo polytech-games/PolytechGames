@@ -21,10 +21,13 @@ try { const raw = JSON.parse(localStorage.getItem(KEY) || '{}'); if (raw && type
 let selectedId = CHARACTERS.some(c => c.id === saved.characterId) ? saved.characterId : 'vlad';
 let confirmedId = CHARACTERS.some(c => c.id === saved.characterId) ? saved.characterId : null;
 let currentScreen = 'menu';
+let dayId=saved.dayId==='tuesday'?'tuesday':'friday';
+$('day-select').value=dayId;
+$('day-select').addEventListener('change',event=>{dayId=event.target.value;persist();});
 const preferences = { animations: typeof saved.animations === 'boolean' ? saved.animations : !matchMedia('(prefers-reduced-motion: reduce)').matches, largeText: saved.largeText === true };
 
 function persist() {
-  try { localStorage.setItem(KEY, JSON.stringify({ version: 1, characterId: confirmedId, ...preferences })); storageAvailable = true; }
+  try { localStorage.setItem(KEY, JSON.stringify({ version: 1, characterId: confirmedId, dayId, ...preferences })); storageAvailable = true; }
   catch { storageAvailable = false; }
 }
 function updateMenu() {
@@ -94,7 +97,7 @@ $('confirm-character').addEventListener('click', () => {
   $('ready-screen').querySelector('.ready-copy>p').innerHTML = storageAvailable ? 'Выбор сохранён на этом устройстве.<br>Твоя история в Политехе начинается здесь.' : 'Персонаж выбран для этой сессии.<br>Браузер не разрешил сохранить выбор.';
   showScreen('ready');
 });
-function enterCampus() { if (confirmedId) location.href = `campus.html?character=${encodeURIComponent(confirmedId)}`; }
+function enterCampus() { if (confirmedId) location.href = `campus.html?character=${encodeURIComponent(confirmedId)}&day=${dayId}`; }
 $('ready-menu').addEventListener('click', enterCampus);
 $('continue-game').addEventListener('click', enterCampus);
 $('ready-to-menu').addEventListener('click', () => showScreen('menu'));

@@ -1,10 +1,11 @@
 'use strict';
-const D=window.CampusData, Day=window.CampusDay;
+const D=window.CampusData;
 const ui=id=>document.getElementById(id), canvas=ui('campus-canvas'), context=canvas.getContext('2d');
-const STORAGE_KEY='polytech-between-classes-campus-v2';
 function readSave(key){try{const v=JSON.parse(localStorage.getItem(key)||'{}');return v&&typeof v==='object'?v:{};}catch{return {};}}
 const menuSave=readSave('polytech-between-classes-v1');
-const requested=new URLSearchParams(location.search).get('character')||menuSave.characterId;
+const query=new URLSearchParams(location.search),Day=window.CampusDay.createModel(query.get('day')||menuSave.dayId);
+const STORAGE_KEY='polytech-between-classes-campus-v2'+(Day.dayId==='friday'?'':':'+Day.dayId);
+const requested=query.get('character')||menuSave.characterId;
 const character=Object.hasOwn(D.characters,requested)?requested:'vlad';
 let state=Day.restore(readSave(STORAGE_KEY),character);
 if(!D.canStand(state.position.x,state.position.y))state.position={x:810,y:865,row:0};
@@ -16,6 +17,8 @@ const HEAD_PORTRAIT='assets/characters/head/calm.png',HEAD_OFFICE='assets/classr
 document.body.classList.toggle('large-text',menuSave.largeText===true);
 document.body.classList.toggle('no-animation',menuSave.animations===false);
 ui('campus-player').textContent=D.characters[character];
+ui('day-name').textContent=Day.dayName.toUpperCase();
+ui('results-day').textContent=`${Day.dayName.toUpperCase()} · ${Day.definitions.length} ПАРЫ`;
 function save(){state.position={x:player.x,y:player.y,row:player.row};try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch{}}
 function clearMovement(){keys.clear();route=[];player.phase=0;}
 function message(text){ui('campus-message').textContent=text;}
@@ -32,23 +35,28 @@ actionDialog.addEventListener('close',()=>{lastTime=performance.now();save();if(
 function updateHUD(){
   ui('day-clock').textContent=Day.format(state.clock);
   const d=Day.next(state),pending=Day.pendingPermits(state)[0];
-  ui('day-lesson').textContent=d?`${state.clock<d.start?'Следующая':'Сейчас'}: ${d.title} · ${Day.format(d.start)}–${Day.format(d.end)} · ${d.room}`:'Две пары позади';
+  ui('day-lesson').textContent=d?`${state.clock<d.start?'Следующая':'Сейчас'}: ${d.title} · ${Day.format(d.start)}–${Day.format(d.end)} · ${d.room}`:'Занятия позади';
   let goal='Демо-день завершён';
   if(d){const r=Day.record(state,d.id);goal=pending?'Допуск: заведующая в первом корпусе':r.permitGranted&&r.admittedAt===null?`Допуск получен — вернись в корпус ${d.building}`:r.admittedAt!==null?`Вернись на пару: корпус ${d.building}, ${d.room}`:`${state.clock<d.start?'До звонка':'На пару'}: корпус ${d.building}, аудитория ${d.room}`;}
   ui('day-goal').textContent=goal;ui('skip-lesson').disabled=!d||!worldActive();
-  ui('campus-progress').textContent=`Пройдено: ${state.records.filter(r=>r.status==='completed').length} / 2`;
+  ui('campus-progress').textContent=`Пройдено: ${state.records.filter(r=>r.status==='completed').length} / ${Day.definitions.length}`;
 }
 function updatePrompt(){const entrance=worldActive()?D.nearEntrance(player):null;ui('entry-prompt').hidden=!entrance;nearbyId=entrance?.id||null;if(!entrance)return;
   const d=Day.forLesson(entrance.lesson);
-  ui('entry-description').textContent=entrance.building===1?'Первый корпус\nСтасиншина / заведующая':d?`${entrance.name}\n${d.teacher}`:`${entrance.name}\nПара пока не назначена`;
-  ui('enter-building').disabled=!d;
+  ui('entry-description').textContent=entrance.building===1?'Первый корпус\nПары / заведующая':d?`${entrance.name}\n${d.teacher}`:`${entrance.name}\nПара пока не назначена`;
+  ui('enter-building').disabled=entrance.building!==1&&!d;
 }
 function interact(){if(!worldActive())return;const e=D.nearEntrance(player);if(!e?.lesson)return;clearMovement();
-  if(e.building===1)action('Первый корпус','К кому идём?',[{label:'К Стасиншиной · HTML-вёрстка',primary:true,run:()=>requestLesson('stasinshina')},{label:'К заведующей · получить допуск',run:openHead},closeOption()]);else requestLesson(e.lesson);
+  if(e.building===1){
+    const available=Day.definitions.filter(d=>d.building===1&&state.clock<d.end&&Day.record(state,d.id).status!=='completed');
+    action('Первый корпус',available.length?'Выбери пару или зайди к заведующей.':'На сегодня все пары в этом корпусе закончились.',[
+      ...available.map((d,index)=>({label:`${d.teacher} · ${d.title} · ${d.room} · ${Day.format(d.start)}`,primary:index===0,run:()=>requestLesson(d.id)})),
+      {label:'К заведующей · получить допуск',run:openHead},closeOption()]);
+  }else{const d=Day.forLesson(e.lesson);if(d)requestLesson(d.id);}
 }
-function requestLesson(lessonId){const d=Day.forLesson(lessonId);if(!d)return;const result=Day.admit(state,d.id);save();
+function requestLesson(recordId){const d=Day.definition(recordId);if(!d)return;const result=Day.admit(state,d.id);save();
   if(result==='closed'){action('Пара закончилась','На это занятие уже не зайти. Посмотри следующую пару в расписании.',[closeOption()]);return;}
-  if(result==='early'){action('До звонка ещё есть время',`${d.title} начинается в ${Day.format(d.start)}. Подождать у аудитории?`,[{label:'Дождаться начала пары',primary:true,run:()=>{Day.jump(state,d.start);requestLesson(lessonId);}},closeOption()]);return;}
+  if(result==='early'){action('До звонка ещё есть время',`${d.title} начинается в ${Day.format(d.start)}. Подождать у аудитории?`,[{label:'Дождаться начала пары',primary:true,run:()=>{Day.jump(state,d.start);requestLesson(recordId);}},closeOption()]);return;}
   if(result==='permit'){openScene({type:'reaction',recordId:d.id,reason:'permit'});return;}
   if(result==='resume'){openScene({type:'lesson',recordId:d.id});return;}
   openScene({type:'reaction',recordId:d.id,reason:result});
@@ -65,7 +73,7 @@ function renderScene(){const scene=state.scene;if(!scene)return;const d=Day.defi
   ui('novel-background').src=isHead?HEAD_OFFICE:lesson.background;
   ui('novel-background').alt=isHead?'Кабинет заведующей':'Аудитория';
   ui('lesson-title').textContent=isHead?'Первый корпус · Кабинет заведующей':lesson.title;
-  const portrait=ui('teacher-portrait');portrait.src=isHead?HEAD_PORTRAIT:`assets/characters/${lesson.portrait}/${scene.type==='reaction'&&scene.reason!=='on-time'?'surprised':scene.type==='lesson'?(lesson.nodes[r.node]?.emotion||'calm'):'calm'}.${lesson.portrait==='popov'?'webp':'png'}`;portrait.alt=isHead?'Заведующая':lesson.teacher;portrait.classList.toggle('head-portrait',isHead);
+  const portrait=ui('teacher-portrait');portrait.src=isHead?HEAD_PORTRAIT:`assets/characters/${lesson.portrait}/${scene.type==='reaction'&&scene.reason!=='on-time'?(lesson.reactionEmotion||'surprised'):scene.type==='lesson'?(lesson.nodes[r.node]?.emotion||'calm'):'calm'}.${lesson.portrait==='popov'?'webp':'png'}`;portrait.alt=isHead?'Заведующая':lesson.teacher;portrait.classList.toggle('head-portrait',isHead);
   const choices=ui('novel-choices');choices.replaceChildren();ui('novel-next').hidden=false;
   let text='',speaker=isHead?'Заведующая':lesson.teacher,nextLabel='Дальше →',nextAction=null;
   function choice(label,run){const button=document.createElement('button');button.textContent=`${choices.children.length+1}. ${label}`;button.addEventListener('click',()=>{if(paused||state.scene!==scene)return;run();save();});choices.append(button);}

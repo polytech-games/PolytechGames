@@ -2,18 +2,21 @@
 <link rel="stylesheet" href="../style.css"><style>body{padding:30px;max-width:900px;margin:auto}h1{font-size:30px;letter-spacing:0;margin:20px 0}button{display:block;margin:12px 0}p{margin:15px 0}a{color:#5fd4ff}</style>
 <script src="../data/schedule.browser.js"></script><script src="../day.js"></script>
 <h1>Локальная проверка дня</h1><p>Кнопки заменяют тестовое сохранение этого браузера. Использовать на отдельном локальном origin. Основное меню игры на эту страницу не ссылается.</p>
-<button data-case="fresh">Новый день 08:10</button><button data-case="on-time">У Попова перед звонком</button><button data-case="warning">Опоздание на 11 минут</button><button data-case="permit">Допуск: опоздание на 31 минуту</button><button data-case="natural">Естественный прогул двух пар у звонка</button><button data-case="resume">Незаконченная новелла Попова</button>
+<button data-case="fresh">Новый день 08:10</button><button data-case="on-time">У Попова перед звонком</button><button data-case="warning">Опоздание на 11 минут</button><button data-case="permit">Допуск: опоздание на 31 минуту</button><button data-case="natural">Естественный прогул всех пар у звонка</button><button data-case="resume">Незаконченная новелла Попова</button>
+<button data-case="abdra">Пара Абдрахмановой в пятницу</button><button data-case="atanta">Пара Атантаевой во вторник</button>
 <p id="status" role="status"></p><a href="../campus.html?character=vlad">Открыть кампус</a>
 <script>
 for(const button of document.querySelectorAll('button'))button.addEventListener('click',()=>{
- const Day=window.CampusDay,s=Day.create('vlad'),d=Day.definitions[0],mode=button.dataset.case;
+ const mode=button.dataset.case,Day=window.CampusDay.createModel(mode==='atanta'?'tuesday':'friday'),s=Day.create('vlad'),d=Day.definitions[0];
  if(mode!=='fresh')s.position={x:844,y:343,row:0};
  if(mode==='on-time')s.clock=d.start-600;
  if(mode==='warning')s.clock=d.start+660;
  if(mode==='permit')s.clock=d.start+1860;
  if(mode==='natural'){s.clock=Day.END-2;Day.sync(s);s.position={x:810,y:865,row:0};}
  if(mode==='resume'){s.clock=d.start;Day.admit(s,d.id);s.records[0].node='question';s.scene={type:'lesson',recordId:d.id};}
- localStorage.setItem('polytech-between-classes-campus-v2',JSON.stringify(s));
+ if(mode==='abdra'||mode==='atanta'){const target=Day.definitions.find(v=>v.lessonId===(mode==='abdra'?'abdrakhmanova':'atantaeva'));s.clock=target.start;Day.sync(s);Day.admit(s,target.id);s.scene={type:'lesson',recordId:target.id};s.position={x:530,y:836,row:0};}
+ localStorage.setItem('polytech-between-classes-campus-v2'+(Day.dayId==='friday'?'':':'+Day.dayId),JSON.stringify(s));
+ document.querySelector('a').href=`../campus.html?character=vlad&day=${Day.dayId}`;
  document.getElementById('status').textContent=`Подготовлено: ${button.textContent}. Время ${Day.format(s.clock)}.`;
 });
 </script></html>

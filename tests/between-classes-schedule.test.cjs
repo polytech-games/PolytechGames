@@ -19,16 +19,16 @@ test('weekly schedule preserves source slots, valid references and bell times an
   assert.equal(schedule.rooms.gym.building,null);
 });
 
-test('playable lessons match schedule course ids, teachers and confirmed buildings', () => {
+test('playable lessons match schedule course ids, teachers and building provenance', () => {
   for(const [id,lesson] of Object.entries(lessons)) {
     const course=schedule.courses[lesson.courseId];
     assert.ok(course,lesson.courseId);assert.equal(course.lessonId,id);
     const entries=schedule.days.flatMap(day=>day.lessons).filter(entry=>entry.courseId===lesson.courseId);
     assert.ok(entries.length);
     for(const entry of entries) {
-      assert.equal(entry.teacherId,id);
+      assert.equal(entry.teacherId,lesson.teacherId||id);
       assert.equal(schedule.rooms[entry.roomId].building,id==='popov'?3:1);
-      assert.equal(schedule.rooms[entry.roomId].buildingSource,'user-confirmed');
+      assert.equal(schedule.rooms[entry.roomId].buildingSource,['1415','1311'].includes(entry.roomId)?'inferred-from-room-prefix':'user-confirmed');
     }
   }
   assert.equal(schedule.courses['web-layout'].gameplayTopic,'HTML-вёрстка');

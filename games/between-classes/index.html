@@ -22,6 +22,7 @@
         <div class="eyebrow"><span class="status-dot"></span> ASTANA POLYTECHNIC · П-24-67Б</div>
         <h1 id="game-title">Между<br><span>парами</span><span class="title-period">.</span></h1>
         <p class="tagline">Три корпуса. Одно расписание.<br>И целая история между звонками.</p>
+        <label class="day-picker" for="day-select">Учебный день<select id="day-select"><option value="friday">Пятница · Попов, Стасиншина, Абдрахманова</option><option value="tuesday">Вторник · Абдрахманова, Атантаева, Стасиншина</option></select></label>
         <nav class="menu-buttons" aria-label="Главное меню">
           <button class="primary" id="new-game"><span class="play-icon">▶</span><span id="new-game-label">Выбрать персонажа</span><span class="button-arrow">↗</span></button>
           <button id="continue-game" hidden>Выйти во двор <span class="button-arrow">→</span></button>
@@ -68,11 +69,11 @@
       <img id="ready-image" class="ready-image" src="assets/characters/vlad/happy.png" alt="Влад">
     </section>
 
-    <footer class="bottom-bar"><span>POLYTECH GAMES <span class="footer-divider">/</span> МЕЖДУ ПАРАМИ</span><span>ПЯТНИЦА · v0.3</span></footer>
+    <footer class="bottom-bar"><span>POLYTECH GAMES <span class="footer-divider">/</span> МЕЖДУ ПАРАМИ</span><span>ДВА УЧЕБНЫХ ДНЯ · v0.4</span></footer>
     <p id="announcement" class="sr-only" aria-live="polite"></p>
   </main>
 
-  <dialog id="help-dialog" aria-labelledby="help-title"><button class="dialog-close" aria-label="Закрыть">×</button><div class="eyebrow">ПЕРВЫЙ УЧЕБНЫЙ ДЕНЬ</div><h2 id="help-title">Между звонками</h2><p>Ты — студент Политеха. Демо начинается в пятницу в 08:10: в 08:30 — Попов в третьем корпусе, в 10:10 — HTML-вёрстка у Стасиншиной в первом. После двух пар узнаешь, как прошёл день.</p><p>Выбери персонажа и выйди во двор. WASD или стрелки — ходьба, клик по карте — маршрут. У входа нажми E (У в русской раскладке) или «Войти»: в первом корпусе ждёт Стасиншина, в третьем — Попов. Escape открывает паузу. Во дворе минута проходит за 1,33 секунды. Диалоги и пауза останавливают часы. Можно опоздать, уйти раньше или прогулять пару — это меняет реплики и итог дня. При опоздании больше получаса понадобится допуск у заведующей в первом корпусе.</p><button class="primary" id="help-select">Выбрать персонажа →</button></dialog>
+  <dialog id="help-dialog" aria-labelledby="help-title"><button class="dialog-close" aria-label="Закрыть">×</button><div class="eyebrow">ПЕРВЫЙ УЧЕБНЫЙ ДЕНЬ</div><h2 id="help-title">Между звонками</h2><p>Ты — студент Политеха. Выбери день: пятница начинается в 08:10 и включает Попова, Стасиншину и Абдрахманову. Вторник начинается в 09:50: Абдрахманова, Атантаева, Стасиншина и снова Абдрахманова. После последней доступной пары увидишь итог дня.</p><p>Выбери персонажа и выйди во двор. WASD или стрелки — ходьба, клик по карте — маршрут. У входа нажми E (У в русской раскладке) или «Войти»: в первом корпусе выбирай преподавателя и аудиторию, в третьем в пятницу ждёт Попов. Escape открывает паузу. Во дворе минута проходит за 1,33 секунды. Диалоги и пауза останавливают часы. Можно опоздать, уйти раньше или прогулять пару — это меняет реплики и итог дня. При опоздании больше получаса понадобится допуск у заведующей в первом корпусе.</p><button class="primary" id="help-select">Выбрать персонажа →</button></dialog>
   <dialog id="settings-dialog" aria-labelledby="settings-title"><button class="dialog-close" aria-label="Закрыть">×</button><div class="eyebrow">ПОД СЕБЯ</div><h2 id="settings-title">Настройки</h2><label class="setting-row"><span>Анимации<small>Плавные переходы и появление персонажей</small></span><input id="animations" type="checkbox" checked></label><label class="setting-row"><span>Крупный текст<small>Увеличить подписи и кнопки</small></span><input id="large-text" type="checkbox"></label><p class="settings-note">Настройки сохраняются на этом устройстве.</p></dialog>
 </body>
 </html>

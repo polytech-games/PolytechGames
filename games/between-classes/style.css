@@ -13,3 +13,5 @@
 .ready-screen{padding-top:28px;padding-bottom:28px}.ready-copy h2{margin:16px 0}.ready-copy p{margin-bottom:18px}
 dialog{padding:24px}dialog h2{margin:4px 0 14px}dialog p{line-height:1.6;margin:10px 0}.setting-row{padding:12px 0}
 @media(max-width:700px){.menu-copy{padding-top:25px;padding-bottom:25px}.menu-copy h1{font-size:64px}.menu-cast{height:65%}.character-preview{min-height:210px;height:210px}.preview-image{height:380px}.preview-name{padding:40px 18px 14px}.preview-name h3{font-size:28px}.selection-layout{gap:12px}.section-heading{margin-bottom:12px}.card-art{height:90px}.select-screen{padding-top:14px;padding-bottom:14px}.ready-image{height:50%}}
+
+.day-picker{display:grid;gap:5px;margin-top:16px;max-width:360px;font-size:11px;color:var(--muted)}.day-picker select{width:100%;min-width:0;padding:10px 8px;background:#121e30;color:var(--ink);border:1px solid var(--line);border-radius:7px;font:700 11px var(--font)}

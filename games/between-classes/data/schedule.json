@@ -86,15 +86,18 @@
     },
     "product-lifecycle": {
       "title": "Проектировать web и мобильные приложения согласно жизненному циклу продукта",
-      "lessonId": null
+      "lessonId": "abdrakhmanova-lifecycle",
+      "gameplayTopic": "Жизненный цикл приложения"
     },
     "program-structure": {
       "title": "Определять структуру программы, процедуры, библиотеки языка для модулей ПО",
-      "lessonId": null
+      "lessonId": "abdrakhmanova",
+      "gameplayTopic": "Структура программы"
     },
     "programming-methods": {
       "title": "Выбирать способы программирования для каждого модуля ПО",
-      "lessonId": null
+      "lessonId": "atantaeva",
+      "gameplayTopic": "Способы программирования"
     },
     "web-layout": {
       "title": "Создавать макеты web и мобильных приложений для проектирования функциональности",
