@@ -3,7 +3,7 @@
 <script src="../data/schedule.browser.js"></script><script src="../day.js"></script>
 <h1>Локальная проверка дня</h1><p>Кнопки заменяют тестовое сохранение этого браузера. Использовать на отдельном локальном origin. Основное меню игры на эту страницу не ссылается.</p>
 <button data-case="fresh">Новый день 08:10</button><button data-case="on-time">У Попова перед звонком</button><button data-case="warning">Опоздание на 11 минут</button><button data-case="permit">Допуск: опоздание на 31 минуту</button><button data-case="natural">Естественный прогул всех пар у звонка</button><button data-case="resume">Незаконченная новелла Попова</button>
-<button data-case="abdra">Пара Абдрахмановой в пятницу</button><button data-case="atanta">Пара Атантаевой во вторник</button>
+<button data-case="stas">Пара Стасиншиной в пятницу</button><button data-case="abdra">Пара Абдрахмановой в пятницу</button><button data-case="atanta">Пара Атантаевой во вторник</button>
 <p id="status" role="status"></p><a href="../campus.html?character=vlad">Открыть кампус</a>
 <script>
 for(const button of document.querySelectorAll('button'))button.addEventListener('click',()=>{
@@ -14,7 +14,7 @@ for(const button of document.querySelectorAll('button'))button.addEventListener(
  if(mode==='permit')s.clock=d.start+1860;
  if(mode==='natural'){s.clock=Day.END-2;Day.sync(s);s.position={x:810,y:865,row:0};}
  if(mode==='resume'){s.clock=d.start;Day.admit(s,d.id);s.records[0].node='question';s.scene={type:'lesson',recordId:d.id};}
- if(mode==='abdra'||mode==='atanta'){const target=Day.definitions.find(v=>v.lessonId===(mode==='abdra'?'abdrakhmanova':'atantaeva'));s.clock=target.start;Day.sync(s);Day.admit(s,target.id);s.scene={type:'lesson',recordId:target.id};s.position={x:530,y:836,row:0};}
+ if(['stas','abdra','atanta'].includes(mode)){const target=Day.definitions.find(v=>v.lessonId===(mode==='stas'?'stasinshina':mode==='abdra'?'abdrakhmanova':'atantaeva'));s.clock=target.start;Day.sync(s);Day.admit(s,target.id);s.scene={type:'lesson',recordId:target.id};s.position={x:530,y:836,row:0};}
  localStorage.setItem('polytech-between-classes-campus-v2'+(Day.dayId==='friday'?'':':'+Day.dayId),JSON.stringify(s));
  document.querySelector('a').href=`../campus.html?character=vlad&day=${Day.dayId}`;
  document.getElementById('status').textContent=`Подготовлено: ${button.textContent}. Время ${Day.format(s.clock)}.`;

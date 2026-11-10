@@ -4,22 +4,22 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0c1420">
   <title>Двор Политеха — Между парами</title>
   <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="campus.css">
-  <script src="data/schedule.browser.js" defer></script><script src="day.js" defer></script><script src="campus-data.js" defer></script><script src="campus.js" defer></script>
+  <script src="data/schedule.browser.js" defer></script><script src="day.js" defer></script><script src="campus-data.js" defer></script><script src="campus-events.js" defer></script><script src="story.js" defer></script><script src="campus.js" defer></script>
 </head>
 <body class="campus-page">
   <header class="campus-header"><a href="index.html">← Между парами</a><div><span class="eyebrow">ASTANA POLYTECHNIC</span><h1>Между корпусами</h1></div><span id="campus-player">Студент</span><button id="campus-pause" aria-label="Открыть меню паузы">☰ Меню</button></header>
   <main>
     <div class="campus-map">
       <canvas id="campus-canvas" width="1536" height="1024" tabindex="0" aria-label="Карта кампуса. Передвигайтесь стрелками, WASD или нажмите на нужное место."></canvas>
-      <div class="day-hud"><div><span class="eyebrow" id="day-name">ПЯТНИЦА</span><strong id="day-clock">08:10</strong></div><div><strong id="day-lesson"></strong><p id="day-goal" aria-live="polite"></p></div><button id="skip-lesson">Прогулять пару</button></div>
+      <div class="day-hud"><div><span class="eyebrow" id="day-name">ПЯТНИЦА</span><button id="day-clock" title="Открыть расписание">08:10</button></div><div><strong id="day-lesson"></strong><button id="day-goal" title="Идти к текущей цели"></button></div><div class="time-tools" aria-label="Управление временем"><button id="time-speed" title="Скорость часов: ×1, ×4, ×10">×1</button><button id="wait-time">Подождать</button><button id="skip-lesson">Прогулять</button></div></div>
       <p id="campus-loading" role="status">Загрузка кампуса…</p><div id="entry-prompt" hidden><span id="entry-description" aria-live="polite"></span><button id="enter-building" class="primary"><kbd>E</kbd> Войти</button></div>
-      <div class="campus-map-footer"><span>WASD · клик / касание — идти · E — войти</span><span id="campus-progress">Пройдено: 0 / 3</span></div>
+      <div class="campus-map-footer"><span>WASD · клик / касание — идти · E — взаимодействовать</span><span id="campus-progress">Пройдено: 0 / 3</span></div>
+      <p id="campus-message" role="status"></p>
     </div>
-    <p id="campus-message" role="status"></p>
   </main>
   <section id="novel" role="dialog" aria-modal="true" aria-labelledby="lesson-title" hidden>
     <img id="novel-background" class="novel-background" src="assets/classrooms/popov/bg-windows.webp" alt="Аудитория">
-    <header class="novel-header"><h2 id="lesson-title">Пара</h2><button id="leave-lesson">Во двор ↗</button></header>
+    <header class="novel-header"><h2 id="lesson-title">Пара</h2><div class="novel-tools"><button id="conversation-log">История</button><button id="leave-lesson">Во двор ↗</button></div></header>
     <img id="teacher-portrait" class="teacher-portrait" src="assets/characters/stasinshina/calm.png" alt="Стасиншина">
     <div class="novel-dialogue"><span id="novel-speaker"></span><p id="novel-text" aria-live="polite"></p><div id="novel-choices" aria-label="Варианты ответа"></div><button id="novel-next" class="primary">Дальше →</button></div>
   </section>

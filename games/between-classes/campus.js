@@ -1,5 +1,5 @@
 'use strict';
-const D=window.CampusData;
+const D=window.CampusData,Story=window.CampusStory,Events=window.CampusEvents;
 const ui=id=>document.getElementById(id), canvas=ui('campus-canvas'), context=canvas.getContext('2d');
 function readSave(key){try{const v=JSON.parse(localStorage.getItem(key)||'{}');return v&&typeof v==='object'?v:{};}catch{return {};}}
 const menuSave=readSave('polytech-between-classes-v1');
@@ -27,7 +27,7 @@ function inertWorld(value){document.querySelector('.campus-header').inert=value;
 function action(title,text,options){
   clearMovement();ui('action-title').textContent=title;ui('action-text').textContent=text;
   const revision=++actionRevision,buttons=ui('action-buttons');buttons.replaceChildren();
-  for(const option of options){const button=document.createElement('button');button.textContent=option.label;if(option.primary)button.className='primary';button.addEventListener('click',()=>{if(revision!==actionRevision)return;actionRevision++;actionDialog.close();option.run?.();save();});buttons.append(button);}
+  for(const option of options){const button=document.createElement('button');button.textContent=option.label;button.disabled=option.disabled===true;if(option.primary)button.className='primary';button.addEventListener('click',()=>{if(revision!==actionRevision)return;actionRevision++;actionDialog.close();option.run?.();save();});buttons.append(button);}
   if(!actionDialog.open)actionDialog.showModal();
 }
 function closeOption(){return {label:'Вернуться во двор',run:()=>canvas.focus({preventScroll:true})};}
@@ -39,14 +39,36 @@ function updateHUD(){
   let goal='Демо-день завершён';
   if(d){const r=Day.record(state,d.id);goal=pending?'Допуск: заведующая в первом корпусе':r.permitGranted&&r.admittedAt===null?`Допуск получен — вернись в корпус ${d.building}`:r.admittedAt!==null?`Вернись на пару: корпус ${d.building}, ${d.room}`:`${state.clock<d.start?'До звонка':'На пару'}: корпус ${d.building}, аудитория ${d.room}`;}
   ui('day-goal').textContent=goal;ui('skip-lesson').disabled=!d||!worldActive();
+  ui('time-speed').textContent=`×${state.speed}`;
+  ui('time-speed').setAttribute('aria-label',`Скорость времени ×${state.speed}. Нажми, чтобы изменить`);
+  for(const id of ['time-speed','wait-time','day-clock','day-goal'])ui(id).disabled=!worldActive();
   ui('campus-progress').textContent=`Пройдено: ${state.records.filter(r=>r.status==='completed').length} / ${Day.definitions.length}`;
 }
-function updatePrompt(){const entrance=worldActive()?D.nearEntrance(player):null;ui('entry-prompt').hidden=!entrance;nearbyId=entrance?.id||null;if(!entrance)return;
-  const d=Day.forLesson(entrance.lesson);
-  ui('entry-description').textContent=entrance.building===1?'Первый корпус\nПары / заведующая':d?`${entrance.name}\n${d.teacher}`:`${entrance.name}\nПара пока не назначена`;
-  ui('enter-building').disabled=entrance.building!==1&&!d;
+function updatePrompt(){
+  const entrance=worldActive()?D.nearEntrance(player):null,spot=!entrance&&worldActive()?Events.near(player):null;
+  ui('entry-prompt').hidden=!entrance&&!spot;nearbyId=entrance?.id||spot?.id||null;if(!nearbyId)return;
+  const d=entrance&&Day.forLesson(entrance.lesson);
+  ui('entry-description').textContent=spot?`${spot.title}\nЕсть минутка?`:entrance.building===1?'Первый корпус\nПары / заведующая':d?`${entrance.name}\n${d.teacher}`:`${entrance.name}\nПара пока не назначена`;
+  const enter=ui('enter-building');enter.disabled=!!entrance&&entrance.building!==1&&!d;
+  if(enter.dataset.target!==nearbyId){enter.dataset.target=nearbyId;const key=document.createElement('kbd');key.textContent='E';enter.replaceChildren(key,document.createTextNode(spot?spot.prompt:'Войти'));}
 }
-function interact(){if(!worldActive())return;const e=D.nearEntrance(player);if(!e?.lesson)return;clearMovement();
+function openCampusEvent(spot){
+  const previous=state.campusEvents.find(e=>e.id===spot.id);
+  if(previous){action(spot.title,`Сегодня ты уже здесь задерживался. ${previous.text}`,[closeOption()]);return;}
+  action(spot.title,spot.text,[...spot.choices.map(c=>({label:c.label,run:()=>{
+    const result=Events.consume(state,Day,spot.id,c.id);if(!result)return;
+    action(spot.title,`${result.text}${result.minutes?'\n\nПрошло '+result.minutes+' мин. Сейчас '+Day.format(state.clock)+'.':''}`,[{label:state.finished?'Посмотреть итог дня':'Вернуться во двор',primary:true,run:()=>{if(state.finished)showResults();}}]);
+  }})),]);
+}
+function openSchedule(){
+  if(!worldActive())return;
+  const status={pending:'Ещё не был',present:'На паре',completed:'Завершена','left-early':'Вышел раньше',missed:'Прогул'};
+  action(`Расписание · ${Day.dayName}`,`Сейчас ${Day.format(state.clock)}. Выбери оставшуюся пару — персонаж пойдёт к нужному корпусу.`,[
+    ...Day.definitions.map(d=>({label:`${Day.format(d.start)}–${Day.format(d.end)} · ${d.title}\n${d.teacher} · корпус ${d.building}, ${d.room} · ${status[Day.record(state,d.id).status]}`,disabled:state.clock>=d.end||Day.record(state,d.id).status==='completed',run:()=>walkToBuilding(d.building)})),closeOption(),
+  ]);
+}
+function walkToBuilding(building){const entrance=D.entrances.find(e=>e.building===building&&e.lesson);if(entrance)goTo(entrance.x,entrance.y);}
+function interact(){if(!worldActive())return;const e=D.nearEntrance(player);if(!e){const spot=Events.near(player);if(spot)openCampusEvent(spot);return;}if(!e.lesson)return;clearMovement();
   if(e.building===1){
     const available=Day.definitions.filter(d=>d.building===1&&state.clock<d.end&&Day.record(state,d.id).status!=='completed');
     action('Первый корпус',available.length?'Выбери пару или зайди к заведующей.':'На сегодня все пары в этом корпусе закончились.',[
@@ -87,10 +109,10 @@ function renderScene(){const scene=state.scene;if(!scene)return;const d=Day.defi
     text=r.permitReason?.startsWith('Проспал')?'Будильник завтра поставь заранее. Допуск подписан. Возвращайся к преподавателю.':'Сначала смотри расписание, потом гуляй между корпусами. Допуск подписан, иди на пару.';
     nextLabel='Вернуться во двор →';nextAction=finishScene;
   } else {
-    if(!Object.hasOwn(lesson.nodes,r.node))r.node='start';const node=lesson.nodes[r.node];
+    if(!Object.hasOwn(lesson.nodes,r.node))r.node='start';const node=Story.view(r,lesson);
     speaker=node.speaker;text=node.text.replaceAll('{name}',D.characters[character]);
-    if(node.choices)for(const c of node.choices)choice(c.text,()=>{r.node=c.next;renderScene();});
-    nextLabel=node.end?'Закончить пару →':'Дальше →';nextAction=()=>{if(node.end){Day.complete(state,d.id);finishScene();message(`Звонок. ${Day.format(d.end)} — пара закончилась.`);}else{r.node=node.next;renderScene();save();}};
+    if(node.choices)for(const [index,c] of node.choices.entries()){const nodeId=r.node;choice(c.text,()=>{if(Story.choose(r,lesson,nodeId,index))renderScene();});}
+    nextLabel=node.end?'Закончить пару →':'Дальше →';nextAction=()=>{if(node.end){Story.finish(r,lesson);Day.complete(state,d.id);finishScene();message(`Звонок. ${Day.format(d.end)} — пара закончилась.`);}else{Story.advance(r,lesson);renderScene();save();}};
   }
   ui('novel-speaker').textContent=speaker;ui('novel-text').textContent=text;ui('novel-next').textContent=nextLabel;ui('novel-next').hidden=choices.children.length>0;
   ui('novel-next').onclick=()=>{if(!paused&&state.scene===scene)nextAction?.();save();};
@@ -98,16 +120,22 @@ function renderScene(){const scene=state.scene;if(!scene)return;const d=Day.defi
 }
 function showResults(){clearMovement();ui('day-results').hidden=false;ui('novel').hidden=true;inertWorld(true);const list=ui('results-list');list.replaceChildren();
   for(const r of Day.summary(state)){const article=document.createElement('article');article.className='result-card';const title=document.createElement('h3');title.textContent=`${r.slot}. ${r.title}`;article.append(title);
-    const lines=[r.status==='completed'?'Пара пройдена':r.status==='missed'?'Прогул':'Ушёл раньше окончания',`Опоздание: ${r.lateMinutes} мин. · Выговор: ${r.warning?'да':'нет'} · Допуск: ${r.permitGranted?'получен'+(r.status==='missed'?' (пара всё равно пропущена)':''):r.permitRequested?'не получен':'не требовался'}`,`Ранний уход: ${r.leftEarly?'да':'нет'}`,r.comment];
+    const lines=[r.status==='completed'?'Пара завершена':r.status==='missed'?'Прогул':'Ушёл раньше окончания',`Опоздание: ${r.lateMinutes} мин. · Выговор: ${r.warning?'да':'нет'} · Допуск: ${r.permitGranted?'получен'+(r.status==='missed'?' (пара всё равно пропущена)':''):r.permitRequested?'не получен':'не требовался'}`,`Ранний уход: ${r.leftEarly?'да':'нет'}`,r.comment];
+    if(r.story?.outcome)lines.push(`Чем запомнилась: ${r.story.outcome}`);
+    if(r.story?.events?.length)lines.push('На паре: '+r.story.events.join(' '));
     for(const text of lines){const p=document.createElement('p');p.textContent=text;article.append(p);}list.append(article);
   }
+  if(state.campusEvents.length){const article=document.createElement('article');article.className='result-card';const h=document.createElement('h3');h.textContent='Между парами';article.append(h);
+    for(const event of state.campusEvents){const p=document.createElement('p');p.textContent=`${Day.format(event.time)} · ${event.title} · ${event.minutes} мин. ${event.text}`;article.append(p);}list.append(article);}
   ui('replay-day').focus({preventScroll:true});save();
 }
 function pause(){if(paused||state.finished)return;paused=true;clearMovement();save();if(!pauseDialog.open)pauseDialog.showModal();updatePrompt();}
 function resume(){paused=false;lastTime=performance.now();if(state.scene)renderScene();else canvas.focus({preventScroll:true});}
 function draw(){context.clearRect(0,0,1536,1024);if(map)context.drawImage(map,0,0,1536,1024);
+  if(map&&route.length){context.save();context.strokeStyle='#5fd4ff';context.lineWidth=5;context.setLineDash([10,9]);context.beginPath();context.moveTo(player.x,player.y);for(const point of route)context.lineTo(point.x,point.y);context.stroke();context.restore();}
+  if(map)for(const spot of Events.spots){context.fillStyle=state.campusEvents.some(e=>e.id===spot.id)?'#526071e8':'#704622ed';context.strokeStyle=nearbyId===spot.id?'#fff':'#f5c76b';context.lineWidth=2;context.beginPath();context.arc(spot.x,spot.y-14,23,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#fff';context.font='bold 10px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(spot.mark,spot.x,spot.y-14);}
   if(map)for(const e of D.entrances.filter(e=>e.lesson)){context.fillStyle=nearbyId===e.id?'#5fd4ff':'#12263de8';context.strokeStyle='#8fe3ff';context.lineWidth=2;context.beginPath();context.arc(e.x,e.y-12,17,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#f4f1ea';context.font='bold 17px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(String(e.building),e.x,e.y-12);}
-  if(sprite){const sw=sprite.naturalWidth/3,sh=sprite.naturalHeight/4,height=72,width=height*sw/sh,column=[0,1,0,2][Math.floor(player.phase)%4];context.fillStyle='#07162455';context.beginPath();context.ellipse(player.x,player.y,11,4,0,0,Math.PI*2);context.fill();context.drawImage(sprite,column*sw,player.row*sh,sw,sh,player.x-width/2,player.y-height*.9,width,height);}
+  if(sprite){const sw=sprite.naturalWidth/3,sh=sprite.naturalHeight/4,height=72,width=height*sw/sh,column=[0,1,0,2][Math.floor(player.phase)%4];context.fillStyle='#07162499';context.strokeStyle='#5fd4ff';context.lineWidth=2;context.beginPath();context.ellipse(player.x,player.y,16,6,0,0,Math.PI*2);context.fill();context.stroke();context.drawImage(sprite,column*sw,player.row*sh,sw,sh,player.x-width/2,player.y-height*.9,width,height);}
 }
 function tick(time){const elapsed=lastTime?Math.max(0,(time-lastTime)/1000):0,dt=Math.min(elapsed,.05);lastTime=time;
   if(worldActive()){
@@ -120,7 +148,7 @@ function tick(time){const elapsed=lastTime?Math.max(0,(time-lastTime)/1000):0,dt
   }
   updateHUD();updatePrompt();draw();requestAnimationFrame(tick);
 }
-function goTo(x,y){if(!worldActive())return;const e=D.entrances.find(e=>Math.hypot(x-e.x,y-e.y)<60),goal=e?{x:e.x,y:e.y}:{x,y};clearMovement();route=D.findPath(player,goal);message(route.length?(e?`Идём: ${e.name.toLowerCase()}. У двери нажми E.`:''):'Здесь не пройти. Выбери дорожку.');}
+function goTo(x,y){if(!worldActive())return;const e=D.entrances.find(e=>Math.hypot(x-e.x,y-e.y)<60),spot=!e&&Events.spots.find(s=>Math.hypot(x-s.x,y-s.y)<50),goal=e?{x:e.x,y:e.y}:spot?{x:spot.x,y:spot.y}:{x,y};clearMovement();route=D.findPath(player,goal);message(route.length?(e?`Идём: ${e.name.toLowerCase()}. У двери нажми E.`:spot?`Идём: ${spot.title.toLowerCase()}. Нажми E рядом.`:''):'Здесь не пройти. Выбери дорожку.');}
 canvas.addEventListener('pointerdown',event=>{canvas.focus({preventScroll:true});const r=canvas.getBoundingClientRect();goTo((event.clientX-r.left)*1536/r.width,(event.clientY-r.top)*1024/r.height);});
 document.addEventListener('keydown',event=>{
   if(event.key==='Escape'){if(!pauseDialog.open&&!actionDialog.open&&!state.finished){event.preventDefault();pause();}return;}
@@ -132,6 +160,27 @@ document.addEventListener('keydown',event=>{
 document.addEventListener('keyup',event=>{keys.delete(event.code);save();});
 window.addEventListener('blur',()=>{clearMovement();save();});document.addEventListener('visibilitychange',()=>{lastTime=performance.now();if(document.hidden){clearMovement();save();if(!paused&&!state.finished)pause();}});window.addEventListener('pagehide',save);
 ui('enter-building').addEventListener('click',interact);ui('leave-lesson').addEventListener('click',exitScene);ui('campus-pause').addEventListener('click',pause);ui('campus-resume').addEventListener('click',()=>pauseDialog.close());pauseDialog.addEventListener('close',resume);
+ui('day-clock').addEventListener('click',openSchedule);
+ui('day-goal').addEventListener('click',()=>{if(!worldActive())return;const d=Day.next(state);if(d)walkToBuilding(Day.pendingPermits(state).length?1:d.building);});
+ui('conversation-log').addEventListener('click',()=>{
+  if(!state.scene||paused)return;const d=Day.definition(state.scene.recordId),r=Day.record(state,d.id),lesson=D.lessons[d.lessonId];
+  const entries=Story.log(r,lesson);const text=entries.length?entries.map(e=>`${e.speaker}: ${e.text.replaceAll('{name}',D.characters[character])}`).join('\n\n'):'Разговор с преподавателем ещё не начался.';
+  action('История разговора',text,[{label:'Назад к разговору',primary:true}]);
+});
+ui('time-speed').addEventListener('click',()=>{
+  if(!worldActive())return;const speeds=[1,4,10];Day.setSpeed(state,speeds[(speeds.indexOf(state.speed)+1)%speeds.length]);
+  lastTime=performance.now();save();updateHUD();message(`Часы ×${state.speed}. Ходьба остаётся с обычной скоростью.`);
+});
+ui('wait-time').addEventListener('click',()=>{
+  if(!worldActive())return;const d=Day.next(state);if(!d)return;
+  const options=[5,15,30].map(minutes=>({label:`+${minutes} минут · ${Day.format(Math.min(Day.END,state.clock+minutes*60))}`,time:Math.min(Day.END,state.clock+minutes*60)}));
+  if(state.clock<d.start)options.push({label:`К началу пары · ${Day.format(d.start)}`,time:d.start});
+  for(const minutes of [5,15,31]){const time=d.start+minutes*60;if(time>state.clock&&time<d.end)options.push({label:`Опоздать на ${minutes} мин · ${Day.format(time)}`,time});}
+  action('Пусть время пройдёт',`${d.title} · ${d.teacher}\nОжидание проходит во дворе: если пропустить конец пары, останется прогул или ранний уход. Назад время не перематывается.`,[
+    ...options.map(o=>({label:o.label,run:()=>{Day.waitUntil(state,o.time);lastTime=performance.now();updateHUD();updatePrompt();if(state.finished)showResults();}})),
+    closeOption(),
+  ]);
+});
 ui('skip-lesson').addEventListener('click',()=>{if(!worldActive())return;const d=Day.next(state);if(!d)return;action('Прогулять пару?',`${d.title} · ${d.teacher} · ${Day.format(d.start)}–${Day.format(d.end)}. Время перейдёт к концу занятия.`,[{label:`Прогулять и дождаться ${Day.format(d.end)}`,primary:true,run:()=>{Day.skip(state,d.id);updateHUD();if(state.finished)showResults();}},closeOption()]);});
 ui('replay-day').addEventListener('click',()=>{state=Day.create(character);Object.assign(player,state.position,{phase:0});ui('day-results').hidden=true;inertWorld(false);lastTime=performance.now();save();canvas.focus({preventScroll:true});});
 function loadImage(path){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error(path));image.src=path;});}
