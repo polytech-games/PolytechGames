@@ -7,19 +7,24 @@ const vm=require('node:vm');
 const Day=require('../games/between-classes/day.js');
 const [first,second]=Day.definitions;
 function at(time){const state=Day.create('vlad');state.clock=time;return state;}
-test('Friday, Tuesday and Thursday use their scheduled lessons, times and rooms',()=>{
+test('Tuesday, Wednesday and Friday cover all available lesson scenes',()=>{
+  assert.deepEqual(Day.playableDays.map(day=>day.id),['tuesday','wednesday','friday']);
+  const scenes=Day.playableDays.flatMap(day=>Day.createModel(day.id).definitions.map(d=>d.lessonId));
+  const {lessons}=require('../games/between-classes/campus-data.js');
+  assert.deepEqual(new Set(scenes),new Set(Object.keys(lessons)));
   assert.deepEqual(Day.definitions.map(d=>d.lessonId),['popov','stasinshina','abdrakhmanova','abdraimova']);
   assert.equal(Day.format(Day.END),'15:20');
   assert.deepEqual(Day.definitions.slice(-1).map(d=>[d.slot,d.building,d.room]),[[4,2,'2213']]);
-  const thursday=Day.createModel('thursday');
-  assert.equal(thursday.format(thursday.START),'13:30');
-  assert.equal(thursday.format(thursday.END),'15:20');
-  assert.deepEqual(thursday.definitions.map(d=>[d.slot,d.lessonId,d.building,d.room]),[[4,'muratov',1,'1404']]);
+  const wednesday=Day.createModel('wednesday');
+  assert.equal(wednesday.format(wednesday.START),'09:50');
+  assert.equal(wednesday.format(wednesday.END),'13:40');
+  assert.deepEqual(wednesday.definitions.map(d=>[d.slot,d.lessonId,d.building,d.room]),[[2,'popov',3,'3213'],[3,'muratov',2,'2209']]);
   const tuesday=Day.createModel('tuesday');
   assert.equal(tuesday.format(tuesday.START),'09:50');
   assert.equal(tuesday.format(tuesday.END),'17:10');
   assert.deepEqual(tuesday.definitions.map(d=>[d.slot,d.lessonId,d.room]),[[2,'abdrakhmanova','1415'],[3,'atantaeva','1311'],[4,'stasinshina','1406'],[5,'abdrakhmanova-lifecycle','1415']]);
   assert.equal(Day.createModel('unknown').dayId,'friday');
+  assert.equal(Day.createModel('thursday').dayId,'friday');
 });
 test('Tuesday attendance, permits and the two Abdrakhmanova scenes stay independent',()=>{
   const model=Day.createModel('tuesday'),s=model.create('vlad');

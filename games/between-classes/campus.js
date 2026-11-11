@@ -95,7 +95,8 @@ function renderScene(){const scene=state.scene;if(!scene)return;const d=Day.defi
   const isHead=scene.type.startsWith('head');
   ui('novel-background').src=isHead?HEAD_OFFICE:lesson.background;
   ui('novel-background').alt=isHead?'Кабинет заведующей':'Аудитория';
-  ui('lesson-title').textContent=isHead?'Первый корпус · Кабинет заведующей':lesson.title;
+  const building=campusEntrances.find(entrance=>entrance.building===d.building);
+  ui('lesson-title').textContent=isHead?'Первый корпус · Кабинет заведующей':`${building.name} · ${d.title} · ${d.room}`;
   const portrait=ui('teacher-portrait');portrait.src=isHead?HEAD_PORTRAIT:`assets/characters/${lesson.portrait}/${scene.type==='reaction'&&scene.reason!=='on-time'?(lesson.reactionEmotion||'surprised'):scene.type==='lesson'?(lesson.nodes[r.node]?.emotion||'calm'):'calm'}.${lesson.portrait==='popov'?'webp':'png'}`;portrait.alt=isHead?'Заведующая':lesson.teacher;portrait.classList.toggle('head-portrait',isHead);
   const choices=ui('novel-choices');choices.replaceChildren();ui('novel-next').hidden=false;
   let text='',speaker=isHead?'Заведующая':lesson.teacher,nextLabel='Дальше →',nextAction=null;

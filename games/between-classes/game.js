@@ -22,7 +22,12 @@ let selectedId = CHARACTERS.some(c => c.id === saved.characterId) ? saved.charac
 let confirmedId = CHARACTERS.some(c => c.id === saved.characterId) ? saved.characterId : null;
 let currentScreen = 'menu';
 const daySelect=$('day-select');
-let dayId=Array.from(daySelect.options).some(option=>option.value===saved.dayId)?saved.dayId:'friday';
+for(const day of window.CampusDay.playableDays){
+  const count=window.CampusDay.createModel(day.id).definitions.length;
+  const label=count===1?'пара':count<5?'пары':'пар';
+  daySelect.add(new Option(`${day.name} · ${count} ${label}`,day.id));
+}
+let dayId=window.CampusDay.createModel(saved.dayId).dayId;
 daySelect.value=dayId;
 daySelect.addEventListener('change',event=>{dayId=event.target.value;persist();});
 const preferences = { animations: typeof saved.animations === 'boolean' ? saved.animations : !matchMedia('(prefers-reduced-motion: reduce)').matches, largeText: saved.largeText === true };

@@ -4,13 +4,18 @@ window.CampusSchedule = {
   "group": "П-24-67Б",
   "semester": 1,
   "academicYear": null,
+  "playableDayIds": [
+    "tuesday",
+    "wednesday",
+    "friday"
+  ],
   "source": {
     "type": "user-image",
     "file": "references/weekly-timetable.png",
     "notes": [
       "Время звонков добавлено по отдельному изображению пользователя; учебный год не указан.",
       "Номера пар сохранены, включая пропуски первой пары во вторник и первых трёх пар в четверг.",
-      "Аудитория системной безопасности в среду не указана; null не заменён аудиторией четверга.",
+      "В исходном расписании у Муратова в среду стоял прочерк; аудиторию 2209 указал пользователь.",
       "Корпуса для 1406 и 3213 подтверждены пользователем; остальные определены предположительно по первой цифре аудитории.",
       "HTML-вёрстка у Стасиншиной подтверждена пользователем; официальное название предмета сохранено."
     ]
@@ -146,6 +151,12 @@ window.CampusSchedule = {
       "building": 1,
       "buildingSource": "inferred-from-room-prefix"
     },
+    "2209": {
+      "label": "2209",
+      "type": "classroom",
+      "building": 2,
+      "buildingSource": "inferred-from-room-prefix"
+    },
     "2213": {
       "label": "2213",
       "type": "classroom",
@@ -255,7 +266,7 @@ window.CampusSchedule = {
           "slot": 3,
           "courseId": "system-security",
           "teacherId": "muratov",
-          "roomId": null
+          "roomId": "2209"
         }
       ]
     },

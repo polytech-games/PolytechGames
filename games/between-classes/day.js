@@ -3,9 +3,11 @@
   else root.CampusDay = factory(root.CampusSchedule);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (schedule) {
   'use strict';
-  function createModel(dayId='friday'){
-  if(!['friday','tuesday','thursday'].includes(dayId))dayId='friday';
-  const day=schedule.days.find(d=>d.id===dayId),RATE=60/1.33;
+  const playableDays=schedule.days.filter(day=>schedule.playableDayIds.includes(day.id));
+  const defaultDay=playableDays.find(day=>day.id==='friday');
+  function createModel(requestedDayId){
+  const day=playableDays.find(day=>day.id===requestedDayId)??defaultDay;
+  const dayId=day.id,RATE=60/1.33;
   const seconds = text => { const [h,m]=text.split(':').map(Number);return h*3600+m*60; };
   const definitions = day.lessons.filter(entry=>schedule.courses[entry.courseId].lessonId).map(entry=>{
     const slot=schedule.timeSlots.find(s=>s.number===entry.slot),course=schedule.courses[entry.courseId];
@@ -81,5 +83,5 @@
   function summary(state){return definitions.map(d=>{const r=record(state,d.id);return {...d,...r,lateMinutes:Math.ceil(r.lateSeconds/60),comment:r.status==='missed'?`${d.teacher}: «До аудитории сегодня так и не дошёл?»`:r.status==='left-early'?`${d.teacher}: «Начало видел. А продолжение где?»`:r.permitGranted?`${d.teacher}: «Допуск есть. В следующий раз приходи вовремя».`:r.warning?`${d.teacher}: «Опоздание обсудили. Давай без повторений».`:r.lateSeconds>0?`${d.teacher}: «В следующий раз чуть раньше».`:`${d.teacher}: «На пару пришёл вовремя».`};});}
   return {dayId,dayName:day.name,START,END,RATE,definitions,create,restore,record,definition,forLesson,sync,advance,jump,setSpeed,waitUntil,next,admission,admit,pendingPermits,grant,leave,complete,skip,format,summary};
   }
-  return {...createModel(),createModel};
+  return {...createModel(),createModel,playableDays};
 });

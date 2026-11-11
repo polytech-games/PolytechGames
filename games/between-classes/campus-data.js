@@ -68,7 +68,6 @@
     "teacher": "Абдраимова",
     "teacherId": "abdraimova",
     "courseId": "entrepreneurship",
-    "title": "Второй корпус · Предпринимательство · 2213",
     "portrait": "abdraimova",
     "reactionEmotion": "calm",
     "background": "assets/classrooms/popov/bg-board.webp",
@@ -214,7 +213,6 @@
     "teacher": "Муратов",
     "teacherId": "muratov",
     "courseId": "system-security",
-    "title": "Первый корпус · Системная безопасность · 1404",
     "portrait": "muratov",
     "reactionEmotion": "calm",
     "background": "assets/classrooms/popov/bg-windows.webp",
@@ -360,7 +358,6 @@
     "teacher": "Абдрахманова",
     "teacherId": "abdrakhmanova",
     "courseId": "program-structure",
-    "title": "Первый корпус · Структура программы · 1415",
     "portrait": "abdrakhmanova",
     "reactionEmotion": "calm",
     "background": "assets/classrooms/popov/bg-windows.webp",
@@ -570,7 +567,6 @@
     "teacher": "Абдрахманова",
     "teacherId": "abdrakhmanova",
     "courseId": "product-lifecycle",
-    "title": "Первый корпус · Жизненный цикл приложения · 1415",
     "portrait": "abdrakhmanova",
     "reactionEmotion": "calm",
     "background": "assets/classrooms/popov/bg-windows.webp",
@@ -750,7 +746,6 @@
     "teacher": "Атантаева",
     "teacherId": "atantaeva",
     "courseId": "programming-methods",
-    "title": "Первый корпус · Способы программирования · 1311",
     "portrait": "atantaeva",
     "reactionEmotion": "calm",
     "background": "assets/classrooms/popov/bg-board.webp",
@@ -976,7 +971,6 @@
   "stasinshina": {
     "teacher": "Стасиншина",
     "courseId": "web-layout",
-    "title": "Первый корпус · HTML-вёрстка",
     "portrait": "stasinshina",
     "background": "assets/classrooms/popov/bg-windows.webp",
     "nodes": {
@@ -1201,7 +1195,6 @@
   "popov": {
     "teacher": "Попов",
     "courseId": "web-platforms",
-    "title": "Третий корпус · Пара Попова",
     "portrait": "popov",
     "background": "assets/classrooms/popov/bg-board.webp",
     "nodes": {

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const schedule = require('../games/between-classes/data/schedule.json');
 const { lessons } = require('../games/between-classes/campus-data.js');
 
-test('weekly schedule preserves source slots, valid references and bell times and unspecified rooms', () => {
+test('weekly schedule preserves source slots, valid references and bell times and the corrected Wednesday room', () => {
   assert.equal(schedule.group, 'П-24-67Б');
   assert.deepEqual(schedule.days.map(day=>day.lessons.map(lesson=>lesson.slot)), [[1,2,3,4],[2,3,4,5],[1,2,3],[4,5,6],[1,2,3,4]]);
   assert.equal(schedule.days.flatMap(day=>day.lessons).length, 18);
@@ -12,10 +12,11 @@ test('weekly schedule preserves source slots, valid references and bell times an
     for(const entry of day.lessons) {
       assert.ok(schedule.courses[entry.courseId], entry.courseId);
       assert.ok(schedule.teachers[entry.teacherId], entry.teacherId);
-      if(entry.roomId!==null)assert.ok(schedule.rooms[entry.roomId],entry.roomId);
+      assert.ok(schedule.rooms[entry.roomId],entry.roomId);
     }
   }
-  assert.equal(schedule.days.find(day=>day.id==='wednesday').lessons.find(lesson=>lesson.slot===3).roomId,null);
+  assert.equal(schedule.days.find(day=>day.id==='wednesday').lessons.find(lesson=>lesson.slot===3).roomId,'2209');
+  assert.equal(schedule.days.find(day=>day.id==='thursday').lessons.find(lesson=>lesson.slot===4).roomId,'1404');
   assert.equal(schedule.rooms.gym.building,null);
 });
 
@@ -27,10 +28,9 @@ test('playable lessons match schedule course ids, teachers and building provenan
     assert.ok(entries.length);
     for(const entry of entries) {
       assert.equal(entry.teacherId,lesson.teacherId||id);
-      if(entry.roomId===null){assert.equal(id,'muratov');continue;}
       const room=schedule.rooms[entry.roomId];
-      assert.equal(room.building,{popov:3,abdraimova:2}[id]??1);
-      assert.equal(room.buildingSource,['1415','1311','1404','2213'].includes(entry.roomId)?'inferred-from-room-prefix':'user-confirmed');
+      assert.equal(room.building,{popov:3,abdraimova:2,muratov:entry.roomId==='2209'?2:1}[id]??1);
+      assert.equal(room.buildingSource,['1415','1311','1404','2209','2213'].includes(entry.roomId)?'inferred-from-room-prefix':'user-confirmed');
     }
   }
   assert.equal(schedule.courses['web-layout'].gameplayTopic,'HTML-вёрстка');
