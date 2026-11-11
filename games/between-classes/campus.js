@@ -211,13 +211,10 @@ function tick(time){const elapsed=lastTime?Math.max(0,(time-lastTime)/1000):0,dt
 }
 function goTo(x,y){if(!worldActive())return;const e=D.entrances.find(e=>Math.hypot(x-e.x,y-e.y)<60),spot=!e&&Events.spots.find(s=>Math.hypot(x-s.x,y-s.y)<50),goal=e?{x:e.x,y:e.y}:spot?{x:spot.x,y:spot.y}:{x,y};clearMovement();route=D.findPath(player,goal);message(route.length?(e?`Идём: ${e.name.toLowerCase()}. У двери нажми E.`:spot?`Идём: ${spot.title.toLowerCase()}. Нажми E рядом.`:''):'Здесь не пройти. Выбери дорожку.');}
 canvas.addEventListener('pointerdown',event=>{
-  canvas.classList.add('pointer-focus');
   canvas.focus({preventScroll:true});
   const bounds=canvas.getBoundingClientRect();
   goTo((event.clientX-bounds.left)*1536/bounds.width,(event.clientY-bounds.top)*1024/bounds.height);
 });
-canvas.addEventListener('keydown',()=>canvas.classList.remove('pointer-focus'));
-canvas.addEventListener('blur',()=>canvas.classList.remove('pointer-focus'));
 document.addEventListener('keydown',event=>{
   if(event.key==='Escape'){if(!pauseDialog.open&&!actionDialog.open&&!state.finished){event.preventDefault();pause();}return;}
   if(paused||actionDialog.open||state.finished)return;
