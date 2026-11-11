@@ -1,0 +1,16 @@
+{
+  "mode": "Built-in image_gen",
+  "reference": "../../../../zhan-na-grani/assets/cg_lose.webp",
+  "jobs": [
+    {
+      "id": "head-portrait",
+      "transparent": true,
+      "prompt": "Use case: identity-preserve. Input1 reference scene: use ONLY adult woman department head seated at FAR LEFT behind desk: short swept-back brown hair, black rectangular glasses, small dangling earrings, dark charcoal blazer over black top, composed stern face. Create ONE isolated waist-up upright portrait facing viewer in slight 3/4, arms loosely folded, preserve recognizable face, age, clothing, hair, glasses and polished illustrated anime visual novel style. Entire hair, shoulders, elbows and waist visible with headroom. GENUINELY TRANSPARENT background, no desk, chair, room, students, vignette, glow, symbols, text or watermark. Opaque woman and clean transparent edges."
+    },
+    {
+      "id": "head-office",
+      "transparent": false,
+      "prompt": "Use case: precise-object-edit. Turn reference scene into ONE EMPTY office background for visual novel, 3:2 landscape. Remove ALL five people: seated woman at left, three standing students and boy in doorway. Preserve room camera/perspective, wooden desk and chair, lamp lighting, piles of papers, bookshelves, window/blinds, plants, dark blue walls, framed certificates and door. Reconstruct the room naturally behind removed people. Close the door. Same polished illustrated anime visual novel environment, warm desk lamp and cool daylight, no people, silhouettes, text overlays or watermark. No characters baked in; character sprites will be placed later."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "sourceRepository": "/home/pirkov/PolytechGamesBackup",
+  "notes": "Two empty classroom camera views; three teacher expressions, no additional angles. Runtime WebP copied unchanged; characters retain alpha. bg-windows is source front view; bg-board is source back view.",
+  "assets": [
+    {
+      "file": "classrooms/popov/bg-windows.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/bg_front.webp",
+      "sha256": "4e2146ddd6cadd9b60002a607b79b25d08d1a56ee4ee16b8b733d52643940366",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB"
+    },
+    {
+      "file": "classrooms/popov/bg-board.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/bg_back.webp",
+      "sha256": "f911f6d943ddbaad8adecc2d8d0bbf64ac3a921ada96601cff9ee3ba76cfa0ad",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB"
+    },
+    {
+      "file": "characters/popov/calm.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/popov_calm.webp",
+      "sha256": "3df9636bb29640238d4aab97e41618dca951af6b836f7e0d38cae7a7ee3d631d",
+      "size": [
+        591,
+        900
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "file": "characters/popov/surprised.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/popov_shock1.webp",
+      "sha256": "b27141773ca7ffc9e8b1bdff01f5d863626d8ee5fabba7ba27736ccd08dc9763",
+      "size": [
+        591,
+        900
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "file": "characters/popov/shocked.webp",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/game/popov_shock3.webp",
+      "sha256": "d108666a3602333765bcf399cdea5a1d6c23d0d4c42c718ff6f6a966bb770d3b",
+      "size": [
+        778,
+        900
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "file": "characters/popov/source-generation-prompts.json",
+      "source": "/home/pirkov/PolytechGamesBackup/games/popov/assets/popov_generation_prompts.json",
+      "sha256": "cee24dc29a2ca7b239d82262bd9b49e32192d04aa1d37f60232889ebbe6de92e"
+    }
+  ]
+}

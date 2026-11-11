@@ -1,0 +1,72 @@
+{
+  "displayNames": {
+    "stasinshina": "Стасиншина",
+    "vlad": "Влад"
+  },
+  "activeVladSprites": [
+    "vlad/idle-straight.png",
+    "vlad/happy-straight.png"
+  ],
+  "assets": [
+    {
+      "file": "stasinshina/calm.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "alpha": [
+        0,
+        254
+      ],
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-0eb6a5bf-e0e4-4836-9ea7-6b0d75e5f07c.png"
+    },
+    {
+      "file": "stasinshina/surprised.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "alpha": [
+        0,
+        254
+      ],
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-dcd3e756-340a-47b2-ba90-12a25b3718e0.png"
+    },
+    {
+      "file": "stasinshina/shocked.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "alpha": [
+        0,
+        254
+      ],
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-c4714483-7e31-45bd-9e52-d9ecf451cf4f.png"
+    },
+    {
+      "file": "vlad/idle-straight.png",
+      "size": [
+        724,
+        2172
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-bcd5a80d-54f9-497b-a522-30fb4d01904e.png"
+    },
+    {
+      "file": "vlad/happy-straight.png",
+      "size": [
+        724,
+        2172
+      ],
+      "alpha": [
+        0,
+        255
+      ],
+      "source": "/home/pirkov/.codex/generated_images/01a1a7bb-ba92-7540-a9dd-8c1c06e21319/exec-7b07637c-8a23-4b46-b252-24f7bf8fcadb.png"
+    }
+  ]
+}

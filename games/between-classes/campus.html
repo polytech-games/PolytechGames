@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080b12">
+  <title>Двор Политеха — Между парами</title>
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="campus.css">
+  <script src="data/schedule.browser.js" defer></script><script src="lesson-formats.js" defer></script><script src="story.js" defer></script><script src="day.js" defer></script><script src="campus-data.js" defer></script><script src="campus-events.js" defer></script><script src="campus.js" defer></script>
+</head>
+<body class="campus-page">
+  <header class="campus-header"><a draggable="false" href="index.html">← Между парами</a><div><span class="eyebrow">ASTANA POLYTECHNIC</span><h1>Между корпусами</h1></div><span id="campus-player">Студент</span><button id="campus-pause" aria-label="Открыть меню паузы">☰ Меню</button></header>
+  <main>
+    <div class="campus-map">
+      <canvas id="campus-canvas" width="1536" height="1024" tabindex="0" aria-label="Карта кампуса. Передвигайтесь стрелками, WASD или нажмите на нужное место."></canvas>
+      <div class="day-hud"><div><span class="eyebrow" id="day-name">ПЯТНИЦА</span><button id="day-clock" title="Открыть расписание">08:10</button></div><div><strong id="day-lesson"></strong><button id="day-goal" title="Идти к текущей цели"></button></div><div class="time-tools" aria-label="Управление временем"><button id="time-speed" title="Скорость часов: ×1, ×4, ×10">×1</button><button id="wait-time">Подождать</button><button id="skip-lesson">Прогулять</button></div></div>
+      <p id="campus-loading" role="status">Загрузка кампуса…</p><div id="entry-prompt" hidden><span id="entry-description" aria-live="polite"></span><button id="enter-building" class="primary"><kbd>E</kbd> Войти</button></div>
+      <div class="campus-map-footer"><span>WASD · клик / касание — идти · E — взаимодействовать</span><span id="campus-progress">Пройдено: 0 / 3</span></div>
+      <p id="campus-message" role="status"></p>
+    </div>
+  </main>
+  <section id="novel" role="dialog" aria-modal="true" aria-labelledby="lesson-title" hidden>
+    <img draggable="false" id="novel-background" class="novel-background" src="assets/classrooms/popov/bg-windows.webp" alt="Аудитория">
+    <header class="novel-header"><h2 id="lesson-title">Пара</h2><div class="novel-tools"><button id="conversation-log">История</button><button id="leave-lesson">Во двор ↗</button></div></header>
+    <img draggable="false" id="teacher-portrait" class="teacher-portrait" src="assets/characters/stasinshina/calm.png" alt="Стасиншина">
+    <div class="novel-dialogue">
+      <span id="novel-speaker"></span><p id="novel-text" aria-live="polite"></p>
+      <div id="novel-choices" aria-label="Варианты ответа"></div>
+      <section id="lesson-activity" aria-labelledby="activity-title" hidden>
+        <div class="activity-heading"><h3 id="activity-title"></h3><span id="activity-progress"></span></div>
+        <details id="activity-notebook" hidden><summary>Открыть конспект</summary><p id="activity-notes"></p></details>
+        <ol id="activity-selection" aria-label="Собранные фрагменты" hidden></ol>
+        <p id="activity-prompt" aria-live="polite"></p>
+        <div id="activity-options" aria-label="Карточки задания"></div>
+        <p id="activity-feedback" role="status" hidden></p>
+        <div class="activity-controls"><button id="activity-undo">Отменить последний</button><button id="activity-submit" class="primary"></button></div>
+      </section>
+      <button id="novel-next" class="primary">Дальше →</button>
+    </div>
+  </section>
+  <dialog id="day-action-dialog" aria-labelledby="action-title"><h2 id="action-title"></h2><p id="action-text"></p><div id="action-buttons"></div></dialog>
+  <section id="day-results" aria-labelledby="results-title" hidden><div class="results-panel"><span class="eyebrow" id="results-day">ПЯТНИЦА · 3 ПАРЫ</span><h2 id="results-title">Как прошёл день</h2><div id="results-list"></div><button id="replay-day" class="primary">Повторить день</button><a draggable="false" href="index.html">В главное меню</a></div></section>
+  <dialog id="campus-pause-dialog" aria-labelledby="pause-title"><h2 id="pause-title">Пауза</h2><button id="campus-resume" class="primary">Продолжить</button><a draggable="false" href="index.html">В главное меню</a><a draggable="false" href="../../index.html">К списку игр</a></dialog>
+</body></html>

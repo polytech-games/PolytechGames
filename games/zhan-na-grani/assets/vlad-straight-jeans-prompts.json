@@ -1,0 +1,39 @@
+{
+  "mode": "Built-in image_gen",
+  "reused": {
+    "vlad_idle": "../../between-classes/assets/characters/vlad/idle.png",
+    "vlad_happy": "../../between-classes/assets/characters/vlad/happy.png"
+  },
+  "edits": [
+    {
+      "id": "vlad_smirk",
+      "transparent": true,
+      "extra": "This is a full-body isolated sprite. Preserve green-orange water pistol held in lowered hand. All background must remain genuinely transparent. Only widen jeans as needed, do not change upper body or pose.",
+      "prompt": "Use case: precise-object-edit. Change ONLY Vlad's jeans to NORMAL REGULAR STRAIGHT-CUT DARK CHARCOAL/BLACK DENIM: relaxed room through thighs/knees/calves, straight leg silhouette, normal width hem over sneakers. No skinny taper, no ankle-hugging fit, no huge baggy cargo, no rips. Preserve the exact same person, curly hair, facial expression, white T-shirt, arms and hands, pose, shoes, camera, composition, all other people/objects, illustration style and lighting. Keep original image dimensions and framing. No text/watermark. This is a full-body isolated sprite. Preserve green-orange water pistol held in lowered hand. All background must remain genuinely transparent. Only widen jeans as needed, do not change upper body or pose."
+    },
+    {
+      "id": "bg_title",
+      "transparent": false,
+      "extra": "This is title classroom ensemble. Vlad is ONLY the curly-haired man in white short-sleeved T-shirt standing on LEFT of group, leaning forward holding green-orange water pistol. Change only HIS visible dark trousers, making the lower leg visibly straight and comfortable. Preserve all three other men and classroom exactly.",
+      "prompt": "Use case: precise-object-edit. Change ONLY Vlad's jeans to NORMAL REGULAR STRAIGHT-CUT DARK CHARCOAL/BLACK DENIM: relaxed room through thighs/knees/calves, straight leg silhouette, normal width hem over sneakers. No skinny taper, no ankle-hugging fit, no huge baggy cargo, no rips. Preserve the exact same person, curly hair, facial expression, white T-shirt, arms and hands, pose, shoes, camera, composition, all other people/objects, illustration style and lighting. Keep original image dimensions and framing. No text/watermark. This is title classroom ensemble. Vlad is ONLY the curly-haired man in white short-sleeved T-shirt standing on LEFT of group, leaning forward holding green-orange water pistol. Change only HIS visible dark trousers, making the lower leg visibly straight and comfortable. Preserve all three other men and classroom exactly."
+    },
+    {
+      "id": "cg_win",
+      "transparent": false,
+      "extra": "This is victory classroom ensemble. Vlad is ONLY curly-haired man on FAR LEFT, white short-sleeve T-shirt, high-fiving black-haired glasses man. Change only Vlad's dark denim trousers, including visible upper legs and knees: regular straight fit, comfortable not body-hugging. Preserve all other men, their trousers, hands/high-five, expressions, desk, chair, room exactly.",
+      "prompt": "Use case: precise-object-edit. Change ONLY Vlad's jeans to NORMAL REGULAR STRAIGHT-CUT DARK CHARCOAL/BLACK DENIM: relaxed room through thighs/knees/calves, straight leg silhouette, normal width hem over sneakers. No skinny taper, no ankle-hugging fit, no huge baggy cargo, no rips. Preserve the exact same person, curly hair, facial expression, white T-shirt, arms and hands, pose, shoes, camera, composition, all other people/objects, illustration style and lighting. Keep original image dimensions and framing. No text/watermark. This is victory classroom ensemble. Vlad is ONLY curly-haired man on FAR LEFT, white short-sleeve T-shirt, high-fiving black-haired glasses man. Change only Vlad's dark denim trousers, including visible upper legs and knees: regular straight fit, comfortable not body-hugging. Preserve all other men, their trousers, hands/high-five, expressions, desk, chair, room exactly."
+    },
+    {
+      "id": "cg_lose",
+      "transparent": false,
+      "extra": "This is office ensemble. Vlad is ONLY curly-haired man LEFTMOST of the three standing students, white short-sleeve T-shirt, hands behind back. Replace only his skinny dark trousers with comfortable straight black jeans, consistent width down calves, hem resting over white sneakers. Leave ALL other students, their clothing and legs, teacher woman, office, lamp, composition and lighting exactly unchanged.",
+      "prompt": "Use case: precise-object-edit. Change ONLY Vlad's jeans to NORMAL REGULAR STRAIGHT-CUT DARK CHARCOAL/BLACK DENIM: relaxed room through thighs/knees/calves, straight leg silhouette, normal width hem over sneakers. No skinny taper, no ankle-hugging fit, no huge baggy cargo, no rips. Preserve the exact same person, curly hair, facial expression, white T-shirt, arms and hands, pose, shoes, camera, composition, all other people/objects, illustration style and lighting. Keep original image dimensions and framing. No text/watermark. This is office ensemble. Vlad is ONLY curly-haired man LEFTMOST of the three standing students, white short-sleeve T-shirt, hands behind back. Replace only his skinny dark trousers with comfortable straight black jeans, consistent width down calves, hem resting over white sneakers. Leave ALL other students, their clothing and legs, teacher woman, office, lamp, composition and lighting exactly unchanged."
+    }
+  ],
+  "reviewedUnchanged": [
+    "bg_intro (no people)",
+    "pov_vlad_pistol (hand and pistol only)",
+    "other assets (Vlad legs not visible)"
+  ],
+  "packaging": "Runtime WebP dimensions preserved to retain existing sprite placement and head portrait crops."
+}
