@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0c1420">
+  <meta name="theme-color" content="#080b12">
   <title>Между парами — Polytech Games</title>
   <link rel="stylesheet" href="style.css">
   <script src="data/schedule.browser.js" defer></script>
@@ -16,7 +16,7 @@
   <main id="game">
     <div class="backdrop" aria-hidden="true"></div>
     <header class="topbar">
-      <a class="brand" href="#menu" aria-label="Polytech Games — главное меню"><span class="brand-mark">П</span> POLYTECH <span>GAMES</span></a>
+      <a draggable="false" class="brand" href="#menu" aria-label="Polytech Games — главное меню"><span class="brand-mark">П</span> POLYTECH <span>GAMES</span></a>
       <span class="edition">VIP / СТУДЕНЧЕСКАЯ НОВЕЛЛА</span>
       <button class="icon-button" id="settings-button" aria-label="Настройки" title="Настройки">⚙</button>
     </header>
@@ -36,9 +36,9 @@
         <p class="save-note" id="save-note">Твоя история начинается с выбора.</p>
       </div>
       <div class="menu-cast" aria-hidden="true">
-        <img class="cast-back cast-left" src="assets/characters/adil/idle.webp" alt="">
-        <img class="cast-back cast-right" src="assets/characters/kirill/idle.webp" alt="">
-        <img class="cast-front" id="menu-actor" src="assets/characters/vlad/idle.png" alt="">
+        <img draggable="false" class="cast-back cast-left" src="assets/characters/adil/idle.webp" alt="">
+        <img draggable="false" class="cast-back cast-right" src="assets/characters/kirill/idle.webp" alt="">
+        <img draggable="false" class="cast-front" id="menu-actor" src="assets/characters/vlad/idle.png" alt="">
       </div>
       <div class="scene-caption"><span class="caption-line"></span> ЗНАКОМОЕ МЕСТО.<br><strong>НОВАЯ ИСТОРИЯ.</strong></div>
     </section>
@@ -53,7 +53,7 @@
         <div class="character-preview">
           <span class="preview-label">П-24-67Б / ЛИЧНОЕ ДЕЛО</span>
           <span class="preview-number" id="preview-number" aria-hidden="true">01</span>
-          <img id="preview-image" class="preview-image" src="assets/characters/vlad/idle.png" alt="Влад">
+          <img draggable="false" id="preview-image" class="preview-image" src="assets/characters/vlad/idle.png" alt="Влад">
           <div class="preview-name"><span>ТВОЙ ПЕРСОНАЖ</span><h3 id="preview-name">Влад</h3><p>Студент Astana Polytechnic</p></div>
         </div>
         <div class="roster-panel">
@@ -70,7 +70,7 @@
 
     <section id="ready-screen" class="screen ready-screen" aria-labelledby="ready-title" hidden>
       <div class="ready-copy"><div class="eyebrow"><span class="status-dot"></span> ПЕРСОНАЖ ВЫБРАН</div><h2 id="ready-title">Влад,<br>увидимся на паре.</h2><p>Выбор сохранён на этом устройстве.<br>Твоя история в Политехе начинается здесь.</p><button class="primary" id="ready-menu">Выйти во двор <span>→</span></button><button class="ghost" id="ready-to-menu">В главное меню</button><button class="ghost" id="change-character">Сменить персонажа</button></div>
-      <img id="ready-image" class="ready-image" src="assets/characters/vlad/happy.png" alt="Влад">
+      <img draggable="false" id="ready-image" class="ready-image" src="assets/characters/vlad/happy.png" alt="Влад">
     </section>
 
     <footer class="bottom-bar"><span>POLYTECH GAMES <span class="footer-divider">/</span> МЕЖДУ ПАРАМИ</span><span>ВЫБОРЫ И ПОСЛЕДСТВИЯ · v0.6</span></footer>

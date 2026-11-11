@@ -187,7 +187,12 @@ function showResults(){clearMovement();ui('day-results').hidden=false;ui('novel'
 }
 function pause(){if(paused||state.finished)return;paused=true;clearMovement();save();if(!pauseDialog.open)pauseDialog.showModal();updatePrompt();}
 function resume(){paused=false;lastTime=performance.now();if(state.scene)renderScene();else canvas.focus({preventScroll:true});}
-function draw(){context.clearRect(0,0,1536,1024);if(map)context.drawImage(map,0,0,1536,1024);
+function draw(){context.clearRect(0,0,1536,1024);
+  if(map){
+    context.drawImage(map,0,0,1536,1024);
+    context.fillStyle='#080e1a4d';
+    context.fillRect(0,0,1536,1024);
+  }
   if(map&&route.length){context.save();context.strokeStyle='#5fd4ff';context.lineWidth=5;context.setLineDash([10,9]);context.beginPath();context.moveTo(player.x,player.y);for(const point of route)context.lineTo(point.x,point.y);context.stroke();context.restore();}
   if(map)for(const spot of Events.spots){context.fillStyle=state.campusEvents.some(e=>e.id===spot.id)?'#526071e8':'#704622ed';context.strokeStyle=nearbyId===spot.id?'#fff':'#f5c76b';context.lineWidth=2;context.beginPath();context.arc(spot.x,spot.y-14,23,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#fff';context.font='bold 10px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(spot.mark,spot.x,spot.y-14);}
   if(map)for(const e of campusEntrances){context.fillStyle=nearbyId===e.id?'#5fd4ff':'#12263de8';context.strokeStyle='#8fe3ff';context.lineWidth=2;context.beginPath();context.arc(e.x,e.y-12,17,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#f4f1ea';context.font='bold 17px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(String(e.building),e.x,e.y-12);}
@@ -205,7 +210,14 @@ function tick(time){const elapsed=lastTime?Math.max(0,(time-lastTime)/1000):0,dt
   updateHUD();updatePrompt();draw();requestAnimationFrame(tick);
 }
 function goTo(x,y){if(!worldActive())return;const e=D.entrances.find(e=>Math.hypot(x-e.x,y-e.y)<60),spot=!e&&Events.spots.find(s=>Math.hypot(x-s.x,y-s.y)<50),goal=e?{x:e.x,y:e.y}:spot?{x:spot.x,y:spot.y}:{x,y};clearMovement();route=D.findPath(player,goal);message(route.length?(e?`Идём: ${e.name.toLowerCase()}. У двери нажми E.`:spot?`Идём: ${spot.title.toLowerCase()}. Нажми E рядом.`:''):'Здесь не пройти. Выбери дорожку.');}
-canvas.addEventListener('pointerdown',event=>{canvas.focus({preventScroll:true});const r=canvas.getBoundingClientRect();goTo((event.clientX-r.left)*1536/r.width,(event.clientY-r.top)*1024/r.height);});
+canvas.addEventListener('pointerdown',event=>{
+  canvas.classList.add('pointer-focus');
+  canvas.focus({preventScroll:true});
+  const bounds=canvas.getBoundingClientRect();
+  goTo((event.clientX-bounds.left)*1536/bounds.width,(event.clientY-bounds.top)*1024/bounds.height);
+});
+canvas.addEventListener('keydown',()=>canvas.classList.remove('pointer-focus'));
+canvas.addEventListener('blur',()=>canvas.classList.remove('pointer-focus'));
 document.addEventListener('keydown',event=>{
   if(event.key==='Escape'){if(!pauseDialog.open&&!actionDialog.open&&!state.finished){event.preventDefault();pause();}return;}
   if(paused||actionDialog.open||state.finished)return;
