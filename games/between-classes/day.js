@@ -4,7 +4,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (schedule) {
   'use strict';
   function createModel(dayId='friday'){
-  if(!['friday','tuesday'].includes(dayId))dayId='friday';
+  if(!['friday','tuesday','thursday'].includes(dayId))dayId='friday';
   const day=schedule.days.find(d=>d.id===dayId),RATE=60/1.33;
   const seconds = text => { const [h,m]=text.split(':').map(Number);return h*3600+m*60; };
   const definitions = day.lessons.filter(entry=>schedule.courses[entry.courseId].lessonId).map(entry=>{

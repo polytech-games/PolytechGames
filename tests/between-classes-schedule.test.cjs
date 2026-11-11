@@ -27,8 +27,10 @@ test('playable lessons match schedule course ids, teachers and building provenan
     assert.ok(entries.length);
     for(const entry of entries) {
       assert.equal(entry.teacherId,lesson.teacherId||id);
-      assert.equal(schedule.rooms[entry.roomId].building,id==='popov'?3:1);
-      assert.equal(schedule.rooms[entry.roomId].buildingSource,['1415','1311'].includes(entry.roomId)?'inferred-from-room-prefix':'user-confirmed');
+      if(entry.roomId===null){assert.equal(id,'muratov');continue;}
+      const room=schedule.rooms[entry.roomId];
+      assert.equal(room.building,{popov:3,abdraimova:2}[id]??1);
+      assert.equal(room.buildingSource,['1415','1311','1404','2213'].includes(entry.roomId)?'inferred-from-room-prefix':'user-confirmed');
     }
   }
   assert.equal(schedule.courses['web-layout'].gameplayTopic,'HTML-вёрстка');

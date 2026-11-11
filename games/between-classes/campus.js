@@ -4,6 +4,7 @@ const ui=id=>document.getElementById(id), canvas=ui('campus-canvas'), context=ca
 function readSave(key){try{const v=JSON.parse(localStorage.getItem(key)||'{}');return v&&typeof v==='object'?v:{};}catch{return {};}}
 const menuSave=readSave('polytech-between-classes-v1');
 const query=new URLSearchParams(location.search),Day=window.CampusDay.createModel(query.get('day')||menuSave.dayId);
+const campusEntrances=D.entrances.filter(e=>e.building===1||Day.definitions.some(d=>d.building===e.building));
 const STORAGE_KEY='polytech-between-classes-campus-v2'+(Day.dayId==='friday'?'':':'+Day.dayId);
 const requested=query.get('character')||menuSave.characterId;
 const character=Object.hasOwn(D.characters,requested)?requested:'vlad';
@@ -18,7 +19,7 @@ document.body.classList.toggle('large-text',menuSave.largeText===true);
 document.body.classList.toggle('no-animation',menuSave.animations===false);
 ui('campus-player').textContent=D.characters[character];
 ui('day-name').textContent=Day.dayName.toUpperCase();
-ui('results-day').textContent=`${Day.dayName.toUpperCase()} · ${Day.definitions.length} ПАРЫ`;
+ui('results-day').textContent=`${Day.dayName.toUpperCase()} · ${Day.definitions.length} ${Day.definitions.length===1?'ПАРА':'ПАРЫ'}`;
 function save(){state.position={x:player.x,y:player.y,row:player.row};try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch{}}
 function clearMovement(){keys.clear();route=[];player.phase=0;}
 function message(text){ui('campus-message').textContent=text;}
@@ -47,7 +48,7 @@ function updateHUD(){
 function updatePrompt(){
   const entrance=worldActive()?D.nearEntrance(player):null,spot=!entrance&&worldActive()?Events.near(player):null;
   ui('entry-prompt').hidden=!entrance&&!spot;nearbyId=entrance?.id||spot?.id||null;if(!nearbyId)return;
-  const d=entrance&&Day.forLesson(entrance.lesson);
+  const d=entrance&&Day.definitions.find(d=>d.building===entrance.building);
   ui('entry-description').textContent=spot?`${spot.title}\nЕсть минутка?`:entrance.building===1?'Первый корпус\nПары / заведующая':d?`${entrance.name}\n${d.teacher}`:`${entrance.name}\nПара пока не назначена`;
   const enter=ui('enter-building');enter.disabled=!!entrance&&entrance.building!==1&&!d;
   if(enter.dataset.target!==nearbyId){enter.dataset.target=nearbyId;const key=document.createElement('kbd');key.textContent='E';enter.replaceChildren(key,document.createTextNode(spot?spot.prompt:'Войти'));}
@@ -67,14 +68,14 @@ function openSchedule(){
     ...Day.definitions.map(d=>({label:`${Day.format(d.start)}–${Day.format(d.end)} · ${d.title}\n${d.teacher} · корпус ${d.building}, ${d.room} · ${status[Day.record(state,d.id).status]}`,disabled:state.clock>=d.end||Day.record(state,d.id).status==='completed',run:()=>walkToBuilding(d.building)})),closeOption(),
   ]);
 }
-function walkToBuilding(building){const entrance=D.entrances.find(e=>e.building===building&&e.lesson);if(entrance)goTo(entrance.x,entrance.y);}
-function interact(){if(!worldActive())return;const e=D.nearEntrance(player);if(!e){const spot=Events.near(player);if(spot)openCampusEvent(spot);return;}if(!e.lesson)return;clearMovement();
+function walkToBuilding(building){const entrance=campusEntrances.find(e=>e.building===building);if(entrance)goTo(entrance.x,entrance.y);}
+function interact(){if(!worldActive())return;const e=D.nearEntrance(player);if(!e){const spot=Events.near(player);if(spot)openCampusEvent(spot);return;}if(!campusEntrances.includes(e))return;clearMovement();
   if(e.building===1){
     const available=Day.definitions.filter(d=>d.building===1&&state.clock<d.end&&Day.record(state,d.id).status!=='completed');
     action('Первый корпус',available.length?'Выбери пару или зайди к заведующей.':'На сегодня все пары в этом корпусе закончились.',[
       ...available.map((d,index)=>({label:`${d.teacher} · ${d.title} · ${d.room} · ${Day.format(d.start)}`,primary:index===0,run:()=>requestLesson(d.id)})),
       {label:'К заведующей · получить допуск',run:openHead},closeOption()]);
-  }else{const d=Day.forLesson(e.lesson);if(d)requestLesson(d.id);}
+  }else{const d=Day.definitions.find(d=>d.building===e.building);if(d)requestLesson(d.id);}
 }
 function requestLesson(recordId){const d=Day.definition(recordId);if(!d)return;const result=Day.admit(state,d.id);save();
   if(result==='closed'){action('Пара закончилась','На это занятие уже не зайти. Посмотри следующую пару в расписании.',[closeOption()]);return;}
@@ -134,7 +135,7 @@ function resume(){paused=false;lastTime=performance.now();if(state.scene)renderS
 function draw(){context.clearRect(0,0,1536,1024);if(map)context.drawImage(map,0,0,1536,1024);
   if(map&&route.length){context.save();context.strokeStyle='#5fd4ff';context.lineWidth=5;context.setLineDash([10,9]);context.beginPath();context.moveTo(player.x,player.y);for(const point of route)context.lineTo(point.x,point.y);context.stroke();context.restore();}
   if(map)for(const spot of Events.spots){context.fillStyle=state.campusEvents.some(e=>e.id===spot.id)?'#526071e8':'#704622ed';context.strokeStyle=nearbyId===spot.id?'#fff':'#f5c76b';context.lineWidth=2;context.beginPath();context.arc(spot.x,spot.y-14,23,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#fff';context.font='bold 10px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(spot.mark,spot.x,spot.y-14);}
-  if(map)for(const e of D.entrances.filter(e=>e.lesson)){context.fillStyle=nearbyId===e.id?'#5fd4ff':'#12263de8';context.strokeStyle='#8fe3ff';context.lineWidth=2;context.beginPath();context.arc(e.x,e.y-12,17,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#f4f1ea';context.font='bold 17px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(String(e.building),e.x,e.y-12);}
+  if(map)for(const e of campusEntrances){context.fillStyle=nearbyId===e.id?'#5fd4ff':'#12263de8';context.strokeStyle='#8fe3ff';context.lineWidth=2;context.beginPath();context.arc(e.x,e.y-12,17,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#f4f1ea';context.font='bold 17px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(String(e.building),e.x,e.y-12);}
   if(sprite){const sw=sprite.naturalWidth/3,sh=sprite.naturalHeight/4,height=72,width=height*sw/sh,column=[0,1,0,2][Math.floor(player.phase)%4];context.fillStyle='#07162499';context.strokeStyle='#5fd4ff';context.lineWidth=2;context.beginPath();context.ellipse(player.x,player.y,16,6,0,0,Math.PI*2);context.fill();context.stroke();context.drawImage(sprite,column*sw,player.row*sh,sw,sh,player.x-width/2,player.y-height*.9,width,height);}
 }
 function tick(time){const elapsed=lastTime?Math.max(0,(time-lastTime)/1000):0,dt=Math.min(elapsed,.05);lastTime=time;

@@ -1,0 +1,7 @@
+{
+  "mode": "Built-in image_gen",
+  "output": "calm.png",
+  "prompts": [
+    "Use case: illustration-story. Transparent waist-up portrait of Yaroslav Muratov, the computer security instructor in an illustrated college visual novel. Images 1 and 2 are reference photos of the same man; image 1 is the main face reference, image 2 shows his real build and shirt. Image 3 is the game illustration style only. Capture his actual, somewhat stocky and fuller build, with broad rounded shoulders, solid upper arms, a wide torso in a loose black short sleeve T-shirt, a softly rounded lower face and full cheeks. Preserve his distinctive shaggy medium-length dark-brown hair, slightly parted and falling over his forehead, dark brows, nose shape and reserved, focused expression. Natural adult facial proportions, relaxed and attentive standing pose, looking towards the class, small gesture with one open hand. Same semi-realistic painted anime style as the reference teacher. Centered head to waist framing with margin above hair, all features clearly readable against a genuine transparent alpha background. One person only, no scenery, no baked glow, no other people, no text, no shadow."
+  ]
+}

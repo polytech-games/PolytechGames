@@ -5,17 +5,14 @@ const path = require('node:path');
 const D = require('../games/between-classes/campus-data.js');
 const root = path.resolve(__dirname, '../games/between-classes');
 
-test('entrances map to the correct teachers and require nearby feet position', () => {
-  const first = D.entrances.find(e => e.building === 1), third = D.entrances.find(e => e.building === 3);
-  assert.equal(D.lessons[first.lesson].teacher, 'Стасиншина');
-  assert.equal(D.lessons[third.lesson].teacher, 'Попов');
+test('entrances require nearby feet position, including both doors of building two', () => {
   assert.equal(D.nearEntrance({x:810,y:865}), null);
   for (const e of D.entrances) {
     assert.ok(D.canStand(e.x,e.y), e.id);
     assert.equal(D.nearEntrance(e)?.id, e.id);
     assert.notEqual(D.nearEntrance({x:e.x,y:e.y+e.radius+1})?.id, e.id);
   }
-  assert.ok(D.entrances.filter(e=>e.building===2).every(e=>e.lesson===null));
+  assert.deepEqual(D.entrances.filter(e=>e.building===2).map(e=>e.id), ['building-2-side','building-2-front']);
 });
 
 test('all entrances can be reached without crossing a painted building', () => {

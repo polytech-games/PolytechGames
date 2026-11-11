@@ -112,11 +112,13 @@ window.CampusSchedule = {
     },
     "system-security": {
       "title": "Системная безопасность (защита от несанкционированного доступа, просмотра и изменения данных)",
-      "lessonId": null
+      "gameplayTopic": "Системная безопасность",
+      "lessonId": "muratov"
     },
     "entrepreneurship": {
       "title": "Научные и законодательные основы предпринимательской деятельности в РК",
-      "lessonId": null
+      "gameplayTopic": "Предпринимательство",
+      "lessonId": "abdraimova"
     }
   },
   "rooms": {

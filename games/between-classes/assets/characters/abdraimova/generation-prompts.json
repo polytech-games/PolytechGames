@@ -1,0 +1,8 @@
+{
+  "mode": "Built-in image_gen",
+  "output": "calm.png",
+  "prompts": [
+    "Use case: illustration-story. Visual novel teacher cutout for a Kazakhstan college game. Image 1 is the face and hair reference of Abdraimova, image 2 is style and framing only. Preserve the visible rounded face, dark eyes and brows, short layered light brown hair with lighter highlights, wispy forward bangs, feathered crown and sides, and calm natural expression. Respect age and recognizable face proportions. Clothes are generic: simple dark teal cardigan over a plain warm ivory blouse, neat everyday college teacher. Centered standing bust to waist, slightly three-quarter toward viewer, shoulders visible, enough space above hair, neutral pose. Match the second reference's semi-realistic hand-painted anime visual novel illustration and warm natural light. Single cutout with true alpha transparency, no scenery, no other people, no text, no shadow. Portrait orientation.",
+    "Use case: precise-object-edit. Edit this existing visual novel illustration of Abdraimova. Change only her dark teal cardigan to a plain neutral black cardigan, retaining natural charcoal highlights, visible knit texture, cut, folds and buttons. Keep the ivory blouse, trousers, hands, papers, watch, exact facial likeness, short highlighted layered haircut and pose the same. Retain a genuinely transparent alpha background and remove any soft color halo from the original cutout. Same framing, no text."
+  ]
+}

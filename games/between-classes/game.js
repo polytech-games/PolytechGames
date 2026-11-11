@@ -21,9 +21,10 @@ try { const raw = JSON.parse(localStorage.getItem(KEY) || '{}'); if (raw && type
 let selectedId = CHARACTERS.some(c => c.id === saved.characterId) ? saved.characterId : 'vlad';
 let confirmedId = CHARACTERS.some(c => c.id === saved.characterId) ? saved.characterId : null;
 let currentScreen = 'menu';
-let dayId=saved.dayId==='tuesday'?'tuesday':'friday';
-$('day-select').value=dayId;
-$('day-select').addEventListener('change',event=>{dayId=event.target.value;persist();});
+const daySelect=$('day-select');
+let dayId=Array.from(daySelect.options).some(option=>option.value===saved.dayId)?saved.dayId:'friday';
+daySelect.value=dayId;
+daySelect.addEventListener('change',event=>{dayId=event.target.value;persist();});
 const preferences = { animations: typeof saved.animations === 'boolean' ? saved.animations : !matchMedia('(prefers-reduced-motion: reduce)').matches, largeText: saved.largeText === true };
 
 function persist() {
