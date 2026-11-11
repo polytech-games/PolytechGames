@@ -562,14 +562,18 @@ PHRASES.forEach((p, i) => {
   b.addEventListener('click', () => { ensureAudio(); selectPhrase(i); });
   phraseBar.appendChild(b);
 });
-function selectPhrase(i){
-  if (i < 0 || i >= PHRASES.length || i === currentPhrase) return;
+function selectPhrase(i, force){
+  if (i < 0 || i >= PHRASES.length) return;
+  if (!force && i === currentPhrase) return;
   currentPhrase = i;
   [...phraseBar.children].forEach((c, k) => c.classList.toggle('active', k === i));
-  shoutBtn.innerHTML = '<span>' + PHRASES[i].text.replace('!','!<br>') + '</span>';
+  const t = PHRASES[i].text;
+  const btnText = t.includes(' ') ? t.replace(' ', '<br>') : (t.length > 8 ? t.slice(0,4) + '-<br>' + t.slice(4) : t);
+  shoutBtn.innerHTML = '<span>' + btnText + '</span>';
   shoutBtn.style.fontSize = PHRASES[i].text.length > 16 ? '12px' : '15px';
-  beep(560 + i*70, .06, 'triangle', .035);
+  if (!force) beep(560 + i*70, .06, 'triangle', .035);
 }
+selectPhrase(0, true);
 
 /* ================= Ученики ================= */
 const SHIRTS = ['#e07a5f','#5c8bd6','#79bd8c','#c88bd4','#e3b04b','#5fb4b0',
@@ -635,7 +639,7 @@ const game = {
   particles: [],
   teacher: { x: 480, y: 590, angle: -Math.PI/2, cooldown: 0, shoutAnim: 0, walk: 0, moving: false }
 };
-let endTimeout = null, hintTimeout = null, toastTimeout = null, lastTimerSec = -1, lastNotebook = -1;
+let endTimeout = null, hintTimeout = null, toastTimeout = null, lastTimerSec = -1, lastNotebook = -1, lastPct = -1;
 
 /* ================= Ввод ================= */
 const keys = new Set();
@@ -661,7 +665,9 @@ window.addEventListener('keydown', e => {
   if (e.code === 'KeyM') toggleSound();
   if (e.code === 'Enter' && game.state === 'menu') startGame();
   const n = ['Digit1','Digit2','Digit3','Digit4','Digit5'].indexOf(e.code);
-  if (n >= 0){ ensureAudio(); selectPhrase(n); }
+  const np = ['Numpad1','Numpad2','Numpad3','Numpad4','Numpad5'].indexOf(e.code);
+  const phraseIdx = n >= 0 ? n : np;
+  if (phraseIdx >= 0){ ensureAudio(); selectPhrase(phraseIdx); }
   if (e.code === 'Tab'){
     e.preventDefault();
     ensureAudio();
@@ -945,15 +951,15 @@ function startGame(){
   game.teacher = { x: 480, y: 590, angle: -Math.PI/2, cooldown: 0, shoutAnim: 0, walk: 0, moving: false };
   for (const s of students){
     s.progress = 0; s.writing = 0; s.idleT = 0; s.idleLimit = rand(1.2, 3);
-    s.distracted = false; s.done = false; s.jump = 0; s.reply = ''; s.replyT = 0;
+    s.distracted = false; s.done = false; s.jump = 0; s.reply = ''; s.replyT = 0; s.offended = 0;
   }
-  lastTimerSec = -1; lastNotebook = -1;
+  lastTimerSec = -1; lastNotebook = -1; lastPct = -1;
   hideOverlay();
   hud.classList.remove('hidden');
   hint.classList.remove('hidden','fade');
   hintTimeout = setTimeout(() => hint.classList.add('fade'), 9000);
   phraseBar.classList.remove('hidden');
-  selectPhrase(0);
+  selectPhrase(0, true);
   bahk.react = 0; bahk.stateT = 0; bahk.mood = 'warm';
   bahk.currentLine = ''; bahk.lineTimer = 0;
   touchWrap.classList.toggle('hidden', !isTouch);
@@ -974,7 +980,6 @@ function endGame(result){
   touchWrap.classList.add('hidden');
   clearTimeout(hintTimeout);
 
-  const starsEl = $('winStars').querySelectorAll('.star');
   if (result === 'won'){
     const left = game.timeLeft;
     game.stars = left >= 36 ? 3 : (left >= 16 ? 2 : 1);
@@ -985,6 +990,7 @@ function endGame(result){
     $('winText').textContent = ['Успели впритык, но урок сдан.','Отличный урок, всё успели записать.','Одни пятёрки — можно и домой!'][game.stars-1];
     endTimeout = setTimeout(() => {
       showCard('win'); spawnConfetti();
+      const starsEl = $('winStars').querySelectorAll('.star');
       starsEl.forEach((el, i) => {
         el.classList.remove('lit');
         if (i < game.stars) setTimeout(() => el.classList.add('lit'), 180 + i*200);
@@ -999,8 +1005,9 @@ function endGame(result){
       : `Заполнено ${pct}% тетрадей. Ученики подсказывают, что записать.`;
     endTimeout = setTimeout(() => {
       showCard('lose');
+      const loseStarsEl = $('loseStars').querySelectorAll('.star');
       const got = Math.min(3, Math.round(game.completed / (TOTAL_STUDENTS/3)));
-      starsEl.forEach((el, i) => {
+      loseStarsEl.forEach((el, i) => {
         el.classList.toggle('lit', i < got);
         el.style.transitionDelay = (i * 0.12) + 's';
       });
@@ -1282,7 +1289,7 @@ function bubble(x, y, text, size, fill, stroke, tailDir){
   ctx.closePath();
   ctx.fillStyle = fill; ctx.fill();
   ctx.strokeStyle = stroke; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(tx - 7, ty - 1); ctx.lineTo(tx, ty + 9*dir); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tx - 7, ty - 1); ctx.lineTo(tx, ty + 9*dir); ctx.lineTo(tx + 7, ty - 1); ctx.stroke();
   ctx.fillStyle = stroke;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(text, bx + w/2, by + h/2 + 1);
@@ -1532,28 +1539,37 @@ function drawTeacher(t){
   if (p.shoutAnim > 0){
     const a = clamp(p.shoutAnim, 0, 1);
     const sc = 0.7 + 0.3*easeOut(1 - a);
-    const txt = 'ЗАПИШИТЕ!';
+    const txt = p.shoutText || 'Запишите!';
     const col = p.shoutColor || '#e2593c';
     ctx.save();
     ctx.globalAlpha = Math.min(1, a*2.4);
-    ctx.translate(x, headY - 30);
+    ctx.translate(x, headY - 48);
     ctx.scale(sc, sc);
     ctx.font = '900 17px "Segoe UI", sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     const w = ctx.measureText(txt).width + 30;
-    let bx = clamp(-w/2, -x + 10, W - x - w - 10);
+    let bx = clamp(-w/2, 10 - x, W - 10 - x - w);
     ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
     fillRR(ctx, bx, -19, w, 38, 19, '#fff8ea');
     ctx.shadowColor = 'transparent';
     ctx.strokeStyle = col; ctx.lineWidth = 2.5;
     rr(ctx, bx, -19, w, 38, 19); ctx.stroke();
+    // хвостик
+    const tx = clamp(0, bx + 16, bx + w - 16);
     ctx.beginPath();
-    ctx.moveTo(x + bx - 9, 18); ctx.lineTo(x, 32); ctx.lineTo(x + bx + 9, 18); ctx.closePath();
+    ctx.moveTo(tx - 8, 18);
+    ctx.lineTo(tx, 28);
+    ctx.lineTo(tx + 8, 18);
+    ctx.closePath();
     ctx.fillStyle = '#fff8ea'; ctx.fill();
-    ctx.strokeStyle = col;
-    ctx.beginPath(); ctx.moveTo(x+bx-9, 18); ctx.lineTo(x, 32); ctx.stroke();
+    ctx.strokeStyle = col; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(tx - 8, 18);
+    ctx.lineTo(tx, 28);
+    ctx.lineTo(tx + 8, 18);
+    ctx.stroke();
     ctx.fillStyle = col;
-    ctx.fillText(txt, x + bx + w/2, 0);
+    ctx.fillText(txt, bx + w/2, 0);
     ctx.restore();
   }
   // кулдаун
@@ -1628,9 +1644,12 @@ function updateHud(){
   }
   if (game.completed !== lastNotebook){
     lastNotebook = game.completed;
-    const total = students.reduce((a,s) => a + s.progress, 0);
-    const pct = Math.round(total / (TOTAL_STUDENTS * 100) * 100);
     notebookText.textContent = game.completed + ' / ' + TOTAL_STUDENTS;
+  }
+  const total = students.reduce((a,s) => a + s.progress, 0);
+  const pct = Math.round(total / (TOTAL_STUDENTS * 100) * 100);
+  if (pct !== lastPct){
+    lastPct = pct;
     percentText.textContent = pct + '%';
     miniFill.style.width = pct + '%';
   }
