@@ -187,12 +187,7 @@ function showResults(){clearMovement();ui('day-results').hidden=false;ui('novel'
 }
 function pause(){if(paused||state.finished)return;paused=true;clearMovement();save();if(!pauseDialog.open)pauseDialog.showModal();updatePrompt();}
 function resume(){paused=false;lastTime=performance.now();if(state.scene)renderScene();else canvas.focus({preventScroll:true});}
-function draw(){context.clearRect(0,0,1536,1024);
-  if(map){
-    context.drawImage(map,0,0,1536,1024);
-    context.fillStyle='#080e1a4d';
-    context.fillRect(0,0,1536,1024);
-  }
+function draw(){context.clearRect(0,0,1536,1024);if(map)context.drawImage(map,0,0,1536,1024);
   if(map&&route.length){context.save();context.strokeStyle='#5fd4ff';context.lineWidth=5;context.setLineDash([10,9]);context.beginPath();context.moveTo(player.x,player.y);for(const point of route)context.lineTo(point.x,point.y);context.stroke();context.restore();}
   if(map)for(const spot of Events.spots){context.fillStyle=state.campusEvents.some(e=>e.id===spot.id)?'#526071e8':'#704622ed';context.strokeStyle=nearbyId===spot.id?'#fff':'#f5c76b';context.lineWidth=2;context.beginPath();context.arc(spot.x,spot.y-14,23,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#fff';context.font='bold 10px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(spot.mark,spot.x,spot.y-14);}
   if(map)for(const e of campusEntrances){context.fillStyle=nearbyId===e.id?'#5fd4ff':'#12263de8';context.strokeStyle='#8fe3ff';context.lineWidth=2;context.beginPath();context.arc(e.x,e.y-12,17,0,Math.PI*2);context.fill();context.stroke();context.fillStyle='#f4f1ea';context.font='bold 17px Nunito,sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(String(e.building),e.x,e.y-12);}
