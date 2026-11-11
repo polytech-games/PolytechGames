@@ -1,5 +1,5 @@
 'use strict';
-const D=window.CampusData,Story=window.CampusStory,Events=window.CampusEvents;
+const D=window.CampusData,Story=window.CampusStory,Events=window.CampusEvents,Formats=window.CampusLessonFormats;
 const ui=id=>document.getElementById(id), canvas=ui('campus-canvas'), context=canvas.getContext('2d');
 function readSave(key){try{const v=JSON.parse(localStorage.getItem(key)||'{}');return v&&typeof v==='object'?v:{};}catch{return {};}}
 const menuSave=readSave('polytech-between-classes-v1');
@@ -63,7 +63,7 @@ function openCampusEvent(spot){
 }
 function openSchedule(){
   if(!worldActive())return;
-  const status={pending:'Ещё не был',present:'На паре',completed:'Завершена','left-early':'Вышел раньше',missed:'Прогул'};
+  const status={pending:'Ещё не был',present:'На паре',completed:'Завершена','left-early':'Вышел раньше',missed:'Прогул',cancelled:'Отменена'};
   action(`Расписание · ${Day.dayName}`,`Сейчас ${Day.format(state.clock)}. Выбери оставшуюся пару — персонаж пойдёт к нужному корпусу.`,[
     ...Day.definitions.map(d=>({label:`${Day.format(d.start)}–${Day.format(d.end)} · ${d.title}\n${d.teacher} · корпус ${d.building}, ${d.room} · ${status[Day.record(state,d.id).status]}`,disabled:state.clock>=d.end||Day.record(state,d.id).status==='completed',run:()=>walkToBuilding(d.building)})),closeOption(),
   ]);
@@ -81,7 +81,7 @@ function requestLesson(recordId){const d=Day.definition(recordId);if(!d)return;c
   if(result==='closed'){action('Пара закончилась','На это занятие уже не зайти. Посмотри следующую пару в расписании.',[closeOption()]);return;}
   if(result==='early'){action('До звонка ещё есть время',`${d.title} начинается в ${Day.format(d.start)}. Подождать у аудитории?`,[{label:'Дождаться начала пары',primary:true,run:()=>{Day.jump(state,d.start);requestLesson(recordId);}},closeOption()]);return;}
   if(result==='permit'){openScene({type:'reaction',recordId:d.id,reason:'permit'});return;}
-  if(result==='resume'){openScene({type:'lesson',recordId:d.id});return;}
+  if(result==='resume'||result==='cancelled'){openScene({type:'lesson',recordId:d.id});return;}
   openScene({type:'reaction',recordId:d.id,reason:result});
 }
 function openHead(){const pending=Day.pendingPermits(state)[0];
@@ -91,14 +91,61 @@ function openHead(){const pending=Day.pendingPermits(state)[0];
 function openScene(scene){clearMovement();state.scene=scene;ui('novel').hidden=false;inertWorld(true);renderScene();updatePrompt();save();}
 function finishScene(){state.scene=null;ui('novel').hidden=true;inertWorld(false);clearMovement();lastTime=performance.now();save();canvas.focus({preventScroll:true});updateHUD();updatePrompt();if(state.finished)showResults();}
 function exitScene(){const scene=state.scene;if(!scene)return;if(scene.type==='lesson'||(scene.type==='reaction'&&Day.record(state,scene.recordId).admittedAt!==null))Day.leave(state,scene.recordId);finishScene();message('Ты снова во дворе. Часы идут.');}
-function renderScene(){const scene=state.scene;if(!scene)return;const d=Day.definition(scene.recordId),r=Day.record(state,d.id),lesson=D.lessons[d.lessonId];
+function currentLesson(definition,record){
+  const base=D.lessons[definition.lessonId],format=Formats.get(definition.teacherId,record.formatId);
+  return format?{...base,...format}:base;
+}
+function renderActivity(scene,record,lesson){
+  const nodeId=record.node;
+  const {activity,picks,checked,total,ready,passed,result,capped,options,notes}=Story.activityView(record,lesson);
+  const isOrder=activity.type==='order';
+  const act=(action,index)=>{if(!paused&&!actionDialog.open&&state.scene===scene&&Story.activityAction(record,lesson,nodeId,action,index)){renderScene();save();}};
+  ui('lesson-activity').hidden=false;
+  ui('activity-title').textContent=activity.title;
+  ui('activity-progress').textContent=checked?result:`${picks.length} / ${total}`;
+  ui('activity-notebook').hidden=!notes.length;
+  ui('activity-notes').textContent=notes.join('\n');
+  const selection=ui('activity-selection');
+  selection.hidden=!isOrder||!picks.length;
+  selection.classList.toggle('code-tiles',!!activity.code);
+  selection.replaceChildren(...(isOrder?picks.map(index=>Object.assign(document.createElement('li'),{textContent:activity.items[index]})):[]));
+  const prompt=ui('activity-prompt');
+  prompt.textContent=ready?'':isOrder?'Выбирай карточки в нужном порядке.':activity.rounds[picks.length].prompt;
+  prompt.hidden=ready;
+  const tiles=ui('activity-options');
+  tiles.classList.toggle('code-tiles',!!activity.code);
+  tiles.replaceChildren(...(ready?[]:options.map((text,index)=>{
+    const button=document.createElement('button');
+    button.textContent=`${index+1}. ${text}`;
+    button.disabled=isOrder&&picks.includes(index);
+    button.onclick=()=>act('pick',index);
+    return button;
+  })));
+  const feedback=ui('activity-feedback');
+  feedback.hidden=!checked;
+  feedback.classList.toggle('passed',passed);
+  if(checked){
+    const explanations=isOrder?[]:activity.rounds.filter((round,index)=>picks[index]!==round.answer).map(round=>round.explanation);
+    feedback.textContent=[passed?activity.success??'Ответ принят.':activity.failure??'Есть ошибки. Посмотри разбор.',
+      ...explanations,capped?`За нейронку максимум ${activity.cap.max} баллов.`:''].filter(Boolean).join(' ');
+  }
+  const undo=ui('activity-undo');undo.hidden=checked;undo.disabled=!picks.length;undo.onclick=()=>act('undo');
+  const submit=ui('activity-submit');submit.disabled=!ready;
+  submit.textContent=checked?'Дальше →':activity.submit??'Проверить';
+  submit.onclick=()=>act(checked?'continue':'check');
+  (tiles.querySelector('button:not(:disabled)')||submit).focus();
+}
+function renderScene(){const scene=state.scene;if(!scene)return;const d=Day.definition(scene.recordId),r=Day.record(state,d.id),lesson=currentLesson(d,r);
   const isHead=scene.type.startsWith('head');
   ui('novel-background').src=isHead?HEAD_OFFICE:lesson.background;
   ui('novel-background').alt=isHead?'Кабинет заведующей':'Аудитория';
   const building=campusEntrances.find(entrance=>entrance.building===d.building);
-  ui('lesson-title').textContent=isHead?'Первый корпус · Кабинет заведующей':`${building.name} · ${d.title} · ${d.room}`;
+  ui('lesson-title').textContent=isHead?'Первый корпус · Кабинет заведующей':[building.name,d.title,d.room,lesson.label].filter(Boolean).join(' · ');
   const portrait=ui('teacher-portrait');portrait.src=isHead?HEAD_PORTRAIT:`assets/characters/${lesson.portrait}/${scene.type==='reaction'&&scene.reason!=='on-time'?(lesson.reactionEmotion||'surprised'):scene.type==='lesson'?(lesson.nodes[r.node]?.emotion||'calm'):'calm'}.${lesson.portrait==='popov'?'webp':'png'}`;portrait.alt=isHead?'Заведующая':lesson.teacher;portrait.classList.toggle('head-portrait',isHead);
+  portrait.hidden=!isHead&&r.formatId==='cancelled';
   const choices=ui('novel-choices');choices.replaceChildren();ui('novel-next').hidden=false;
+  ui('lesson-activity').hidden=true;
+  document.querySelector('.novel-dialogue').scrollTop=0;
   let text='',speaker=isHead?'Заведующая':lesson.teacher,nextLabel='Дальше →',nextAction=null;
   function choice(label,run){const button=document.createElement('button');button.textContent=`${choices.children.length+1}. ${label}`;button.addEventListener('click',()=>{if(paused||state.scene!==scene)return;run();save();});choices.append(button);}
   if(scene.type==='reaction'){
@@ -113,16 +160,23 @@ function renderScene(){const scene=state.scene;if(!scene)return;const d=Day.defi
   } else {
     if(!Object.hasOwn(lesson.nodes,r.node))r.node='start';const node=Story.view(r,lesson);
     speaker=node.speaker;text=node.text.replaceAll('{name}',D.characters[character]);
+    if(node.activity){
+      ui('novel-speaker').textContent=speaker;ui('novel-text').textContent=text;
+      ui('novel-next').hidden=true;ui('novel-next').onclick=null;
+      renderActivity(scene,r,lesson);return;
+    }
     if(node.choices)for(const [index,c] of node.choices.entries()){const nodeId=r.node;choice(c.text,()=>{if(Story.choose(r,lesson,nodeId,index))renderScene();});}
-    nextLabel=node.end?'Закончить пару →':'Дальше →';nextAction=()=>{if(node.end){Story.finish(r,lesson);Day.complete(state,d.id);finishScene();message(`Звонок. ${Day.format(d.end)} — пара закончилась.`);}else{Story.advance(r,lesson);renderScene();save();}};
+    nextLabel=node.end?(r.formatId==='cancelled'?'Разойтись →':'Закончить пару →'):'Дальше →';nextAction=()=>{if(node.end){Story.finish(r,lesson);Day.complete(state,d.id);finishScene();message(r.formatId==='cancelled'?'Пара отменена. Отметки о прогуле нет.':`Звонок. ${Day.format(d.end)} — пара закончилась.`);}else{Story.advance(r,lesson);renderScene();save();}};
   }
   ui('novel-speaker').textContent=speaker;ui('novel-text').textContent=text;ui('novel-next').textContent=nextLabel;ui('novel-next').hidden=choices.children.length>0;
   ui('novel-next').onclick=()=>{if(!paused&&state.scene===scene)nextAction?.();save();};
   (choices.firstElementChild||ui('novel-next')).focus({preventScroll:true});
 }
 function showResults(){clearMovement();ui('day-results').hidden=false;ui('novel').hidden=true;inertWorld(true);const list=ui('results-list');list.replaceChildren();
-  for(const r of Day.summary(state)){const article=document.createElement('article');article.className='result-card';const title=document.createElement('h3');title.textContent=`${r.slot}. ${r.title}`;article.append(title);
-    const lines=[r.status==='completed'?'Пара завершена':r.status==='missed'?'Прогул':'Ушёл раньше окончания',`Опоздание: ${r.lateMinutes} мин. · Выговор: ${r.warning?'да':'нет'} · Допуск: ${r.permitGranted?'получен'+(r.status==='missed'?' (пара всё равно пропущена)':''):r.permitRequested?'не получен':'не требовался'}`,`Ранний уход: ${r.leftEarly?'да':'нет'}`,r.comment];
+  for(const r of Day.summary(state)){const article=document.createElement('article');article.className='result-card';const title=document.createElement('h3');
+    const format=Formats.get(r.teacherId,r.formatId);
+    title.textContent=`${r.slot}. ${r.title}${format&&r.status!=='cancelled'?` · ${format.label.toLowerCase()}`:''}`;article.append(title);
+    const lines=r.status==='cancelled'?['Пара отменена']:[r.status==='completed'?'Пара завершена':r.status==='missed'?'Прогул':'Ушёл раньше окончания',`Опоздание: ${r.lateMinutes} мин. · Выговор: ${r.warning?'да':'нет'} · Допуск: ${r.permitGranted?'получен'+(r.status==='missed'?' (пара всё равно пропущена)':''):r.permitRequested?'не получен':'не требовался'}`,`Ранний уход: ${r.leftEarly?'да':'нет'}`,r.comment];
     if(r.story?.outcome)lines.push(`Чем запомнилась: ${r.story.outcome}`);
     if(r.story?.events?.length)lines.push('На паре: '+r.story.events.join(' '));
     for(const text of lines){const p=document.createElement('p');p.textContent=text;article.append(p);}list.append(article);
@@ -155,7 +209,9 @@ canvas.addEventListener('pointerdown',event=>{canvas.focus({preventScroll:true})
 document.addEventListener('keydown',event=>{
   if(event.key==='Escape'){if(!pauseDialog.open&&!actionDialog.open&&!state.finished){event.preventDefault();pause();}return;}
   if(paused||actionDialog.open||state.finished)return;
-  if(state.scene){if(event.repeat)return;if(/^[1-9]$/.test(event.key)){event.preventDefault();ui('novel-choices').children[Number(event.key)-1]?.click();}else if((event.key===' '||event.key==='Enter')&&!event.target.closest('button,a,input,select')){event.preventDefault();ui('novel-next').click();}return;}
+  if(state.scene){if(event.repeat)return;const activityOpen=!ui('lesson-activity').hidden;
+    if(/^[1-9]$/.test(event.key)){event.preventDefault();ui(activityOpen?'activity-options':'novel-choices').children[Number(event.key)-1]?.click();}
+    else if((event.key===' '||event.key==='Enter')&&!event.target.closest('button,a,input,select,summary')){event.preventDefault();ui(activityOpen?'activity-submit':'novel-next').click();}return;}
   if(['e','у'].includes(event.key.toLowerCase())&&!event.repeat&&!event.target.closest('a,input,select')){event.preventDefault();interact();return;}
   if(event.target.closest('button,a,input,select'))return;const direction=keyMap[event.key]||keyMap[event.key.toLowerCase()];if(direction){event.preventDefault();keys.set(event.code,direction);route=[];}
 });
@@ -165,7 +221,7 @@ ui('enter-building').addEventListener('click',interact);ui('leave-lesson').addEv
 ui('day-clock').addEventListener('click',openSchedule);
 ui('day-goal').addEventListener('click',()=>{if(!worldActive())return;const d=Day.next(state);if(d)walkToBuilding(Day.pendingPermits(state).length?1:d.building);});
 ui('conversation-log').addEventListener('click',()=>{
-  if(!state.scene||paused)return;const d=Day.definition(state.scene.recordId),r=Day.record(state,d.id),lesson=D.lessons[d.lessonId];
+  if(!state.scene||paused)return;const d=Day.definition(state.scene.recordId),r=Day.record(state,d.id),lesson=currentLesson(d,r);
   const entries=Story.log(r,lesson);const text=entries.length?entries.map(e=>`${e.speaker}: ${e.text.replaceAll('{name}',D.characters[character])}`).join('\n\n'):'Разговор с преподавателем ещё не начался.';
   action('История разговора',text,[{label:'Назад к разговору',primary:true}]);
 });
@@ -186,5 +242,5 @@ ui('wait-time').addEventListener('click',()=>{
 ui('skip-lesson').addEventListener('click',()=>{if(!worldActive())return;const d=Day.next(state);if(!d)return;action('Прогулять пару?',`${d.title} · ${d.teacher} · ${Day.format(d.start)}–${Day.format(d.end)}. Время перейдёт к концу занятия.`,[{label:`Прогулять и дождаться ${Day.format(d.end)}`,primary:true,run:()=>{Day.skip(state,d.id);updateHUD();if(state.finished)showResults();}},closeOption()]);});
 ui('replay-day').addEventListener('click',()=>{state=Day.create(character);Object.assign(player,state.position,{phase:0});ui('day-results').hidden=true;inertWorld(false);lastTime=performance.now();save();canvas.focus({preventScroll:true});});
 function loadImage(path){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error(path));image.src=path;});}
-Promise.all([loadImage('assets/campus/campus-map-v4.png'),loadImage(`assets/walk/${character}.png`)]).then(([background,actor])=>{map=background;sprite=actor;ui('campus-loading').hidden=true;if(state.finished)showResults();else if(state.scene){const r=Day.record(state,state.scene.recordId),d=Day.definition(state.scene.recordId);if(!Object.hasOwn(D.lessons[d.lessonId].nodes,r.node))r.node='start';openScene(state.scene);}else canvas.focus({preventScroll:true});lastTime=performance.now();}).catch(()=>{ui('campus-loading').textContent='Не удалось загрузить кампус. Обнови страницу.';});
-updateHUD();requestAnimationFrame(tick);
+Promise.all([loadImage('assets/campus/campus-map-v4.png'),loadImage(`assets/walk/${character}.png`)]).then(([background,actor])=>{map=background;sprite=actor;ui('campus-loading').hidden=true;if(state.finished)showResults();else if(state.scene)openScene(state.scene);else canvas.focus({preventScroll:true});lastTime=performance.now();}).catch(()=>{ui('campus-loading').textContent='Не удалось загрузить кампус. Обнови страницу.';});
+save();updateHUD();requestAnimationFrame(tick);

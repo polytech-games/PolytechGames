@@ -22,3 +22,75 @@
 @media(max-width:700px){.novel-header{gap:8px}.novel-header h2{max-width:48%}.novel-tools{gap:4px}.novel-tools button{font-size:10px;padding:8px}.day-hud #day-goal{font-size:10px}}
 
 #campus-message{position:absolute;bottom:29px;left:10px;right:10px;max-width:600px;width:calc(100% - 20px);margin:0 auto;background:#0b1629e6;border-radius:7px;padding:6px 10px;pointer-events:none}#entry-prompt:not([hidden])~#campus-message{display:none}
+
+#novel:has(#lesson-activity:not([hidden])) .novel-dialogue {
+  margin-top: 86px;
+  max-height: calc(100svh - 106px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  flex-shrink: 0;
+}
+#lesson-activity {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #8fe3ff45;
+  border-radius: 10px;
+  background: #0b1322;
+  display: grid;
+  gap: 10px;
+}
+.activity-heading, .activity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.activity-heading h3 { font-size: 16px; line-height: 1.25; }
+#activity-progress {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+#activity-notebook {
+  padding: 6px 10px;
+  border: 1px solid #f6c86955;
+  border-radius: 6px;
+  color: #f6da91;
+  background: #392e17;
+  font-size: 14px;
+}
+#activity-notebook summary { cursor: pointer; }
+#activity-notes { padding-top: 4px; white-space: pre-line; }
+#activity-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+#activity-options:empty { display: none; }
+#activity-options button, .activity-controls button {
+  min-height: 42px;
+  padding: 8px 10px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+#activity-options button { text-align: left; background: #203551; }
+#activity-options button:enabled:hover { border-color: var(--accent); background: #284d70; }
+#lesson-activity button:disabled { opacity: .45; cursor: default; }
+#activity-selection {
+  margin: 0;
+  padding: 6px 10px 6px 32px;
+  border-radius: 6px;
+  background: #ffffff0b;
+  overflow-wrap: anywhere;
+}
+.code-tiles, .code-tiles button { font-family: ui-monospace, monospace; }
+#activity-feedback {
+  padding: 8px 10px;
+  border-left: 3px solid #f1b969;
+  background: #372916;
+  border-radius: 4px;
+}
+#activity-feedback.passed { background: #16372c; border-color: #73d8ad; }
+#activity-submit { margin-left: auto; }
+@media (max-width: 700px) {
+  #lesson-activity { padding: 8px; gap: 6px; }
+  #activity-options { grid-template-columns: 1fr; }
+  #activity-options button, .activity-controls button { font-size: 12px; }
+}

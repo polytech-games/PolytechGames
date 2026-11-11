@@ -86,8 +86,8 @@ test('completion jumps to the bell; early exit resumes and remains visible in re
   assert.equal(Day.complete(s,first.id),true);assert.equal(s.clock,first.end);assert.equal(r.status,'completed');assert.equal(Day.complete(s,first.id),false);
 });
 test('natural no-show and deliberate skipping produce the same absence; repeat skip is rejected',()=>{
-  const natural=Day.create();Day.advance(natural,(first.end-Day.START)/Day.RATE);
-  const deliberate=Day.create();assert.equal(Day.skip(deliberate,first.id),true);
+  const natural=Day.create('vlad',()=>0);Day.advance(natural,(first.end-Day.START)/Day.RATE);
+  const deliberate=Day.create('vlad',()=>0);assert.equal(Day.skip(deliberate,first.id),true);
   assert.equal(Day.record(natural,first.id).status,'missed');assert.deepEqual(natural.records,deliberate.records);
   assert.equal(Day.skip(deliberate,first.id),false);assert.equal(Day.skip(deliberate,second.id),true);
   for(const d of Day.definitions.slice(2)){assert.equal(deliberate.finished,false);assert.equal(Day.skip(deliberate,d.id),true);}
@@ -103,5 +103,26 @@ test('save restores dialogue, permit reaction, time and attendance without offli
   Day.grant(s,first.id,'reason');Day.admit(s,first.id);Day.record(s,first.id).node='followup';s.scene={type:'lesson',recordId:first.id};
   restored=Day.restore(JSON.parse(JSON.stringify(s)),'vlad');assert.equal(restored.scene.type,'lesson');assert.equal(restored.records[0].node,'followup');assert.equal(restored.records[0].permitGranted,true);
   assert.equal(Day.restore(s,'adil').clock,Day.START);
-  assert.deepEqual(Day.restore({version:1,completed:['popov','stasinshina']},'vlad'),Day.create('vlad'));
+  const obsolete=Day.restore({version:1,completed:['popov','stasinshina']},'vlad');
+  assert.equal(obsolete.clock,Day.START);
+  assert.ok(obsolete.records.every(record=>record.status==='pending'));
+});
+
+test('a cancelled Wednesday lesson never marks attendance, absence or late entry',()=>{
+  const model=Day.createModel('wednesday'),state=model.create('vlad',()=>0);
+  const [,lesson]=model.definitions;
+  const record=model.record(state,lesson.id);
+  assert.equal(record.formatId,'cancelled');
+  model.jump(state,lesson.start+31*60);
+  assert.equal(model.admit(state,lesson.id),'cancelled');
+  assert.equal(record.admittedAt,null);
+  assert.deepEqual(model.pendingPermits(state),[]);
+  state.scene={type:'lesson',recordId:lesson.id};
+  assert.equal(model.restore(JSON.parse(JSON.stringify(state)),'vlad').scene.recordId,lesson.id);
+  assert.equal(model.complete(state,lesson.id),true);
+  assert.equal(model.complete(state,lesson.id),false);
+  assert.equal(record.status,'cancelled');
+  const unattended=model.create('vlad',()=>0);
+  model.jump(unattended,lesson.end);
+  assert.equal(model.record(unattended,lesson.id).status,'cancelled');
 });
